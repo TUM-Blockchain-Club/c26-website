@@ -17,7 +17,7 @@ const AcademicForum = () => {
         <div className="w-full flex justify-center">
           <Text as={"p"} className="text-left sm:max-w-[42rem]">
             We are delighted to announce the <b>Call for Extended Abstracts</b>{" "}
-            for the academic forum at the 2025 TUM Blockchain Conference. This
+            for the academic forum at the 2026 TUM Blockchain Conference. This
             forum is part of the research track and hosted in collaboration with
             the TUM Chair of Network Architectures and Services.
             <br />
@@ -28,11 +28,7 @@ const AcademicForum = () => {
           </Text>
         </div>
         <div className="w-full flex justify-center">
-          <Link
-              href={
-                "https://apply.tum-blockchain.com/r/m6YOrA"
-              }
-            >
+          <Link href={"https://apply.tum-blockchain.com/r/m6YOrA"}>
             <Button buttonType={"cta"} className="mt-6">
               Submit Abstract
             </Button>

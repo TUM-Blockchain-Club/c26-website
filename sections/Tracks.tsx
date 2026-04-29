@@ -72,7 +72,7 @@ export const trackItems = [
     description: (
       <>
         We promote academic excellence by hosting leading researchers and
-        professionals to present blockchain innovations at the 2025 TUM
+        professionals to present blockchain innovations at the 2026 TUM
         Blockchain Conference, in collaboration with TUM and IEEE Blockchain.
       </>
     ),

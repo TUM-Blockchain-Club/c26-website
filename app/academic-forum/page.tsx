@@ -39,24 +39,24 @@ export default function PaperSubmission() {
             <div className="mt-2">
               <Text textType={"paragraph"}>
                 <b>Submission Deadline:</b>{" "}
-                <del>August 11, 2025 (23:59 CEST)</del> August 20, 2025 (23:59
+                <del>August 11, 2026 (23:59 CEST)</del> August 20, 2026 (23:59
                 CEST)
               </Text>
             </div>
             <div className="mt-2">
               <Text textType={"paragraph"}>
-                <b>Acceptance Notification:</b> <del>August 15, 2025</del>{" "}
-                August 22, 2025
+                <b>Acceptance Notification:</b> <del>August 15, 2026</del>{" "}
+                August 22, 2026
               </Text>
             </div>
             <div className="mt-2">
               <Text textType={"paragraph"}>
-                <b>Conference Dates:</b> September 11-12, 2025
+                <b>Conference Dates:</b> September 11-12, 2026
               </Text>
             </div>
             <div className="mt-2">
               <Text textType={"paragraph"}>
-                <b>Academic Track Date:</b> September 11, 2025; 13:30 - 17:45
+                <b>Academic Track Date:</b> September 11, 2026; 13:30 - 17:45
                 CEST
               </Text>
             </div>
@@ -78,7 +78,7 @@ export default function PaperSubmission() {
             <div className="mt-12">
               <Text textType={"paragraph"}>
                 We are delighted to announce the Call for Extended Abstracts for
-                the Academic Forum at the 2025 TUM Blockchain Conference. The
+                the Academic Forum at the 2026 TUM Blockchain Conference. The
                 Academic Forum is hosted in collaboration with the TUM Chair of
                 Network Architectures and Services. We are happy to have IEEE
                 Blockchain as a Knowledge partner inviting selected works for a

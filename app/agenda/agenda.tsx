@@ -146,7 +146,7 @@ export const Agenda: React.FC<AgendaProps> = ({ sessions, speakers }) => {
             Days
           </Text>
           <div className="flex flex-row md:flex-col gap-2">
-            {[new Date("2025-09-11"), new Date("2025-09-12")].map(
+            {[new Date("2026-09-11"), new Date("2026-09-12")].map(
               (date, index) => (
                 <Toggle
                   onClick={() =>

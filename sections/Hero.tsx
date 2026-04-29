@@ -13,18 +13,18 @@ const Hero = () => {
         <div>
           <div className="flex flex-col w-full justify-between items-center gap-8">
             <div className="relative max-w-[80vw] xl:max-w-[50vw] min-h-[150px] w-[400px] h-[175px] xs:mt-10 sm:w-[500px] sm:h-[200px] lg:w-[700px] lg:h-[350px]">
-              <Image src={confLogo} alt="TUM Blockchain Conference 24" fill />
+              <Image src={confLogo} alt="TUM Blockchain Conference 26" fill />
             </div>
 
             <div className={"flex flex-col items-center gap-1"}>
               <Text as={"p"} textType={"sub_title"} className="text-center">
-                September 11<sup>th</sup> - 12<sup>th</sup> 2025
+                September 11<sup>th</sup> - 12<sup>th</sup> 2026
               </Text>
             </div>
             <div className="flex flex-col items-center gap-1">
               <Button buttonType={"cta"} asChild disabled>
                 <Link
-                  href={"https://tum-blockchain-conference-25.eventbrite.de"}
+                  href={"https://tum-blockchain-conference-26.eventbrite.de"}
                 >
                   Tickets
                 </Link>

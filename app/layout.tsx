@@ -16,7 +16,7 @@ const ogImages = {
 };
 
 export const metadata: Metadata = {
-  title: "TUM Blockchain Conference 25",
+  title: "TUM Blockchain Conference 26",
   metadataBase: new URL("https://conference.tum-blockchain.com"),
   authors: [
     {
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
   },
   description: description,
   openGraph: {
-    title: "TUM Blockchain Conference 25",
+    title: "TUM Blockchain Conference 26",
     description: description,
     images: ogImages,
     locale: "en_US",
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "TUM Blockchain Conference 25",
+    title: "TUM Blockchain Conference 26",
     description: description,
     site: "@tbc_munich",
     creator: "@tbc_munich",
