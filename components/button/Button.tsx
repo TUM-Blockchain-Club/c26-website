@@ -10,11 +10,11 @@ const buttonVariants = cva(
   {
     variants: {
       buttonType: {
-        cta: "font-bold border-gradient-tbc border-2 hover:bg-gradient-to-br hover:from-tbc-yellow/30 hover:via-tbc-pink/30 hover:to-tbc-blue/30",
+        cta: "font-bold border-gradient-tbc border-2 hover:bg-gradient-to-br hover:from-tbc-yellow/30 hover:via-tbc-red/30 hover:to-tbc-purple/30",
         primary: "border border-white hover:bg-bg-hover",
         secondary: "hover:bg-bg-hover",
         ticket:
-          "font-bold border-gradient-tbc border-2 hover:bg-gradient-to-br hover:from-tbc-yellow/30 hover:via-tbc-pink/30 hover:to-tbc-blue/30",
+          "font-bold border-gradient-tbc border-2 hover:bg-gradient-to-br hover:from-tbc-yellow/30 hover:via-tbc-red/30 hover:to-tbc-purple/30",
       },
     },
     defaultVariants: {
