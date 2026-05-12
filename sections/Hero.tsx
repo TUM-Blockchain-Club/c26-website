@@ -18,7 +18,7 @@ const Hero = () => {
 
             <div className={"flex flex-col items-center gap-1"}>
               <Text as={"p"} textType={"sub_title"} className="text-center">
-                September 11<sup>th</sup> - 12<sup>th</sup> 2026
+                October 29<sup>th</sup> - 31<sup>th</sup> 2026
               </Text>
             </div>
             <div className="flex flex-col items-center gap-1">
