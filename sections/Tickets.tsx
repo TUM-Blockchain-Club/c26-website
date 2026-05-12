@@ -11,7 +11,13 @@ const Tickets = () => {
           Tickets
         </Text>
       </div>
+      {/* Ticket prices will be announced soon */}
       <div className="w-full flex justify-center">
+        <Text textType={"sub_title"} className="text-gradient">
+          Ticket prices will be announced soon
+        </Text>
+      </div>
+      {/* <div className="w-full flex justify-center">
         <div className="sm:flex mt-20 justify-center sm:space-x-10 space-y-10 sm:space-y-0 w-7/8 sm:w-full">
           <Ticket price={8} ticketType={"student"} title="Student" />
           <Ticket price={59} ticketType={"regular"} title="Regular" />
@@ -24,7 +30,7 @@ const Tickets = () => {
             Tickets
           </Link>
         </Button>
-      </div>
+      </div> */}
     </section>
   );
 };

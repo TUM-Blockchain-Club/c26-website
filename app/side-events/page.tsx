@@ -27,7 +27,10 @@ export default async function SideEvents() {
             >
               Side Events
             </Text>
-            <Events items={items} />
+            {/* <Events items={items} /> */}
+            <Text textType={"sub_title"} className="text-gradient">
+              Side events will be announced soon
+            </Text>
           </div>
         </Container>
       </main>

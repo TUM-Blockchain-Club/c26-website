@@ -31,7 +31,7 @@ export default async function Workshops() {
               className="text-gradient text-left mb-20"
               as="p"
             >
-              Workshops
+              Last Year's Workshops
             </Text>
             <WorkshopsContainer items={items} />
           </div>

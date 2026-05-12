@@ -2,7 +2,7 @@
 
 import { Text } from "@/components/text";
 import Image from "next/image";
-import confLogo from "@/public/logos/c25-wordmark.svg";
+import confLogo from "@/public/logos/c26-wordmark.svg";
 import { Button } from "@/components/button";
 import Link from "next/link";
 

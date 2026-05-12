@@ -62,7 +62,7 @@ const Grants = () => {
             height={40}
           />
           <Button className="w-fit" disabled>
-            Application Closed
+            Applications not open yet
           </Button>
         </div>
       </div>
