@@ -10,14 +10,14 @@ const montserrat = Montserrat({ subsets: ["latin"] });
 const description =
   "Germany's leading student-run conference exploring the frontiers of blockchain technology";
 
-const deploymentUrl = new URL(
-  process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
+const siteUrl = new URL(
+  process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
     : "https://c26-website.vercel.app",
 );
 
 const ogImages = {
-  url: new URL("/opengraph-image.png", deploymentUrl),
+  url: new URL("/opengraph-image.png", siteUrl),
   width: 1200,
   height: 630,
 };
