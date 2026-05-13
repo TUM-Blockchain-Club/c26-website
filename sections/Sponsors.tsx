@@ -39,7 +39,7 @@ const SponsorCarousel = ({ sponsors, size, reverse }: SponsorCarouselProps) => {
       : "h-16 w-32 xs:h-20 xs:w-40 md:h-24 md:w-52";
 
   return (
-    <div className="relative left-1/2 w-[100dvw] -translate-x-1/2 overflow-hidden py-2">
+    <div className="relative ml-[calc(50%-50vw)] mr-[calc(50%-50vw)] w-screen overflow-hidden py-2">
       <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-black to-transparent md:w-28" />
       <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-black to-transparent md:w-28" />
       <div
