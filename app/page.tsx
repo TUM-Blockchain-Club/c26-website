@@ -40,7 +40,7 @@ export default function Home() {
                 {/* <Grants /> */}
                 <Speaker />
                 <Sponsors />
-                <Partners />
+                {/* <Partners /> */}
               </div>
             </div>
           </Container>
