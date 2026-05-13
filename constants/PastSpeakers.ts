@@ -98,7 +98,7 @@ export const pastSpeakers: Speaker[] = [
     createdAt: "",
     updatedAt: "",
     publishedAt: "",
-    profile_photo: profilePhoto("/speakers/placeholder.webp"),
+    profile_photo: profilePhoto("/speakers/past/benedikt-buenz.png"),
   },
   {
     id: 8,
