@@ -9,8 +9,15 @@ import "./globals.css";
 const montserrat = Montserrat({ subsets: ["latin"] });
 const description =
   "Germany's leading student-run conference exploring the frontiers of blockchain technology";
+
+const deploymentUrl = new URL(
+  process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : "https://c26-website.vercel.app",
+);
+
 const ogImages = {
-  url: new URL("https://conference.tum-blockchain.com/opengraph-image.png"),
+  url: new URL("/opengraph-image.png", deploymentUrl),
   width: 1200,
   height: 630,
 };
