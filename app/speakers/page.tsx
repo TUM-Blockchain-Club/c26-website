@@ -1,17 +1,19 @@
 import { Container } from "@/components/container";
 import { Speaker as SpeakerComponent } from "@/components/speaker";
 import { Text } from "@/components/text";
-import { fetchSpeakers } from "@/components/service/contentStrapi";
+// import { fetchSpeakers } from "@/components/service/contentStrapi";
+import { pastSpeakers } from "@/constants/PastSpeakers";
 
 const SpeakersPage = async () => {
-  const speakers = await fetchSpeakers();
+  // const speakers = await fetchSpeakers();
+  // const filteredSpeakers = speakers
+  //   .filter((speaker) => {
+  //     const priority = Number(speaker.priority);
+  //     return !isNaN(priority) && priority >= 0;
+  //   })
+  //   .sort((a, b) => Number(a.priority) - Number(b.priority));
 
-  const filteredSpeakers = speakers
-    .filter((speaker) => {
-      const priority = Number(speaker.priority);
-      return !isNaN(priority) && priority >= 0;
-    })
-    .sort((a, b) => Number(a.priority) - Number(b.priority));
+  const filteredSpeakers = pastSpeakers;
 
   return (
     <div className={"flex justify-center"}>
@@ -20,7 +22,7 @@ const SpeakersPage = async () => {
           <div className={"mt-[100px] md:mt-[20vh] z-10 max-w-3xl"}>
             <div className="lg:flex items-center">
               <Text textType={"sub_hero"} className="text-gradient text-left">
-                Speakers
+                Previous Speakers
               </Text>
             </div>
           </div>
