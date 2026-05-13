@@ -33,8 +33,8 @@ export default function Home() {
               <div className={"flex flex-col pb-24 gap-32"}>
                 <Video />
                 <Statistic />
-                <Manifesto />
-                <Tracks />
+                {/* <Manifesto /> */}
+                {/* <Tracks /> */}
                 {/* <Venue /> */}
                 <Tickets />
                 {/* <Grants /> */}
