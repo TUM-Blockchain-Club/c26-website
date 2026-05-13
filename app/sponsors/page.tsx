@@ -7,7 +7,7 @@ const SponsorsPage = () => {
       <main className={"w-full max-w-7xl pt-[25px] lg:pt-0 z-20 pb-40"}>
         <Container>
           <div className={"mt-[100px] md:mt-[20vh]"}>
-            <Sponsors />
+            <Sponsors displayMode="grid" />
           </div>
         </Container>
       </main>
