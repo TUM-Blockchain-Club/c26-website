@@ -14,7 +14,7 @@ const Tickets = () => {
       {/* Ticket prices will be announced soon */}
       <div className="w-full flex justify-center">
         <Text textType={"sub_title"} className="text-gradient">
-          Ticket prices will be announced soon
+          Will be dropped soon
         </Text>
       </div>
       {/* <div className="w-full flex justify-center">
