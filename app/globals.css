@@ -37,9 +37,40 @@ body {
   animation: shadow-glow 5s infinite;
 }
 
+.hero-ring-wobble {
+  animation: hero-ring-wobble 18s ease-in-out infinite;
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+
 .sponsor-bronze {
   box-shadow: 0px 0px 100px 10px rgba(92, 21, 103, 0.5);
   background-color: rgba(92, 21, 103, 0.5);
+}
+
+@keyframes hero-ring-wobble {
+  0%,
+  100% {
+    transform: rotate(0deg) scale(1);
+  }
+  18% {
+    transform: rotate(1.6deg) scale(1.018) translate3d(0.6%, -0.4%, 0);
+  }
+  38% {
+    transform: rotate(-1.2deg) scale(1.01) translate3d(-0.5%, 0.7%, 0);
+  }
+  62% {
+    transform: rotate(1deg) scale(1.024) translate3d(0.3%, 0.4%, 0);
+  }
+  82% {
+    transform: rotate(-0.8deg) scale(1.006) translate3d(-0.2%, -0.5%, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-ring-wobble {
+    animation: none;
+  }
 }
 
 @keyframes glow {
