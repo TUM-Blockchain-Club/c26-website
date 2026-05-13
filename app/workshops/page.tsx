@@ -5,8 +5,12 @@ import { Text } from "@/components/text";
 import { WorkshopsContainer } from "@/components/workshops/WorkshopsContainer";
 import { workshopItems } from "@/constants/WorkshopData";
 import { fetchWorkshops, Workshop } from "@/components/service/contentStrapi";
+import { notFound } from "next/navigation";
 
 export default async function Workshops() {
+  // Workshops subpage is temporarily disabled.
+  notFound();
+
   const workshops: Workshop[] = await fetchWorkshops();
 
   const items = workshops.map((e) => ({

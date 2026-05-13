@@ -26,15 +26,15 @@ const links: HeaderLink[] = [
   // { label: "Manifesto", link: "/#manifesto", showsAtHome: true },
   { label: "Speakers", link: "/speakers", showsAtHome: true },
   { label: "Sponsors", link: "/sponsors", showsAtHome: true },
-  { label: "Academic Forum", link: "/academic-forum", showsAtHome: true },
+  // { label: "Academic Forum", link: "/academic-forum", showsAtHome: true },
   // {
   //   label: "Apply as Speaker",
   //   link: "https://tally.so/r/w8EB0o",
   //   showsAtHome: true,
   // },
   { label: "Side Events", link: "/side-events", showsAtHome: true },
-  { label: "Agenda", link: "/agenda", showsAtHome: true },
-  { label: "Workshops", link: "/workshops", showsAtHome: true },
+  // { label: "Agenda", link: "/agenda", showsAtHome: true },
+  // { label: "Workshops", link: "/workshops", showsAtHome: true },
   // { label: "Student Grants", link: "#grants", showsAtHome: true },
   // { label: "FAQ", link: "#faq", showsAtHome: true },
 ];
@@ -91,10 +91,10 @@ const PRIORITY: string[] = [
   // "Manifesto",
   "Speakers",
   "Sponsors",
-  "Academic Forum",
+  // "Academic Forum",
   "Side Events",
-  "Agenda",
-  "Workshops",
+  // "Agenda",
+  // "Workshops",
   // "Apply as Speaker",
 ];
 

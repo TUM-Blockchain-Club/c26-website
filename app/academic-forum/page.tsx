@@ -3,8 +3,12 @@ import { Button } from "@/components/button";
 import { Container } from "@/components/container";
 import { Text } from "@/components/text";
 import { Link } from "@/components/link";
+import { notFound } from "next/navigation";
 
 export default function PaperSubmission() {
+  // Academic Forum subpage is temporarily disabled.
+  notFound();
+
   return (
     <div className={"overflow-x-hidden"}>
       <main className={"w-full pt-[25px] lg:pt-0 z-20 2xl:px-[225px] pb-40"}>

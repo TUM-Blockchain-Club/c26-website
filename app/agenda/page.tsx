@@ -7,8 +7,12 @@ import { useSession } from "@/hooks/useSession";
 import { Session, Stages, Tracks } from "@/model/session";
 import { fetchSessions } from "@/components/service/contentStrapi_static";
 import { fetchSpeakers } from "@/components/service/contentStrapi";
+import { notFound } from "next/navigation";
 
 const AgendaPage = async () => {
+  // Agenda subpage is temporarily disabled.
+  notFound();
+
   const sessions = await fetchSessions();
   const speakers = await fetchSpeakers();
 
