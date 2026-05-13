@@ -35,9 +35,9 @@ export default function Home() {
                 <Statistic />
                 <Manifesto />
                 <Tracks />
-                <Venue />
+                {/* <Venue /> */}
                 <Tickets />
-                <Grants />
+                {/* <Grants /> */}
                 <Speaker />
                 <Sponsors />
                 <Partners />
