@@ -222,8 +222,8 @@ export const Header = React.forwardRef<HeaderElement, HeaderProps>(
             <div className="w-10 md:w-12 lg:w-16 shrink-0">
               <NextLink href="/">
                 <Image
-                  src={logoUrl || "/logos/tbc-conference-logo.png"}
-                  alt="TUM Blockchain Conference 2024 Logo"
+                  src={logoUrl || "/logos/c24-sticker-1.png"}
+                  alt="TUM Blockchain Conference sticker logo"
                   className="transition-all duration-300"
                   width={isScrolled ? 44 : 56}
                   height={isScrolled ? 44 : 56}
