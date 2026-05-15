@@ -10,12 +10,12 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        "tbc-yellow": "#FFC110",
-        "tbc-red": "#F44336",
-        "tbc-purple": "#6F3DE2",
-        "tbc-light-blue": "#FFC110",
-        "tbc-violet": "#6F3DE2",
-        "tbc-pink": "#F44336",
+        "tbc-yellow": "rgb(var(--tbc-yellow-rgb) / <alpha-value>)",
+        "tbc-red": "rgb(var(--tbc-red-rgb) / <alpha-value>)",
+        "tbc-purple": "rgb(var(--tbc-purple-rgb) / <alpha-value>)",
+        "tbc-light-blue": "rgb(var(--tbc-yellow-rgb) / <alpha-value>)",
+        "tbc-violet": "rgb(var(--tbc-purple-rgb) / <alpha-value>)",
+        "tbc-pink": "rgb(var(--tbc-red-rgb) / <alpha-value>)",
         "bg-hover": "#1D1D1D",
         "email-pink": "#FFCB6D",
         "email-purple": "#FFCB6D",

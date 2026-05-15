@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --tbc-yellow-rgb: 255 193 16;
+  --tbc-red-rgb: 244 67 54;
+  --tbc-purple-rgb: 111 61 226;
+  --tbc-yellow: rgb(var(--tbc-yellow-rgb));
+  --tbc-red: rgb(var(--tbc-red-rgb));
+  --tbc-purple: rgb(var(--tbc-purple-rgb));
+}
+
 html {
   scroll-behavior: smooth;
   overflow-x: hidden;
@@ -12,17 +21,11 @@ body {
 }
 
 .cta-border {
-  /*background: linear-gradient(
-    135deg,
-    rgba(255, 203, 109, 1) 0%,
-    rgba(228, 52, 165, 1) 50%,
-    rgba(52, 138, 235, 1) 100%
-  );*/
   border-image: linear-gradient(
       135deg,
-      rgba(255, 193, 16, 1) 0%,
-      rgba(244, 67, 54, 1) 49%,
-      rgba(111, 61, 226, 1) 100%
+      var(--tbc-yellow) 0%,
+      var(--tbc-red) 49%,
+      var(--tbc-purple) 100%
     )
     1;
   border-width: 2px;
@@ -41,6 +44,16 @@ body {
   animation: hero-ring-wobble 18s ease-in-out infinite;
   transform-origin: 50% 50%;
   will-change: transform;
+}
+
+.sponsor-carousel-card {
+  box-shadow: 0 0 35px rgb(var(--tbc-yellow-rgb) / 0.14);
+}
+
+.sponsor-carousel-card:hover {
+  box-shadow:
+    0 0 30px rgb(var(--tbc-red-rgb) / 0.18),
+    0 0 55px rgb(var(--tbc-purple-rgb) / 0.14);
 }
 
 .sponsor-bronze {
@@ -75,44 +88,44 @@ body {
 
 @keyframes glow {
   0% {
-    background-color: rgba(255, 193, 16, 0.5);
-    box-shadow: 0px 0px 100px 10px rgba(255, 193, 16, 0.8);
+    background-color: rgb(var(--tbc-yellow-rgb) / 0.5);
+    box-shadow: 0px 0px 100px 10px rgb(var(--tbc-yellow-rgb) / 0.8);
   }
   33.3% {
-    background-color: rgba(244, 67, 54, 0.5);
-    box-shadow: 0px 0px 100px 10px rgba(244, 67, 54, 0.8);
+    background-color: rgb(var(--tbc-red-rgb) / 0.5);
+    box-shadow: 0px 0px 100px 10px rgb(var(--tbc-red-rgb) / 0.8);
   }
   66.6% {
-    background-color: rgba(111, 61, 226, 0.5);
-    box-shadow: 0px 0px 100px 10px rgba(111, 61, 226, 0.8);
+    background-color: rgb(var(--tbc-purple-rgb) / 0.5);
+    box-shadow: 0px 0px 100px 10px rgb(var(--tbc-purple-rgb) / 0.8);
   }
   100% {
-    background-color: rgba(255, 193, 16, 0.5);
-    box-shadow: 0px 0px 100px 10px rgba(255, 193, 16, 0.8);
+    background-color: rgb(var(--tbc-yellow-rgb) / 0.5);
+    box-shadow: 0px 0px 100px 10px rgb(var(--tbc-yellow-rgb) / 0.8);
   }
 }
 
 @keyframes shadow-glow {
   0% {
-    box-shadow: 0px 0px 100px 10px rgba(255, 193, 16, 0.2);
+    box-shadow: 0px 0px 100px 10px rgb(var(--tbc-yellow-rgb) / 0.2);
   }
   33.3% {
-    box-shadow: 0px 0px 100px 10px rgba(244, 67, 54, 0.2);
+    box-shadow: 0px 0px 100px 10px rgb(var(--tbc-red-rgb) / 0.2);
   }
   66.6% {
-    box-shadow: 0px 0px 100px 10px rgba(111, 61, 226, 0.2);
+    box-shadow: 0px 0px 100px 10px rgb(var(--tbc-purple-rgb) / 0.2);
   }
   100% {
-    box-shadow: 0px 0px 100px 10px rgba(255, 193, 16, 0.2);
+    box-shadow: 0px 0px 100px 10px rgb(var(--tbc-yellow-rgb) / 0.2);
   }
 }
 
 .text-gradient {
   background: -webkit-linear-gradient(
     300deg,
-    rgba(255, 193, 16, 1) 0%,
-    rgba(244, 67, 54, 1) 49%,
-    rgba(111, 61, 226, 1) 100%
+    var(--tbc-yellow) 0%,
+    var(--tbc-red) 49%,
+    var(--tbc-purple) 100%
   );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -125,9 +138,9 @@ body {
 .border-gradient-tbc {
   border-image: linear-gradient(
       to right bottom,
-      theme("colors.tbc-yellow"),
-      theme("colors.tbc-red"),
-      theme("colors.tbc-purple")
+      var(--tbc-yellow),
+      var(--tbc-red),
+      var(--tbc-purple)
     )
     1;
 }
@@ -145,9 +158,9 @@ body {
 .border-gradient-tbc-from-transparent {
   border-image: linear-gradient(
       to right bottom,
-      rgba(255, 193, 16, 1) 0%,
-      rgba(244, 67, 54, 1) 49%,
-      rgba(111, 61, 226, 1) 100%
+      var(--tbc-yellow) 0%,
+      var(--tbc-red) 49%,
+      var(--tbc-purple) 100%
     )
     1;
 }
@@ -155,18 +168,18 @@ body {
 .bg-gradient-tbc {
   background-image: linear-gradient(
     to right bottom,
-    theme("colors.tbc-yellow"),
-    theme("colors.tbc-red"),
-    theme("colors.tbc-purple")
+    var(--tbc-yellow),
+    var(--tbc-red),
+    var(--tbc-purple)
   );
 }
 
 .bg-gradient-tbc-md {
   background-image: linear-gradient(
     to right bottom,
-    theme("colors.tbc-yellow"),
-    theme("colors.tbc-red"),
-    theme("colors.tbc-purple")
+    var(--tbc-yellow),
+    var(--tbc-red),
+    var(--tbc-purple)
   );
 }
 
@@ -184,9 +197,9 @@ body {
   width: 100%;
   background-image: linear-gradient(
     to right bottom,
-    theme("colors.tbc-yellow"),
-    theme("colors.tbc-red"),
-    theme("colors.tbc-purple")
+    var(--tbc-yellow),
+    var(--tbc-red),
+    var(--tbc-purple)
   );
 }
 

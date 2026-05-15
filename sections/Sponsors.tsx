@@ -54,7 +54,7 @@ const SponsorCarousel = ({ sponsors, size, reverse }: SponsorCarouselProps) => {
             href={sponsor.link}
             target="_blank"
             rel="noopener noreferrer"
-            className={`flex shrink-0 items-center justify-center rounded-md border border-white/15 bg-white px-5 shadow-[0_0_35px_rgba(255,193,16,0.14)] transition hover:border-white/50 ${itemClassName}`}
+            className={`sponsor-carousel-card flex shrink-0 items-center justify-center rounded-md border border-white/15 bg-white px-5 transition hover:border-white/50 ${itemClassName}`}
           >
             <Image
               src={sponsor.imageSrc}
