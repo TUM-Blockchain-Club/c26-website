@@ -14,7 +14,7 @@ const Statistic = () => {
         <div className={"flex flex-col items-center lg:flex-row gap-12 mt-12"}>
           <div className={"flex flex-col gap-2 items-center lg:items-center"}>
             <Text className={""} textType={"sub_hero"}>
-              1100+
+              1200+
             </Text>
             <Text textType={"sub_title"}>Attendees</Text>
           </div>
