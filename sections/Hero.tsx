@@ -4,7 +4,9 @@ import { Text } from "@/components/text";
 import Image from "next/image";
 import confLogo from "@/public/logos/c26-wordmark.svg";
 import { Button } from "@/components/button";
-import Link from "next/link";
+
+// Restore this URL when ticket sales should be clickable again:
+// https://tum-blockchain-conference-26.eventbrite.de
 
 const Hero = () => {
   return (
@@ -22,12 +24,8 @@ const Hero = () => {
               </Text>
             </div>
             <div className="flex flex-col items-center gap-1">
-              <Button buttonType={"cta"} asChild disabled>
-                <Link
-                  href={"https://tum-blockchain-conference-26.eventbrite.de"}
-                >
-                  Tickets
-                </Link>
+              <Button buttonType={"cta"} disabled>
+                Tickets
               </Button>
             </div>
             {/* <div className={"flex flex-col items-center gap-1"}>
