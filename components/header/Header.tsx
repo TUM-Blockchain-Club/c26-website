@@ -25,6 +25,11 @@ const links: HeaderLink[] = [
   { label: "Home", link: "/", showsAtHome: true },
   // { label: "Manifesto", link: "/#manifesto", showsAtHome: true },
   { label: "Speakers", link: "/speakers", showsAtHome: true },
+  {
+    label: "Hackathon",
+    link: "https://hackathon.tum-blockchain.com/",
+    showsAtHome: true,
+  },
   // { label: "Sponsors", link: "/sponsors", showsAtHome: true },
   // { label: "Academic Forum", link: "/academic-forum", showsAtHome: true },
   // {
@@ -90,6 +95,7 @@ const PRIORITY: string[] = [
   "Home",
   // "Manifesto",
   "Speakers",
+  "Hackathon",
   // "Sponsors",
   // "Academic Forum",
   "Side Events",
