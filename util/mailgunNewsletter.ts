@@ -78,8 +78,8 @@ export async function sendNewsletterConfirmationEmail({
   formData.set(
     "text",
     [
-      "Please confirm that you want to receive updates from TUM Blockchain Club.",
-      "As soon as our tickets are released, you will be notified.",
+      "Please confirm that you want to receive updates from TUM Blockchain Club. As soon as our tickets are released, you will be notified.",
+      "",
       "Welcome to the TUM Blockchain Club family.",
       "",
       "Confirm subscription:",
@@ -91,11 +91,16 @@ export async function sendNewsletterConfirmationEmail({
   formData.set(
     "html",
     [
-      "<p>Please confirm that you want to receive updates from TUM Blockchain Club.</p>",
-      "<p>As soon as our tickets are released, you will be notified.</p>",
-      "<p>Welcome to the TUM Blockchain Club family.</p>",
-      `<p><a href="${escapeHtml(confirmationUrl)}">Confirm subscription</a></p>`,
-      "<p>If you did not request this, you can ignore this email.</p>",
+      '<table role="presentation" cellpadding="0" cellspacing="0" style="border-collapse:collapse;color:#202124;font-family:Arial,sans-serif;font-size:18px;line-height:1.5;max-width:640px;width:100%;">',
+      "<tr><td>",
+      '<p style="margin:0 0 24px;">Please confirm that you want to receive updates from TUM Blockchain Club. As soon as our tickets are released, you will be notified.</p>',
+      '<p style="margin:0 0 32px;">Welcome to the TUM Blockchain Club family.</p>',
+      '<p style="margin:0 0 32px;">',
+      `<a href="${escapeHtml(confirmationUrl)}" style="color:#1155cc;text-decoration:underline;">Confirm subscription</a>`,
+      "</p>",
+      '<p style="margin:0;color:#202124;">If you did not request this, you can ignore this email.</p>',
+      "</td></tr>",
+      "</table>",
     ].join(""),
   );
 

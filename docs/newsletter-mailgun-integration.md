@@ -29,4 +29,4 @@ The client can send a short `source` value. It is stored in the Mailgun member `
 
 ## User-Facing Copy
 
-Successful form submissions show a green checkmark with the confirmation-email sent state. The confirmation email explains that the recipient will receive TUM Blockchain Club updates and ticket-release notifications once tickets are available.
+Successful form submissions show a green checkmark with the confirmation-email sent state. The confirmation email uses compact table-based HTML for Gmail compatibility and explains that the recipient will receive TUM Blockchain Club updates and ticket-release notifications once tickets are available.
