@@ -13,6 +13,7 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 interface NewsletterRequest {
   email?: unknown;
+  source?: unknown;
   website?: unknown;
 }
 
@@ -34,6 +35,10 @@ export const POST = async (request: Request): Promise<NextResponse> => {
   }
 
   const email = body.email.trim().toLowerCase();
+  const source =
+    typeof body.source === "string" && body.source.length <= 80
+      ? body.source
+      : "c26-website";
 
   if (!EMAIL_PATTERN.test(email) || email.length > 254) {
     return NextResponse.json(
@@ -56,7 +61,7 @@ export const POST = async (request: Request): Promise<NextResponse> => {
   formData.set(
     "vars",
     JSON.stringify({
-      source: "c26-website-footer",
+      source,
       subscribedAt: new Date().toISOString(),
     }),
   );

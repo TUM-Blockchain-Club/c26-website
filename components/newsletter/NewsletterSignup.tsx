@@ -6,13 +6,23 @@ import React from "react";
 
 type Status = "idle" | "loading" | "success" | "error";
 
-export function NewsletterSignup() {
+interface NewsletterSignupProps {
+  label?: string;
+  initialMessage?: string;
+  source?: string;
+  successMessage?: string;
+}
+
+export function NewsletterSignup({
+  label = "Newsletter",
+  initialMessage = "Get conference updates and club news in your inbox.",
+  source = "c26-website-footer",
+  successMessage = "You are on the list.",
+}: NewsletterSignupProps) {
   const [email, setEmail] = React.useState("");
   const [website, setWebsite] = React.useState("");
   const [status, setStatus] = React.useState<Status>("idle");
-  const [message, setMessage] = React.useState(
-    "Get conference updates and club news in your inbox.",
-  );
+  const [message, setMessage] = React.useState(initialMessage);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -30,7 +40,7 @@ export function NewsletterSignup() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, website }),
+        body: JSON.stringify({ email, source, website }),
       });
 
       const result = (await response.json()) as { error?: string };
@@ -42,7 +52,7 @@ export function NewsletterSignup() {
       }
 
       setStatus("success");
-      setMessage("You are on the list.");
+      setMessage(successMessage);
       setEmail("");
     } catch {
       setStatus("error");
@@ -60,7 +70,7 @@ export function NewsletterSignup() {
           className="font-sans text-sm font-semibold uppercase text-white"
           htmlFor="newsletter-email"
         >
-          Newsletter
+          {label}
         </label>
         <p className="font-sans text-sm text-white/70" aria-live="polite">
           {message}
@@ -94,7 +104,7 @@ export function NewsletterSignup() {
             setEmail(event.target.value);
             if (status !== "idle") {
               setStatus("idle");
-              setMessage("Get conference updates and club news in your inbox.");
+              setMessage(initialMessage);
             }
           }}
           required
