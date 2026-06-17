@@ -1,4 +1,5 @@
 import { Link } from "@/components/link";
+import { NewsletterSignup } from "@/components/newsletter";
 import { Text } from "@/components/text";
 import confLogo from "@/public/logos/c26-wordmark.svg";
 import dcLogo from "@/public/logos/discord-logo.png";
@@ -116,6 +117,7 @@ export const Footer = React.forwardRef<FooterElement, FooterProps>(
                   "flex flex-col lg:flex-row h-full justify-center lg:justify-center gap-8 lg:gap-16"
                 }
               >
+                <NewsletterSignup />
                 <div className="flex flex-col space-y-2 items-left">
                   <Text asChild>
                     <Link href={"mailto:relations@tum-blockchain.com"}>
