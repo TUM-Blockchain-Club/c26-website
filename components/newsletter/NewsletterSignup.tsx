@@ -17,7 +17,7 @@ export function NewsletterSignup({
   label = "Newsletter",
   initialMessage = "Get conference updates and club news in your inbox.",
   source = "c26-website-footer",
-  successMessage = "You are on the list.",
+  successMessage = "Check your inbox to confirm your subscription.",
 }: NewsletterSignupProps) {
   const [email, setEmail] = React.useState("");
   const [website, setWebsite] = React.useState("");
@@ -32,7 +32,7 @@ export function NewsletterSignup({
     }
 
     setStatus("loading");
-    setMessage("Submitting your email...");
+    setMessage("Sending confirmation email...");
 
     try {
       const response = await fetch("/api/newsletter", {

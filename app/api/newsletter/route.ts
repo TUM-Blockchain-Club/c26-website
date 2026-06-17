@@ -3,13 +3,12 @@ export const runtime = "nodejs";
 export const maxDuration = 10;
 
 import { NextResponse } from "next/server";
-
-const MAILGUN_API_KEY = process.env.MAILGUN_API_KEY;
-const MAILGUN_LIST_ADDRESS = process.env.MAILGUN_LIST_ADDRESS;
-const MAILGUN_API_BASE =
-  process.env.MAILGUN_API_BASE || "https://api.eu.mailgun.net";
+import { sendNewsletterConfirmationEmail } from "@/util/mailgunNewsletter";
+import { createNewsletterToken } from "@/util/newsletterToken";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const CONFIRMATION_TOKEN_TTL_HOURS = 48;
+const CONSENT_TEXT_VERSION = "newsletter-consent-2026-06-17";
 
 interface NewsletterRequest {
   email?: unknown;
@@ -47,60 +46,43 @@ export const POST = async (request: Request): Promise<NextResponse> => {
     );
   }
 
-  if (!MAILGUN_API_KEY || !MAILGUN_LIST_ADDRESS) {
-    console.error("Mailgun newsletter integration is not configured");
+  if (!process.env.NEWSLETTER_CONFIRMATION_SECRET) {
+    console.error("Newsletter confirmation token secret is not configured");
     return NextResponse.json(
       { error: "Newsletter signup is not configured" },
       { status: 500 },
     );
   }
 
-  const formData = new FormData();
-  formData.set("address", email);
-  formData.set("subscribed", "true");
-  formData.set(
-    "vars",
-    JSON.stringify({
-      source,
-      subscribedAt: new Date().toISOString(),
-    }),
+  const requestedAt = new Date();
+  const expiresAt = new Date(
+    requestedAt.getTime() + CONFIRMATION_TOKEN_TTL_HOURS * 60 * 60 * 1000,
   );
-
-  const response = await fetch(
-    `${MAILGUN_API_BASE}/v3/lists/${encodeURIComponent(
-      MAILGUN_LIST_ADDRESS,
-    )}/members`,
+  const token = createNewsletterToken(
     {
-      method: "POST",
-      headers: {
-        Authorization: `Basic ${Buffer.from(`api:${MAILGUN_API_KEY}`).toString(
-          "base64",
-        )}`,
-      },
-      body: formData,
+      consentTextVersion: CONSENT_TEXT_VERSION,
+      email,
+      expiresAt: expiresAt.toISOString(),
+      requestedAt: requestedAt.toISOString(),
+      source,
     },
+    process.env.NEWSLETTER_CONFIRMATION_SECRET,
   );
+  const confirmationUrl = new URL("/api/newsletter/confirm", request.url);
+  confirmationUrl.searchParams.set("token", token);
 
-  if (response.ok) {
-    return NextResponse.json({ ok: true }, { status: 201 });
+  try {
+    await sendNewsletterConfirmationEmail({
+      confirmationUrl: confirmationUrl.toString(),
+      email,
+    });
+  } catch (error) {
+    console.error("Mailgun newsletter confirmation failed", error);
+    return NextResponse.json(
+      { error: "Could not send confirmation email right now" },
+      { status: 502 },
+    );
   }
 
-  const responseText = await response.text();
-
-  if (
-    response.status === 400 &&
-    responseText.toLowerCase().includes("already")
-  ) {
-    return NextResponse.json({ ok: true }, { status: 200 });
-  }
-
-  console.error("Mailgun newsletter signup failed", {
-    status: response.status,
-    response: responseText,
-  });
-
-  return NextResponse.json(
-    { error: "Could not subscribe right now" },
-    { status: 502 },
-  );
+  return NextResponse.json({ ok: true }, { status: 202 });
 };

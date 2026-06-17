@@ -21,4 +21,4 @@
 - Keep route-level changes in `app/` and shared UI changes in `components/`.
 - Prefer existing components and section patterns before introducing new abstractions.
 - Document meaningful changes in Markdown under `docs/`.
-- Newsletter signups use `app/api/newsletter/route.ts` and Mailgun mailing list environment variables: `MAILGUN_API_KEY`, `MAILGUN_LIST_ADDRESS`, and optional `MAILGUN_API_BASE`.
+- Newsletter signups use `app/api/newsletter/route.ts`, encrypted confirmation tokens in `util/newsletterToken.ts`, and Mailgun environment variables: `MAILGUN_API_KEY`, `MAILGUN_LIST_ADDRESS`, `MAILGUN_DOMAIN`, `NEWSLETTER_CONFIRMATION_SECRET`, `NEWSLETTER_FROM`, and optional `MAILGUN_API_BASE`.
