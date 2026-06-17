@@ -26,3 +26,7 @@ Tokens expire after 48 hours. Because there is no database, pending signups are 
 ## Signup Sources
 
 The client can send a short `source` value. It is stored in the Mailgun member `vars` payload so operators can tell footer newsletter signups from ticket alert signups.
+
+## User-Facing Copy
+
+Successful form submissions show a green checkmark with the confirmation-email sent state. The confirmation email explains that the recipient will receive TUM Blockchain Club updates and ticket-release notifications once tickets are available.

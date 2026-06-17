@@ -82,7 +82,15 @@ function renderConfirmationPage({
       }
       h1 { margin: 0 0 12px; font-size: 28px; }
       p { margin: 0 0 24px; color: rgba(255, 255, 255, 0.72); line-height: 1.5; }
-      a { color: #ffc110; }
+      a {
+        background: linear-gradient(135deg, #ffc110 0%, #f44336 49%, #6f3de2 100%);
+        background-clip: text;
+        color: transparent;
+        font-weight: 700;
+        text-decoration: none;
+        -webkit-background-clip: text;
+      }
+      a:hover { text-decoration: underline; }
     </style>
   </head>
   <body>

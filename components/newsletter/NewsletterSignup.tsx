@@ -73,7 +73,14 @@ export function NewsletterSignup({
           {label}
         </label>
         <p className="font-sans text-sm text-white/70" aria-live="polite">
-          {message}
+          {status === "success" ? (
+            <span className="inline-flex items-center gap-2 text-emerald-400">
+              <Check className="h-4 w-4" aria-hidden="true" />
+              {message}
+            </span>
+          ) : (
+            message
+          )}
         </p>
       </div>
       <div className="sr-only" aria-hidden="true">

@@ -23,7 +23,7 @@ const TicketNotification = () => {
           label="Ticket alerts"
           initialMessage="Leave your email for the ticket drop."
           source="c26-website-ticket-alerts"
-          successMessage="Check your inbox to confirm ticket alerts."
+          successMessage="Successfully sent email."
         />
       </div>
     </section>

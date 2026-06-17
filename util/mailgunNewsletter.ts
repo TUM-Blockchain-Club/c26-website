@@ -79,7 +79,10 @@ export async function sendNewsletterConfirmationEmail({
     "text",
     [
       "Please confirm that you want to receive updates from TUM Blockchain Club.",
+      "As soon as our tickets are released, you will be notified.",
+      "Welcome to the TUM Blockchain Club family.",
       "",
+      "Confirm subscription:",
       confirmationUrl,
       "",
       "If you did not request this, you can ignore this email.",
@@ -89,6 +92,8 @@ export async function sendNewsletterConfirmationEmail({
     "html",
     [
       "<p>Please confirm that you want to receive updates from TUM Blockchain Club.</p>",
+      "<p>As soon as our tickets are released, you will be notified.</p>",
+      "<p>Welcome to the TUM Blockchain Club family.</p>",
       `<p><a href="${escapeHtml(confirmationUrl)}">Confirm subscription</a></p>`,
       "<p>If you did not request this, you can ignore this email.</p>",
     ].join(""),
