@@ -24,7 +24,7 @@ const ogImages = {
 
 export const metadata: Metadata = {
   title: "TUM Blockchain Conference 26",
-  metadataBase: new URL("https://conference.tum-blockchain.com"),
+  metadataBase: new URL("https://conference26.tum-blockchain.com"),
   authors: [
     {
       name: "Yudhistira Arief Wibowo",
@@ -97,12 +97,13 @@ export default function RootLayout({
         {children}
         <SpeedInsights />
         <Footer />
+        <Script
+          defer
+          data-domain="conference26.tum-blockchain.com"
+          src="https://plausible.rbg.tum-blockchain.com/js/script.js"
+          strategy="afterInteractive"
+        />
       </body>
-      <Script
-        defer
-        data-domain="conference.tum-blockchain.com"
-        src="https://plausible.rbg.tum-blockchain.com/js/script.js"
-      ></Script>
     </html>
   );
 }

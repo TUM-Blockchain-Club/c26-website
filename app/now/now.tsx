@@ -169,9 +169,9 @@ const Now: React.FC<NowProps> = ({ sessions, speakers, simulatedDate }) => {
                 Grab it on your phone:{" "}
                 <Link
                   className="font-bold"
-                  href="https://conference.tum-blockchain.com/now"
+                  href="https://conference26.tum-blockchain.com/now"
                 >
-                  https://conference.tum-blockchain.com/now
+                  https://conference26.tum-blockchain.com/now
                 </Link>
               </Text>
             </div>
