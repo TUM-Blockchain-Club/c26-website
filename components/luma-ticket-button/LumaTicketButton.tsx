@@ -90,9 +90,11 @@ function buildLumaUrl(attribution: AttributionParams) {
 }
 
 export function LumaTicketButton({
+  className,
   id,
   children = "Register for Event",
 }: {
+  className?: string;
   id: string;
   children?: ReactNode;
 }) {
@@ -109,7 +111,7 @@ export function LumaTicketButton({
 
   if (!href) {
     return (
-      <Button buttonType="cta" disabled>
+      <Button buttonType="cta" disabled className={className}>
         {children}
       </Button>
     );
@@ -117,7 +119,7 @@ export function LumaTicketButton({
 
   return (
     <>
-      <Button buttonType="cta" asChild>
+      <Button buttonType="cta" asChild className={className}>
         <a
           id={id}
           href={href}

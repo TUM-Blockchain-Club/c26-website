@@ -24,7 +24,10 @@ const Tickets = () => {
       </div>
       */}
       <div className="w-full flex justify-center mt-20">
-        <LumaTicketButton id="luma-ticket-btn-tickets" />
+        <LumaTicketButton
+          id="luma-ticket-btn-tickets"
+          className="px-8 py-4 text-base font-bold md:px-10 md:py-5 md:text-lg"
+        />
       </div>
     </section>
   );

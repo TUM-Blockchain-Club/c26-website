@@ -21,7 +21,10 @@ const Hero = () => {
               </Text>
             </div>
             <div className="flex flex-col items-center gap-1">
-              <LumaTicketButton id="luma-ticket-btn-hero">
+              <LumaTicketButton
+                id="luma-ticket-btn-hero"
+                className="px-7 py-4 text-base font-bold md:px-9 md:py-5 md:text-lg"
+              >
                 Tickets
               </LumaTicketButton>
             </div>
