@@ -1,4 +1,5 @@
 import { Text } from "@/components/text";
+import { Button } from "@/components/button";
 import { Sponsor } from "@/components/sponsor/Sponsor";
 import { Link } from "@/components/link";
 import {
@@ -9,6 +10,8 @@ import {
   silverSponsors,
 } from "@/constants/PastSponsors";
 import Image from "next/image";
+
+const PARTNERSHIP_DECK_URL = "https://tally.so/r/vGzv6g";
 
 // Helper function to chunk an array into groups of specified size
 const chunkArray = <T,>(array: T[], size: number): T[][] => {
@@ -106,6 +109,23 @@ const Sponsors = ({ displayMode = "carousel" }: SponsorsProps) => {
             size="small"
             reverse
           />
+        </div>
+
+        <div className="flex max-w-3xl flex-col items-center gap-5 text-center">
+          <Text as="p" textType="small" className="text-white/75">
+            Explore a partnership with the TUM Blockchain Conference & Hackathon
+            2026. Fill out the form and we&apos;ll send you the sponsorship
+            deck.
+          </Text>
+          <Button buttonType="cta" asChild>
+            <Link
+              href={PARTNERSHIP_DECK_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Request Partnership Deck
+            </Link>
+          </Button>
         </div>
 
         {/*
