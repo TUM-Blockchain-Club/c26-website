@@ -27,9 +27,9 @@ The Luma ticket button reads and persists:
 - `utm_content`
 - `utm_term`
 
-The button appends those parameters to `https://luma.com/event/evt-9GgBM7ScK61zTbb` before checkout. QR redirect links should therefore send visitors to the conference site with UTM parameters so Luma can attribute checkout activity to the printed campaign source.
+The button appends those parameters to `https://luma.com/event/evt-9GgBM7ScK61zTbb` before sending visitors to Luma. QR redirect links should therefore send visitors to the conference site with UTM parameters so Luma can attribute checkout activity to the printed campaign source.
 
-The Luma checkout script is loaded from the button component only after attribution has been calculated in the browser. Do not move it back to the root layout unless the button stops rendering a temporary direct-link fallback before hydration.
+The Luma checkout script is intentionally not loaded. The CTA is a normal outbound link to Luma with UTM parameters, which avoids the embedded checkout overlay and keeps attribution explicit.
 
 For campaign attribution, the redirect service currently emits URLs like:
 

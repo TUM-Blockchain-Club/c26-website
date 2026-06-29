@@ -17,15 +17,23 @@ const Hero = () => {
 
             <div className={"flex flex-col items-center gap-1"}>
               <Text as={"p"} textType={"sub_title"} className="text-center">
-                October 29<sup>th</sup> - 31<sup>th</sup> 2026
+                October 29<sup>th</sup> - 31<sup>st</sup> 2026
               </Text>
             </div>
-            <div className="flex flex-col items-center gap-1">
+            <div className="flex max-w-xl flex-col items-center gap-4 text-center">
+              <Text
+                as="p"
+                textType="paragraph"
+                className="max-w-md text-white/75"
+              >
+                Secure your spot for Germany&apos;s leading student-run
+                blockchain conference.
+              </Text>
               <LumaTicketButton
                 id="luma-ticket-btn-hero"
-                className="px-7 py-4 text-base font-bold md:px-9 md:py-5 md:text-lg"
+                className="border-4 border-white/80 px-9 py-5 text-lg font-black uppercase tracking-[0.08em] shadow-[0_0_34px_rgba(255,255,255,0.22)] ring-2 ring-tbc-yellow/60 ring-offset-4 ring-offset-black md:px-12 md:py-6 md:text-xl"
               >
-                Tickets
+                Buy Tickets
               </LumaTicketButton>
             </div>
             {/* <div className={"flex flex-col items-center gap-1"}>

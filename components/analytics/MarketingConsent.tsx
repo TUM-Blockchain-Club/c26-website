@@ -148,36 +148,45 @@ export function MarketingConsent() {
   }
 
   return (
-    <aside
-      aria-label="Cookie consent"
-      className="fixed inset-x-4 bottom-4 z-[10000] mx-auto max-w-3xl rounded-[5px] border border-white/20 bg-black/95 p-4 shadow-2xl backdrop-blur md:bottom-6 md:p-5"
+    <div
+      className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/95 px-4 py-6 backdrop-blur-md"
+      role="presentation"
     >
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="max-w-2xl space-y-1">
-          <p className="text-sm font-semibold text-white">Cookie preferences</p>
-          <p className="text-xs leading-5 text-white/70 md:text-sm">
-            We use necessary cookies for this site. With your consent, Meta
-            Pixel helps us measure ticket interest and build advertising
-            audiences.
-          </p>
+      <aside
+        aria-label="Cookie consent"
+        aria-modal="true"
+        role="dialog"
+        className="w-full max-w-2xl rounded-[5px] border border-white/20 bg-black p-5 shadow-2xl md:p-7"
+      >
+        <div className="flex flex-col gap-5">
+          <div className="space-y-3">
+            <p className="text-lg font-semibold text-white md:text-xl">
+              Help us sell more tickets
+            </p>
+            <p className="text-sm leading-6 text-white/75 md:text-base">
+              We use necessary cookies to run this site. If you accept marketing
+              cookies, Meta Pixel helps us understand ticket interest and reach
+              more people for the conference.
+            </p>
+          </div>
+          <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+            <Button
+              buttonType="secondary"
+              className="border border-white/20 px-5 py-3 text-sm"
+              onClick={() => chooseConsent("rejected")}
+            >
+              Continue without marketing
+            </Button>
+            <Button
+              buttonType="cta"
+              className="px-5 py-3 text-sm font-bold"
+              onClick={() => chooseConsent("accepted")}
+            >
+              Accept marketing cookies
+            </Button>
+          </div>
         </div>
-        <div className="flex shrink-0 gap-2">
-          <Button
-            buttonType="secondary"
-            className="border border-white/20 px-4 py-2 text-sm"
-            onClick={() => chooseConsent("rejected")}
-          >
-            Reject
-          </Button>
-          <Button
-            buttonType="cta"
-            className="px-4 py-2 text-sm"
-            onClick={() => chooseConsent("accepted")}
-          >
-            Accept
-          </Button>
-        </div>
-      </div>
-    </aside>
+      </aside>
+    </div>
   );
 }

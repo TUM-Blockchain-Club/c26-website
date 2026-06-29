@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/components/button";
-import Script from "next/script";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 
@@ -118,24 +117,16 @@ export function LumaTicketButton({
   }
 
   return (
-    <>
-      <Button buttonType="cta" asChild className={className}>
-        <a
-          id={id}
-          href={href}
-          className="luma-checkout--button"
-          data-luma-action="checkout"
-          data-luma-event-id={LUMA_EVENT_ID}
-          onClick={trackTicketClick}
-        >
-          {children}
-        </a>
-      </Button>
-      <Script
-        id="luma-checkout"
-        src="https://embed.lu.ma/checkout-button.js"
-        strategy="afterInteractive"
-      />
-    </>
+    <Button buttonType="cta" asChild className={className}>
+      <a
+        id={id}
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={trackTicketClick}
+      >
+        {children}
+      </a>
+    </Button>
   );
 }
