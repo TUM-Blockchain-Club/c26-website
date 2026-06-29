@@ -4,18 +4,18 @@ The conference site intentionally does not add Google Analytics. Plausible remai
 
 ## Consent
 
-CookieYes is loaded from `app/layout.tsx` with the existing CookieYes client key. Marketing trackers must only load after the visitor grants the CookieYes advertising/marketing category.
+The conference site uses a first-party consent banner in `components/analytics/MarketingConsent.tsx`. It stores the visitor's choice in the `tbc_conference_marketing_consent` cookie for `.tum-blockchain.com` and mirrors the value in `localStorage` as a fallback for privacy-restricted browser contexts.
 
-`components/analytics/MetaPixel.tsx` renders Meta's snippet as a CookieYes-blocked script with `type="text/plain"` and `data-cookieyes="cookieyes-advertisement"`. CookieYes executes it after the visitor grants the advertisement category. The pixel ID is `2626290637773063`.
+Do not reintroduce the old CookieYes client key without reconfiguring CookieYes for `conference26.tum-blockchain.com` or the parent domain `tum-blockchain.com`. The previous CookieYes setup was registered to `www.tum-blockchain.com`, so consent cookies were not valid for the conference subdomain.
 
 ## Meta Pixel
 
-After consent, the site initializes Meta Pixel and sends:
+After marketing consent, the site initializes Meta Pixel and sends:
 
 - `PageView` when the pixel is loaded.
 - `InitiateCheckout` when a visitor clicks the Luma ticket button.
 
-Do not add Meta's `<noscript>` tracking image here because it would bypass the JavaScript consent gate.
+Do not add Meta's `<noscript>` tracking image here because it would bypass the JavaScript consent gate. The pixel ID is `2626290637773063`.
 
 ## Luma UTM Forwarding
 
@@ -37,4 +37,4 @@ For campaign attribution, the redirect service currently emits URLs like:
 https://conference26.tum-blockchain.com/?utm_source=fly-01&utm_medium=qr&utm_campaign=flyer-2026&utm_content=fly-01
 ```
 
-If CookieYes is reconfigured, verify that the advertisement category still maps to `cookieyes-advertisement`.
+The Luma button only calls `fbq("track", "InitiateCheckout")` when the visitor has accepted marketing cookies and the Meta Pixel has been loaded.

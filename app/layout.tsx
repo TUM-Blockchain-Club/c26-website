@@ -1,6 +1,6 @@
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
-import { MetaPixel } from "@/components/analytics/MetaPixel";
+import { MarketingConsent } from "@/components/analytics/MarketingConsent";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
@@ -88,10 +88,6 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <Script src="https://tally.so/widgets/embed.js"></Script>
-        <Script
-          src={`https://cdn-cookieyes.com/client_data/6331baf83b563ec3150ad4bb/script.js`}
-          strategy="beforeInteractive"
-        ></Script>
       </head>
       <body
         className={`${montserrat.className} bg-black text-white overflow-x-hidden w-screen items-center justify-center`}
@@ -102,7 +98,7 @@ export default function RootLayout({
         {children}
         <SpeedInsights />
         <Footer />
-        <MetaPixel />
+        <MarketingConsent />
         <Script id="plausible-init" strategy="beforeInteractive">{`
           window.plausible = window.plausible || function() {
             (window.plausible.q = window.plausible.q || []).push(arguments);
