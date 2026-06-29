@@ -91,7 +91,7 @@ function buildLumaUrl(attribution: AttributionParams) {
 export function LumaTicketButton({
   className,
   id,
-  children = "Register for Event",
+  children = "Buy Ticket",
 }: {
   className?: string;
   id: string;

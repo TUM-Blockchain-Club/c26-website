@@ -31,7 +31,7 @@ const Hero = () => {
               </Text>
               <LumaTicketButton
                 id="luma-ticket-btn-hero"
-                className="border-4 border-white/80 px-9 py-5 text-lg font-black uppercase tracking-[0.08em] shadow-[0_0_34px_rgba(255,255,255,0.22)] ring-2 ring-tbc-yellow/60 ring-offset-4 ring-offset-black md:px-12 md:py-6 md:text-xl"
+                className="px-8 py-4 text-base font-black uppercase tracking-[0.06em] shadow-[0_0_24px_rgba(255,255,255,0.18)] md:px-10 md:py-5 md:text-lg"
               >
                 Buy Tickets
               </LumaTicketButton>
