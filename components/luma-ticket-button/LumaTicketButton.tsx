@@ -91,7 +91,7 @@ function buildLumaUrl(attribution: AttributionParams) {
 
 export function LumaTicketButton({
   id,
-  children = "Für Event anmelden",
+  children = "Register for Event",
 }: {
   id: string;
   children?: ReactNode;

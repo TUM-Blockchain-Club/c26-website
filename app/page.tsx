@@ -12,7 +12,6 @@ import Manifesto from "@/sections/Manifesto";
 import Partners from "@/sections/Partners";
 import Speaker from "@/sections/Speaker";
 import Sponsors from "@/sections/Sponsors";
-import TicketNotification from "@/sections/TicketNotification";
 import Tickets from "@/sections/Tickets";
 import Tracks from "@/sections/Tracks";
 import Venue from "@/sections/Venue";
@@ -38,7 +37,6 @@ export default function Home() {
                 {/* <Tracks /> */}
                 {/* <Venue /> */}
                 <Tickets />
-                <TicketNotification />
                 {/* <Grants /> */}
                 <Speaker />
                 <Sponsors />
