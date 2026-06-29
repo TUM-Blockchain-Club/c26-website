@@ -3,10 +3,7 @@
 import { Text } from "@/components/text";
 import Image from "next/image";
 import confLogo from "@/public/logos/c26-wordmark.svg";
-import { Button } from "@/components/button";
-
-// Restore this URL when ticket sales should be clickable again:
-// https://tum-blockchain-conference-26.eventbrite.de
+import { LumaTicketButton } from "@/components/luma-ticket-button";
 
 const Hero = () => {
   return (
@@ -24,9 +21,9 @@ const Hero = () => {
               </Text>
             </div>
             <div className="flex flex-col items-center gap-1">
-              <Button buttonType={"cta"} disabled>
+              <LumaTicketButton id="luma-ticket-btn-hero">
                 Tickets
-              </Button>
+              </LumaTicketButton>
             </div>
             {/* <div className={"flex flex-col items-center gap-1"}>
               <Text as={"p"} textType={"sub_title"} className="text-center">

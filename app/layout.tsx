@@ -1,5 +1,6 @@
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
+import { MetaPixel } from "@/components/analytics/MetaPixel";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
@@ -20,6 +21,11 @@ const ogImages = {
   url: new URL("/opengraph-image.png", siteUrl),
   width: 1200,
   height: 630,
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export const metadata: Metadata = {
@@ -82,11 +88,10 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <Script src="https://tally.so/widgets/embed.js"></Script>
-        {/* <Script
+        <Script
           src={`https://cdn-cookieyes.com/client_data/6331baf83b563ec3150ad4bb/script.js`}
           strategy="beforeInteractive"
-        ></Script> */}
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        ></Script>
       </head>
       <body
         className={`${montserrat.className} bg-black text-white overflow-x-hidden w-screen items-center justify-center`}
@@ -97,6 +102,12 @@ export default function RootLayout({
         {children}
         <SpeedInsights />
         <Footer />
+        <MetaPixel />
+        <Script
+          id="luma-checkout"
+          src="https://embed.lu.ma/checkout-button.js"
+          strategy="afterInteractive"
+        />
         <Script
           defer
           data-domain="conference26.tum-blockchain.com"

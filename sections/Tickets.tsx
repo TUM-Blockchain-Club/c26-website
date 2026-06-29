@@ -1,7 +1,6 @@
 import { Text } from "@/components/text";
-import { Button } from "@/components/button";
 import { Ticket } from "@/components/ticket";
-import Link from "next/link";
+import { LumaTicketButton } from "@/components/luma-ticket-button";
 
 const Tickets = () => {
   return (
@@ -11,10 +10,9 @@ const Tickets = () => {
           Tickets
         </Text>
       </div>
-      {/* Ticket prices will be announced soon */}
       <div className="w-full flex justify-center">
         <Text textType={"sub_title"} className="text-gradient">
-          Will be dropped soon
+          Tickets are available now
         </Text>
       </div>
       {/* <div className="w-full flex justify-center">
@@ -24,13 +22,10 @@ const Tickets = () => {
           <Ticket price={459} ticketType={"vip"} title="VIP" />
         </div>
       </div>
+      */}
       <div className="w-full flex justify-center mt-20">
-        <Button buttonType={"cta"} asChild disabled>
-          <Link href={"https://tum-blockchain-conference-26.eventbrite.de"}>
-            Tickets
-          </Link>
-        </Button>
-      </div> */}
+        <LumaTicketButton id="luma-ticket-btn-tickets" />
+      </div>
     </section>
   );
 };

@@ -22,3 +22,5 @@
 - Prefer existing components and section patterns before introducing new abstractions.
 - Document meaningful changes in Markdown under `docs/`.
 - Newsletter signups use `app/api/newsletter/route.ts`, encrypted confirmation tokens in `util/newsletterToken.ts`, and Mailgun environment variables: `MAILGUN_API_KEY`, `MAILGUN_LIST_ADDRESS`, `MAILGUN_DOMAIN`, `NEWSLETTER_CONFIRMATION_SECRET`, `NEWSLETTER_FROM`, and optional `MAILGUN_API_BASE`.
+- Marketing attribution uses CookieYes, Plausible, Meta Pixel, and the Luma ticket button. Keep Meta Pixel consent-gated through `components/analytics/MetaPixel.tsx`; do not add Google Analytics unless explicitly requested.
+- The Luma ticket CTA lives in `components/luma-ticket-button/LumaTicketButton.tsx` and forwards stored UTM parameters to Luma.

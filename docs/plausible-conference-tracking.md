@@ -14,3 +14,5 @@ This repository represents TUM Blockchain Conference 26 and sends Plausible even
 ```
 
 The evergreen `conference.tum-blockchain.com` domain should redirect to the current conference site and should not be used as this site's Plausible `data-domain`.
+
+Ticket CTA clicks are tracked with a custom Plausible event named `Ticket Click` from `components/luma-ticket-button/LumaTicketButton.tsx`. Luma checkout attribution is handled through UTM forwarding; see `docs/marketing-attribution.md`.
