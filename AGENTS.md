@@ -24,3 +24,4 @@
 - Newsletter signups use `app/api/newsletter/route.ts`, encrypted confirmation tokens in `util/newsletterToken.ts`, and Mailgun environment variables: `MAILGUN_API_KEY`, `MAILGUN_LIST_ADDRESS`, `MAILGUN_DOMAIN`, `NEWSLETTER_CONFIRMATION_SECRET`, `NEWSLETTER_FROM`, and optional `MAILGUN_API_BASE`.
 - Marketing attribution uses CookieYes, Plausible, Meta Pixel, and the Luma ticket button. Keep Meta Pixel consent-gated through the CookieYes `cookieyes-advertisement` category in `components/analytics/MetaPixel.tsx`; do not add Google Analytics unless explicitly requested.
 - The Luma ticket CTA lives in `components/luma-ticket-button/LumaTicketButton.tsx` and forwards stored UTM parameters to Luma.
+- Vercel deploy workflows require `VERCEL_TOKEN`, `VERCEL_ORG_ID`, and `VERCEL_PROJECT_ID` GitHub secrets and install dependencies with `pnpm --frozen-lockfile`.
