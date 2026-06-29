@@ -103,16 +103,17 @@ export default function RootLayout({
         <SpeedInsights />
         <Footer />
         <MetaPixel />
+        <Script id="plausible-init" strategy="beforeInteractive">{`
+          window.plausible = window.plausible || function() {
+            (window.plausible.q = window.plausible.q || []).push(arguments);
+          };
+        `}</Script>
         <Script
-          id="luma-checkout"
-          src="https://embed.lu.ma/checkout-button.js"
-          strategy="afterInteractive"
-        />
-        <Script
+          id="plausible"
           defer
+          strategy="afterInteractive"
           data-domain="conference26.tum-blockchain.com"
           src="https://plausible.rbg.tum-blockchain.com/js/script.js"
-          strategy="afterInteractive"
         />
       </body>
     </html>

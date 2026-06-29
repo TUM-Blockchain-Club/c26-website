@@ -1,8 +1,9 @@
 "use client";
 
 import { Button } from "@/components/button";
+import Script from "next/script";
 import type { ReactNode } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 const LUMA_EVENT_ID = "evt-9GgBM7ScK61zTbb";
 const LUMA_EVENT_URL = `https://luma.com/event/${LUMA_EVENT_ID}`;
@@ -95,34 +96,44 @@ export function LumaTicketButton({
   id: string;
   children?: ReactNode;
 }) {
-  const initialHref = useMemo(() => buildLumaUrl({ utm_source: "direct" }), []);
-  const [href, setHref] = useState(initialHref);
+  const [href, setHref] = useState<string | null>(null);
 
   useEffect(() => {
     setHref(buildLumaUrl(getCurrentAttribution()));
   }, []);
 
   const trackTicketClick = () => {
-    window.plausible?.("Ticket Click", {
-      props: {
-        event: "luma_ticket",
-      },
-    });
+    window.plausible?.("Ticket Click");
     window.fbq?.("track", "InitiateCheckout");
   };
 
-  return (
-    <Button buttonType="cta" asChild>
-      <a
-        id={id}
-        href={href}
-        className="luma-checkout--button"
-        data-luma-action="checkout"
-        data-luma-event-id={LUMA_EVENT_ID}
-        onClick={trackTicketClick}
-      >
+  if (!href) {
+    return (
+      <Button buttonType="cta" disabled>
         {children}
-      </a>
-    </Button>
+      </Button>
+    );
+  }
+
+  return (
+    <>
+      <Button buttonType="cta" asChild>
+        <a
+          id={id}
+          href={href}
+          className="luma-checkout--button"
+          data-luma-action="checkout"
+          data-luma-event-id={LUMA_EVENT_ID}
+          onClick={trackTicketClick}
+        >
+          {children}
+        </a>
+      </Button>
+      <Script
+        id="luma-checkout"
+        src="https://embed.lu.ma/checkout-button.js"
+        strategy="afterInteractive"
+      />
+    </>
   );
 }
