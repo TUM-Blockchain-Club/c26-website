@@ -9,6 +9,7 @@ import Image from "next/image";
 import NextLink from "next/link";
 import { usePathname } from "next/navigation";
 import React, { useEffect, useMemo, useState } from "react";
+import { HACKATHON_URL } from "@/constants/Links";
 
 type HeaderElement = React.ElementRef<"header">;
 export type HeaderProps = React.ComponentPropsWithoutRef<"header"> & {
@@ -27,7 +28,7 @@ const links: HeaderLink[] = [
   { label: "Speakers", link: "/speakers", showsAtHome: true },
   {
     label: "Hackathon",
-    link: "https://hackathon.tum-blockchain.com/",
+    link: HACKATHON_URL,
     showsAtHome: true,
   },
   // { label: "Sponsors", link: "/sponsors", showsAtHome: true },

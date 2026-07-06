@@ -131,6 +131,21 @@ body {
   -webkit-text-fill-color: transparent;
 }
 
+.stat-value {
+  transition: background 0.3s ease;
+}
+
+.stat-value:hover {
+  background: -webkit-linear-gradient(
+    300deg,
+    var(--tbc-yellow) 0%,
+    var(--tbc-red) 49%,
+    var(--tbc-purple) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
 /*a {
   @apply underline underline-offset-[6px] decoration-2 decoration-dotted;
 }*/

@@ -1,5 +1,16 @@
 import { Text } from "@/components/text";
 
+const stats = [
+  { value: "1200+", label: "Attendees" },
+  { value: "125+", label: "Speakers" },
+  { value: "18", label: "Sponsors" },
+  { value: "57", label: "Talks" },
+  { value: "12", label: "Panels" },
+  { value: "4", label: "Workshops" },
+  { value: "1", label: "Ideathon" },
+  { value: "1", label: "Researchathon" },
+];
+
 const Statistic = () => {
   return (
     <section
@@ -8,58 +19,23 @@ const Statistic = () => {
       }
     >
       <div className={"flex flex-col items-center"}>
-        <Text textType={"sub_title"} className={""}>
-          Last Year's Statistics
+        <Text textType={"sub_hero"} className={"text-gradient text-center"}>
+          Last Year&apos;s Statistics
         </Text>
-        <div className={"flex flex-col items-center lg:flex-row gap-12 mt-12"}>
-          <div className={"flex flex-col gap-2 items-center lg:items-center"}>
-            <Text className={""} textType={"sub_hero"}>
-              1200+
-            </Text>
-            <Text textType={"sub_title"}>Attendees</Text>
-          </div>
-          <div className={"flex flex-col gap-2 items-center lg:items-center"}>
-            <Text className={""} textType={"sub_hero"}>
-              125+
-            </Text>
-            <Text textType={"sub_title"}>Speakers</Text>
-          </div>
-          <div className={"flex flex-col gap-2 items-center lg:items-center"}>
-            <Text className={""} textType={"sub_hero"}>
-              18
-            </Text>
-            <Text textType={"sub_title"}>Sponsors</Text>
-          </div>
-          <div className={"flex flex-col gap-2 items-center lg:items-center"}>
-            <Text className={""} textType={"sub_hero"}>
-              57
-            </Text>
-            <Text textType={"sub_title"}>Talks</Text>
-          </div>
-          <div className={"flex flex-col gap-2 items-center lg:items-center"}>
-            <Text className={""} textType={"sub_hero"}>
-              12
-            </Text>
-            <Text textType={"sub_title"}>Panels</Text>
-          </div>
-          <div className={"flex flex-col gap-2 items-center lg:items-center"}>
-            <Text className={""} textType={"sub_hero"}>
-              4
-            </Text>
-            <Text textType={"sub_title"}>Workshops</Text>
-          </div>
-          <div className={"flex flex-col gap-2 items-center lg:items-center"}>
-            <Text className={""} textType={"sub_hero"}>
-              1
-            </Text>
-            <Text textType={"sub_title"}>Ideathon</Text>
-          </div>
-          <div className={"flex flex-col gap-2 items-center lg:items-center"}>
-            <Text className={""} textType={"sub_hero"}>
-              1
-            </Text>
-            <Text textType={"sub_title"}>Researchathon</Text>
-          </div>
+        <div className={"flex flex-wrap justify-center gap-x-10 gap-y-8 mt-12"}>
+          {stats.map((stat) => (
+            <div
+              key={stat.label}
+              className={
+                "flex flex-col gap-2 items-center transition-transform duration-300 hover:-translate-y-1"
+              }
+            >
+              <Text className={"stat-value"} textType={"sub_hero"}>
+                {stat.value}
+              </Text>
+              <Text textType={"sub_title"}>{stat.label}</Text>
+            </div>
+          ))}
         </div>
       </div>
     </section>

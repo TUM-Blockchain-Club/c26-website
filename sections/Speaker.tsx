@@ -1,8 +1,6 @@
-import { Button } from "@/components/button";
 import { Text } from "@/components/text";
 import { Speaker as SpeakerComponent } from "@/components/speaker";
 // import { useSpeaker } from "@/hooks/useSpeaker";
-import { Link } from "@/components/link";
 // import { fetchSpeakers } from "@/components/service/contentStrapi";
 import { featuredPastSpeakers } from "@/constants/PastSpeakers";
 
@@ -30,24 +28,6 @@ const Speaker = async () => {
           filteredSpeakers.map((speaker, index) => (
             <SpeakerComponent key={index} {...speaker} />
           ))}
-      </div>
-      <div className="md:flex space-x-0 md:space-x-4 space-y-4 md:space-y-0">
-        {/* <div>
-          <div className="w-full flex justify-center">
-            <Button disabled>Apply as speaker</Button>
-          </div>
-        </div> */}
-        <div>
-          <div className="w-full flex gap-4 justify-center">
-            <Button buttonType={"secondary"} asChild>
-              <Link href={"/speakers"}>All speakers</Link>
-              {/* <Link href={""}>All 2024 speakers</Link> */}
-            </Button>
-            {/* <Button buttonType={"cta"} asChild>
-              <Link href={"https://tally.so/r/w8EB0o"}>Apply as Speaker</Link>
-            </Button> */}
-          </div>
-        </div>
       </div>
     </section>
   );
