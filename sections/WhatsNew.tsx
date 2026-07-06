@@ -20,9 +20,6 @@ const WhatsNew = () => {
               alt="Digital Assets Day"
               className="h-[70px] sm:h-[86px] w-auto"
             />
-            <Text textType={"small"} className="text-center text-gray-400 mt-3">
-              Hosted by Bundesblock, the German Blockchain Association
-            </Text>
             <div className="mt-4 px-3 py-1 rounded-full border border-white/20 bg-white/5">
               <Text
                 textType={"small"}
@@ -36,12 +33,10 @@ const WhatsNew = () => {
               as="p"
               className="text-left text-gray-400 mt-6 max-w-[250px] sm:max-w-[42rem]"
             >
-              Blockchain is transforming the architecture of the financial
-              sector, and digital assets are set to dominate the transfer of new
-              forms of money, certificates, identities, and industry data.
-              Bundesblock is joining forces with TUM Blockchain Club to explore
-              how the financial sector and traditional industries across Germany
-              and Europe will be reshaped.
+              For the first time, the second conference day will be curated by
+              Bundesblock, bringing together policymakers, regulators, financial
+              institutions, corporates and digital asset leaders to discuss the
+              future of digital assets in Europe.
             </Text>
             <div className="mt-auto pt-8">
               <Button disabled buttonType={"cta"} className="w-fit">
@@ -55,9 +50,6 @@ const WhatsNew = () => {
               alt="TUM Blockchain Hackathon"
               className="h-[70px] sm:h-[86px] w-auto"
             />
-            <Text textType={"small"} className="text-center text-gray-400 mt-3">
-              Hosted by TUM Blockchain Club
-            </Text>
             <div className="mt-4 px-3 py-1 rounded-full border border-white/20 bg-white/5">
               <Text
                 textType={"small"}

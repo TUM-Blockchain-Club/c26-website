@@ -45,21 +45,32 @@ export const Speaker = React.forwardRef<HTMLDivElement, SpeakerProps>(
       <div
         className={classNames(
           className,
-          "flex w-[150px] xs:w-[180px] sm:w-[200px] min-h-[200px] xs:min-h-[270px] sm:min-h-[300px] flex-col gap-4 items-start shrink-0",
+          "group flex w-[170px] xs:w-[200px] sm:w-[220px] min-h-[220px] xs:min-h-[290px] sm:min-h-[320px] flex-col gap-4 items-start shrink-0",
         )}
         ref={ref}
         {...{ ...rest, id: undefined }} // Exclude the `id` property
       >
-        <Image
-          className={"object-cover"}
-          src={profile_photo?.url || "/speakers/placeholder.webp"}
-          alt={name}
-          title={name}
-          width={275}
-          height={275}
-        />
+        <div
+          className={
+            "w-full rounded-full bg-gradient-tbc p-[3px] transition-transform duration-300 group-hover:scale-105"
+          }
+        >
+          <Image
+            className={
+              "w-full h-auto aspect-square object-cover rounded-full grayscale transition-all duration-300 group-hover:grayscale-0"
+            }
+            src={profile_photo?.url || "/speakers/placeholder.webp"}
+            alt={name}
+            title={name}
+            width={275}
+            height={275}
+          />
+        </div>
         <div className={"flex flex-col gap-1 self-stretch"}>
-          <Text textType={"sub_title"} className={"font-bold break-words hyphens-auto"}>
+          <Text
+            textType={"sub_title"}
+            className={"font-bold break-words hyphens-auto"}
+          >
             {name}
           </Text>
           <Text textType={"paragraph"}>
