@@ -36,7 +36,7 @@ const Hero = () => {
               </div>
               <div className="rounded-full border border-white/20 bg-white/5 px-4 py-1.5 backdrop-blur-sm">
                 <Text as="p" textType="lgsmall" className="font-bold">
-                  Munich, Germany
+                  House of Communication, Munich
                 </Text>
               </div>
             </div>
