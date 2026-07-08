@@ -39,6 +39,11 @@ const links: HeaderLink[] = [
   //   showsAtHome: true,
   // },
   { label: "Side Events", link: "/side-events", showsAtHome: true },
+  {
+    label: "Become a Partner",
+    link: "/#become-a-partner",
+    showsAtHome: true,
+  },
   // { label: "Agenda", link: "/agenda", showsAtHome: true },
   // { label: "Workshops", link: "/workshops", showsAtHome: true },
   // { label: "Student Grants", link: "#grants", showsAtHome: true },
@@ -103,6 +108,7 @@ const PRIORITY: string[] = [
   // "Agenda",
   // "Workshops",
   // "Apply as Speaker",
+  "Become a Partner",
 ];
 
 function NavDesktop({ items }: { items: HeaderLink[] }) {

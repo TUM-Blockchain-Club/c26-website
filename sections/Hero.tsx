@@ -11,16 +11,37 @@ const Hero = () => {
       <section className="relative mt-[50vh] translate-y-[-50%] w-full flex justify-center items-center overflow-visible">
         <div>
           <div className="flex flex-col w-full justify-between items-center gap-8">
-            <div className="relative max-w-[80vw] xl:max-w-[50vw] min-h-[150px] w-[400px] h-[175px] xs:mt-10 sm:w-[500px] sm:h-[200px] lg:w-[700px] lg:h-[350px]">
-              <Image src={confLogo} alt="TUM Blockchain Conference 26" fill />
+            <Text
+              as="p"
+              textType="small"
+              className="eyebrow-tbc text-center text-xs md:text-sm"
+            >
+              Hosted by TUM Blockchain Club
+            </Text>
+
+            <div className="relative max-w-[80vw] xl:max-w-[50vw] min-h-[150px] w-[400px] h-[175px] xs:mt-2 sm:w-[500px] sm:h-[200px] lg:w-[700px] lg:h-[320px]">
+              <Image
+                src={confLogo}
+                alt="TUM Blockchain Conference 26"
+                fill
+                className="object-contain"
+              />
             </div>
 
-            <div className={"flex flex-col items-center gap-1"}>
-              <Text as={"p"} textType={"sub_title"} className="text-center">
-                October 29<sup>th</sup> - 31<sup>st</sup> 2026
-              </Text>
+            <div className="flex flex-wrap justify-center items-center gap-3">
+              <div className="rounded-full border border-white/20 bg-white/5 px-4 py-1.5 backdrop-blur-sm">
+                <Text as="p" textType="lgsmall" className="font-bold">
+                  October 29&ndash;31, 2026
+                </Text>
+              </div>
+              <div className="rounded-full border border-white/20 bg-white/5 px-4 py-1.5 backdrop-blur-sm">
+                <Text as="p" textType="lgsmall" className="font-bold">
+                  Munich, Germany
+                </Text>
+              </div>
             </div>
-            <div className="flex max-w-xl flex-col items-center gap-4 text-center">
+
+            <div className="flex max-w-xl flex-col items-center gap-5 text-center">
               <Text
                 as="p"
                 textType="paragraph"
@@ -36,14 +57,6 @@ const Hero = () => {
                 Buy Tickets
               </LumaTicketButton>
             </div>
-            {/* <div className={"flex flex-col items-center gap-1"}>
-              <Text as={"p"} textType={"sub_title"} className="text-center">
-                Deutsches Museum, Munich
-              </Text>
-              <Text as={"p"} textType={"sub_title"} className="text-center">
-                September 12<sup>th</sup> - 13<sup>th</sup> 2024
-              </Text>
-            </div> */}
           </div>
         </div>
       </section>

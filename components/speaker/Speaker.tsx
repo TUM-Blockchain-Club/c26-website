@@ -45,7 +45,7 @@ export const Speaker = React.forwardRef<HTMLDivElement, SpeakerProps>(
       <div
         className={classNames(
           className,
-          "group flex w-[170px] xs:w-[200px] sm:w-[220px] min-h-[220px] xs:min-h-[290px] sm:min-h-[320px] flex-col gap-4 items-start shrink-0",
+          "group flex w-full max-w-[220px] flex-col gap-4 items-start",
         )}
         ref={ref}
         {...{ ...rest, id: undefined }} // Exclude the `id` property
@@ -57,7 +57,7 @@ export const Speaker = React.forwardRef<HTMLDivElement, SpeakerProps>(
         >
           <Image
             className={
-              "w-full h-auto aspect-square object-cover rounded-full grayscale transition-all duration-300 group-hover:grayscale-0"
+              "speaker-photo w-full h-auto aspect-square object-cover rounded-full transition-all duration-300"
             }
             src={profile_photo?.url || "/speakers/placeholder.webp"}
             alt={name}

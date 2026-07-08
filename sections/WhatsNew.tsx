@@ -8,19 +8,22 @@ import HackathonLogo from "@/public/logos/hackathon-logo.png";
 
 const WhatsNew = () => {
   return (
-    <section className="w-full flex flex-col items-center" id="whats-new">
+    <section className="w-full flex flex-col items-center gap-4" id="whats-new">
+      <Text as="p" textType="small" className="eyebrow-tbc text-center">
+        New in 2026
+      </Text>
       <Text textType={"sub_hero"} className="text-gradient text-center">
         What&apos;s New This Year
       </Text>
-      <div className="w-full flex justify-center mt-12">
-        <div className="w-full flex flex-col items-center lg:flex-row lg:items-stretch lg:justify-center lg:space-x-4 space-y-4 lg:space-y-0">
-          <div className="w-full relative border border-gradient-tbc max-w-[280px] sm:max-w-[30rem] p-6 flex flex-col items-center h-full transition-transform duration-300 hover:-translate-y-1">
+      <div className="w-full flex justify-center mt-8">
+        <div className="w-full flex flex-col items-center lg:flex-row lg:items-stretch lg:justify-center gap-4 lg:gap-6">
+          <div className="card-tbc w-full relative max-w-[320px] sm:max-w-[30rem] p-8 flex flex-col items-center h-full hover:-translate-y-1">
             <Image
               src={DigitalAssetsDayLogo}
               alt="Digital Assets Day"
               className="h-[70px] sm:h-[86px] w-auto"
             />
-            <div className="mt-4 px-3 py-1 rounded-full border border-white/20 bg-white/5">
+            <div className="mt-5 px-4 py-1.5 rounded-full border border-white/20 bg-white/5">
               <Text
                 textType={"small"}
                 className="text-white font-bold tracking-wide"
@@ -31,7 +34,7 @@ const WhatsNew = () => {
             <Text
               textType={"lgsmall"}
               as="p"
-              className="text-left text-gray-400 mt-6 max-w-[250px] sm:max-w-[42rem]"
+              className="text-left text-gray-400 mt-6 max-w-[260px] sm:max-w-[42rem] leading-relaxed"
             >
               For the first time, the second conference day will be curated by
               Bundesblock, bringing together policymakers, regulators, financial
@@ -44,13 +47,13 @@ const WhatsNew = () => {
               </Button>
             </div>
           </div>
-          <div className="w-full relative border border-gradient-tbc max-w-[280px] sm:max-w-[30rem] p-6 flex flex-col items-center h-full transition-transform duration-300 hover:-translate-y-1">
+          <div className="card-tbc w-full relative max-w-[320px] sm:max-w-[30rem] p-8 flex flex-col items-center h-full hover:-translate-y-1">
             <Image
               src={HackathonLogo}
               alt="TUM Blockchain Hackathon"
               className="h-[70px] sm:h-[86px] w-auto"
             />
-            <div className="mt-4 px-3 py-1 rounded-full border border-white/20 bg-white/5">
+            <div className="mt-5 px-4 py-1.5 rounded-full border border-white/20 bg-white/5">
               <Text
                 textType={"small"}
                 className="text-white font-bold tracking-wide"
@@ -61,7 +64,7 @@ const WhatsNew = () => {
             <Text
               textType={"lgsmall"}
               as="p"
-              className="text-left text-gray-400 mt-6 max-w-[250px] sm:max-w-[42rem]"
+              className="text-left text-gray-400 mt-6 max-w-[260px] sm:max-w-[42rem] leading-relaxed"
             >
               Build real solutions alongside the conference at the TUM
               Blockchain Hackathon, open to builders of all levels.

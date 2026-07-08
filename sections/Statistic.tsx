@@ -13,30 +13,33 @@ const stats = [
 
 const Statistic = () => {
   return (
-    <section
-      className={
-        "w-full flex flex-col lg:flex-row justify-center items-center xl:items-start gap-12"
-      }
-    >
-      <div className={"flex flex-col items-center"}>
-        <Text textType={"sub_hero"} className={"text-gradient text-center"}>
-          Last Year&apos;s Statistics
-        </Text>
-        <div className={"flex flex-wrap justify-center gap-x-10 gap-y-8 mt-12"}>
-          {stats.map((stat) => (
-            <div
-              key={stat.label}
-              className={
-                "flex flex-col gap-2 items-center transition-transform duration-300 hover:-translate-y-1"
-              }
+    <section className="w-full flex flex-col items-center gap-4">
+      <Text as="p" textType="small" className="eyebrow-tbc text-center">
+        Last edition in numbers
+      </Text>
+      <Text textType={"sub_hero"} className={"text-gradient text-center"}>
+        Last Year&apos;s Statistics
+      </Text>
+      <div className="w-full max-w-4xl grid grid-cols-2 md:grid-cols-4 gap-3 lg:gap-4 mt-8">
+        {stats.map((stat) => (
+          <div
+            key={stat.label}
+            className="card-tbc-soft flex flex-col items-center gap-1 py-6 px-2 hover:-translate-y-1 min-w-0"
+          >
+            <Text
+              className="stat-value !font-display font-bold !text-3xl lg:!text-5xl"
+              textType={"title"}
             >
-              <Text className={"stat-value"} textType={"sub_hero"}>
-                {stat.value}
-              </Text>
-              <Text textType={"sub_title"}>{stat.label}</Text>
-            </div>
-          ))}
-        </div>
+              {stat.value}
+            </Text>
+            <Text
+              textType={"small"}
+              className="uppercase tracking-wide text-white/60 text-center break-words max-w-full"
+            >
+              {stat.label}
+            </Text>
+          </div>
+        ))}
       </div>
     </section>
   );

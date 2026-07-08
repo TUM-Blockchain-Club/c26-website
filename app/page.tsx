@@ -28,16 +28,16 @@ export default function Home() {
             "w-full flex justify-center items-center pt-[25px] lg:pt-0 z-20"
           }
         >
-          <Container>
-            <div className={"flex flex-col max-w-7xl z-10"}>
+          <Container className={"w-full"}>
+            <div className={"flex flex-col w-full max-w-7xl mx-auto z-10"}>
               <Hero />
               <div className={"flex flex-col pb-24 gap-32"}>
                 <Video />
-                <Statistic />
+                <WhatsNew />
                 {/* <Manifesto /> */}
                 {/* <Tracks /> */}
                 {/* <Venue /> */}
-                <WhatsNew />
+                <Statistic />
                 <Tickets />
                 {/* <Grants /> */}
                 <Speaker />

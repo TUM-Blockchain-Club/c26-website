@@ -17,13 +17,20 @@ const Speaker = async () => {
 
   return (
     <section
-      className="w-full flex flex-col items-center justify-center gap-12 lg:gap-20"
+      className="w-full flex flex-col items-center justify-center gap-4"
       id="speaker"
     >
+      <Text as="p" textType="small" className="eyebrow-tbc text-center">
+        Voices from past editions
+      </Text>
       <Text textType={"sub_hero"} className="text-gradient text-center">
         Previous Speakers
       </Text>
-      <div className={"grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-6"}>
+      <div
+        className={
+          "w-full max-w-4xl grid grid-cols-2 lg:grid-cols-4 gap-x-3 gap-y-6 lg:gap-8 mt-8 justify-items-center"
+        }
+      >
         {filteredSpeakers &&
           filteredSpeakers.map((speaker, index) => (
             <SpeakerComponent key={index} {...speaker} />

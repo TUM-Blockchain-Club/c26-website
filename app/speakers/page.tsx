@@ -27,7 +27,9 @@ const SpeakersPage = async () => {
             </div>
           </div>
           <div
-            className={"grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-6 mt-24"}
+            className={
+              "grid grid-cols-2 lg:grid-cols-4 gap-x-3 gap-y-6 lg:gap-6 mt-24 justify-items-center"
+            }
           >
             {filteredSpeakers &&
               filteredSpeakers.map((speaker) => (

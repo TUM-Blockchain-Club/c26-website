@@ -33,16 +33,18 @@ type SponsorCarouselProps = {
 };
 
 const SponsorCarousel = ({ sponsors, size, reverse }: SponsorCarouselProps) => {
-  const repeatedSponsors = [...sponsors, ...sponsors];
+  // 4 copies, animated by -50% (= 2 full sets), so the loop stays seamless
+  // and the strip always exceeds the container width at any window size.
+  const repeatedSponsors = [...sponsors, ...sponsors, ...sponsors, ...sponsors];
   const animationName = reverse ? "sponsor-marquee-reverse" : "sponsor-marquee";
-  const speed = size === "large" ? "36s" : "44s";
+  const speed = size === "large" ? "72s" : "88s";
   const itemClassName =
     size === "large"
       ? "h-24 w-44 xs:h-28 xs:w-56 md:h-32 md:w-72"
       : "h-16 w-32 xs:h-20 xs:w-40 md:h-24 md:w-52";
 
   return (
-    <div className="relative ml-[calc(50%-50vw)] mr-[calc(50%-50vw)] w-screen overflow-hidden py-2">
+    <div className="relative w-full overflow-hidden py-2">
       <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-black to-transparent md:w-28" />
       <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-black to-transparent md:w-28" />
       <div
@@ -85,7 +87,7 @@ const Sponsors = ({ displayMode = "carousel" }: SponsorsProps) => {
   if (displayMode === "carousel") {
     return (
       <section
-        className="w-full flex flex-col items-center gap-8 lg:gap-12"
+        className="w-full flex flex-col items-center gap-4"
         id="sponsors"
       >
         <style>{`
@@ -99,33 +101,41 @@ const Sponsors = ({ displayMode = "carousel" }: SponsorsProps) => {
             to { transform: translateX(0); }
           }
         `}</style>
+        <Text as="p" textType="small" className="eyebrow-tbc text-center">
+          They made it possible
+        </Text>
         <Text textType={"sub_hero"} className="text-gradient text-center">
           Past Sponsors
         </Text>
-        <div className="flex w-full flex-col gap-5 md:gap-7">
-          <SponsorCarousel sponsors={topCarouselSponsors} size="large" />
-          <SponsorCarousel
-            sponsors={bottomCarouselSponsors}
-            size="small"
-            reverse
-          />
-        </div>
+        <div className="w-full flex flex-col items-center gap-8 lg:gap-12 mt-8">
+          <div className="flex w-full flex-col gap-5 md:gap-7">
+            <SponsorCarousel sponsors={topCarouselSponsors} size="large" />
+            <SponsorCarousel
+              sponsors={bottomCarouselSponsors}
+              size="small"
+              reverse
+            />
+          </div>
 
-        <div className="flex max-w-3xl flex-col items-center gap-5 text-center">
-          <Text as="p" textType="small" className="text-white/75">
-            Explore a partnership with the TUM Blockchain Conference & Hackathon
-            2026. Fill out the form and we&apos;ll send you the sponsorship
-            deck.
-          </Text>
-          <Button buttonType="cta" asChild>
-            <Link
-              href={PARTNERSHIP_DECK_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Request Partnership Deck
-            </Link>
-          </Button>
+          <div
+            id="become-a-partner"
+            className="flex max-w-3xl flex-col items-center gap-5 text-center scroll-mt-24"
+          >
+            <Text as="p" textType="small" className="text-white/75">
+              Explore a partnership with the TUM Blockchain Conference &
+              Hackathon 2026. Fill out the form and we&apos;ll send you the
+              sponsorship deck.
+            </Text>
+            <Button buttonType="cta" asChild>
+              <Link
+                href={PARTNERSHIP_DECK_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Request Partnership Deck
+              </Link>
+            </Button>
+          </div>
         </div>
 
         {/*
