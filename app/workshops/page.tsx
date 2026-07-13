@@ -25,10 +25,12 @@ export default async function Workshops() {
 
   return (
     <div className={"overflow-x-hidden"}>
-      <main className={"w-full pt-[25px] lg:pt-0 z-20 2xl:px-[225px] pb-40"}>
+      <main className={"w-full pt-page-pt lg:pt-0 z-20 2xl:px-[225px] pb-40"}>
         <Container>
           <div
-            className={"mt-[100px] md:mt-[20vh] z-10 w-full max-w-7xl mx-auto"}
+            className={
+              "mt-page-top md:mt-page-top-lg z-10 w-full max-w-7xl mx-auto"
+            }
           >
             <Text
               textType={"sub_hero"}

@@ -2,13 +2,79 @@
 @tailwind components;
 @tailwind utilities;
 
+/* =====================================================================
+   DESIGN TOKENS
+   Single source of truth for the TBC Conference design system. Every
+   color, radius and page-spacing value used across the app should
+   reference one of these — never re-declare a literal hex/px value in
+   a component. The /brand page reads these live via getComputedStyle,
+   so anything changed here is automatically reflected there too.
+   ===================================================================== */
 :root {
-  --tbc-yellow-rgb: 255 193 16;
-  --tbc-red-rgb: 244 67 54;
-  --tbc-purple-rgb: 111 61 226;
-  --tbc-yellow: rgb(var(--tbc-yellow-rgb));
-  --tbc-red: rgb(var(--tbc-red-rgb));
-  --tbc-purple: rgb(var(--tbc-purple-rgb));
+  /* --- Brand palette (raw identity colors) ---------------------------
+     The three colors that make up the TBC gradient. Used directly for
+     the odd one-off case, but most UI should reach for the semantic
+     tokens below instead. */
+  --color-brand-yellow-rgb: 255 193 16;
+  --color-brand-red-rgb: 244 67 54;
+  --color-brand-purple-rgb: 111 61 226;
+
+  /* --- Semantic surface tokens --- */
+  --color-background-rgb: 0 0 0; /* page background */
+  --color-surface-rgb: 0 0 0; /* card fill */
+
+  /* --- Semantic border tokens (white at increasing opacity) ---
+     subtle: resting card outline. default: visible pill/card border.
+     strong: hover / emphasis state. */
+  --color-border-subtle-rgb: 255 255 255;
+  --color-border-subtle-alpha: 0.1;
+  --color-border-rgb: 255 255 255;
+  --color-border-alpha: 0.2;
+  --color-border-strong-rgb: 255 255 255;
+  --color-border-strong-alpha: 0.35;
+
+  /* --- Semantic text tokens (white at decreasing opacity) --- */
+  --color-text-rgb: 255 255 255;
+  --color-text-secondary-rgb: 255 255 255;
+  --color-text-secondary-alpha: 0.75;
+  --color-text-muted-rgb: 255 255 255;
+  --color-text-muted-alpha: 0.6;
+  --color-text-faint-rgb: 255 255 255;
+  --color-text-faint-alpha: 0.45;
+
+  /* --- Other semantic accents --- */
+  --color-accent-gold-rgb: 222 158 49; /* VIP ticket tier accent */
+  --color-focus-rgb: 255 59 88; /* check-in QR detection highlight */
+  --color-canvas-idle-rgb: 12 12 12; /* particle canvas resting color */
+
+  /* --- Track / category colors (agenda, tracks grid) ---
+     Each track has a bright tone (text/border) and a muted tone
+     (gradient background wash). */
+  --color-track-education-rgb: 74 222 128;
+  --color-track-education-bg-rgb: 21 128 61;
+  --color-track-ecosystem-rgb: 96 165 250;
+  --color-track-ecosystem-bg-rgb: 30 58 138;
+  --color-track-application-rgb: 34 211 238;
+  --color-track-application-bg-rgb: 6 182 212;
+  --color-track-research-rgb: 250 204 21;
+  --color-track-research-bg-rgb: 122 106 0;
+  --color-track-regulation-rgb: 248 113 113;
+  --color-track-regulation-bg-rgb: 185 28 28;
+  --color-track-workshop-rgb: 196 181 253;
+  --color-track-workshop-bg-rgb: 124 58 237;
+  --color-track-academic-rgb: 251 146 60;
+  --color-track-academic-bg-rgb: 249 115 22;
+
+  /* --- Radii --- */
+  --radius-sm: 0.3125rem; /* 5px — legacy small radius (badges, chips) */
+  --radius-md: 0.5rem; /* 8px — buttons */
+  --radius-lg: 1rem; /* 16px — cards */
+  --radius-full: 9999px;
+
+  /* --- Page-level spacing (repeated header offset across ~10 pages) --- */
+  --space-page-pt: 25px;
+  --space-page-top: 100px;
+  --space-page-top-lg: 20vh;
 }
 
 html {
@@ -23,9 +89,9 @@ body {
 .cta-border {
   border-image: linear-gradient(
       135deg,
-      var(--tbc-yellow) 0%,
-      var(--tbc-red) 49%,
-      var(--tbc-purple) 100%
+      rgb(var(--color-brand-yellow-rgb)) 0%,
+      rgb(var(--color-brand-red-rgb)) 49%,
+      rgb(var(--color-brand-purple-rgb)) 100%
     )
     1;
   border-width: 2px;
@@ -47,18 +113,13 @@ body {
 }
 
 .sponsor-carousel-card {
-  box-shadow: 0 0 35px rgb(var(--tbc-yellow-rgb) / 0.14);
+  box-shadow: 0 0 35px rgb(var(--color-brand-yellow-rgb) / 0.14);
 }
 
 .sponsor-carousel-card:hover {
   box-shadow:
-    0 0 30px rgb(var(--tbc-red-rgb) / 0.18),
-    0 0 55px rgb(var(--tbc-purple-rgb) / 0.14);
-}
-
-.sponsor-bronze {
-  box-shadow: 0px 0px 100px 10px rgba(92, 21, 103, 0.5);
-  background-color: rgba(92, 21, 103, 0.5);
+    0 0 30px rgb(var(--color-brand-red-rgb) / 0.18),
+    0 0 55px rgb(var(--color-brand-purple-rgb) / 0.14);
 }
 
 @keyframes hero-ring-wobble {
@@ -88,44 +149,44 @@ body {
 
 @keyframes glow {
   0% {
-    background-color: rgb(var(--tbc-yellow-rgb) / 0.5);
-    box-shadow: 0px 0px 100px 10px rgb(var(--tbc-yellow-rgb) / 0.8);
+    background-color: rgb(var(--color-brand-yellow-rgb) / 0.5);
+    box-shadow: 0px 0px 100px 10px rgb(var(--color-brand-yellow-rgb) / 0.8);
   }
   33.3% {
-    background-color: rgb(var(--tbc-red-rgb) / 0.5);
-    box-shadow: 0px 0px 100px 10px rgb(var(--tbc-red-rgb) / 0.8);
+    background-color: rgb(var(--color-brand-red-rgb) / 0.5);
+    box-shadow: 0px 0px 100px 10px rgb(var(--color-brand-red-rgb) / 0.8);
   }
   66.6% {
-    background-color: rgb(var(--tbc-purple-rgb) / 0.5);
-    box-shadow: 0px 0px 100px 10px rgb(var(--tbc-purple-rgb) / 0.8);
+    background-color: rgb(var(--color-brand-purple-rgb) / 0.5);
+    box-shadow: 0px 0px 100px 10px rgb(var(--color-brand-purple-rgb) / 0.8);
   }
   100% {
-    background-color: rgb(var(--tbc-yellow-rgb) / 0.5);
-    box-shadow: 0px 0px 100px 10px rgb(var(--tbc-yellow-rgb) / 0.8);
+    background-color: rgb(var(--color-brand-yellow-rgb) / 0.5);
+    box-shadow: 0px 0px 100px 10px rgb(var(--color-brand-yellow-rgb) / 0.8);
   }
 }
 
 @keyframes shadow-glow {
   0% {
-    box-shadow: 0px 0px 100px 10px rgb(var(--tbc-yellow-rgb) / 0.2);
+    box-shadow: 0px 0px 100px 10px rgb(var(--color-brand-yellow-rgb) / 0.2);
   }
   33.3% {
-    box-shadow: 0px 0px 100px 10px rgb(var(--tbc-red-rgb) / 0.2);
+    box-shadow: 0px 0px 100px 10px rgb(var(--color-brand-red-rgb) / 0.2);
   }
   66.6% {
-    box-shadow: 0px 0px 100px 10px rgb(var(--tbc-purple-rgb) / 0.2);
+    box-shadow: 0px 0px 100px 10px rgb(var(--color-brand-purple-rgb) / 0.2);
   }
   100% {
-    box-shadow: 0px 0px 100px 10px rgb(var(--tbc-yellow-rgb) / 0.2);
+    box-shadow: 0px 0px 100px 10px rgb(var(--color-brand-yellow-rgb) / 0.2);
   }
 }
 
 .text-gradient {
   background: -webkit-linear-gradient(
     300deg,
-    var(--tbc-yellow) 0%,
-    var(--tbc-red) 49%,
-    var(--tbc-purple) 100%
+    rgb(var(--color-brand-yellow-rgb)) 0%,
+    rgb(var(--color-brand-red-rgb)) 49%,
+    rgb(var(--color-brand-purple-rgb)) 100%
   );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -135,14 +196,18 @@ body {
    so this uses the padding-box/border-box double-background technique). */
 .card-tbc {
   border: 1px solid transparent;
-  border-radius: 1rem;
+  border-radius: var(--radius-lg);
   background:
-    linear-gradient(rgb(0 0 0), rgb(0 0 0)) padding-box,
+    linear-gradient(
+        rgb(var(--color-surface-rgb)),
+        rgb(var(--color-surface-rgb))
+      )
+      padding-box,
     linear-gradient(
         135deg,
-        rgb(var(--tbc-yellow-rgb) / 0.8),
-        rgb(var(--tbc-red-rgb) / 0.8),
-        rgb(var(--tbc-purple-rgb) / 0.8)
+        rgb(var(--color-brand-yellow-rgb) / 0.8),
+        rgb(var(--color-brand-red-rgb) / 0.8),
+        rgb(var(--color-brand-purple-rgb) / 0.8)
       )
       border-box;
   transition:
@@ -152,14 +217,15 @@ body {
 
 .card-tbc:hover {
   box-shadow:
-    0 0 30px rgb(var(--tbc-red-rgb) / 0.15),
-    0 0 60px rgb(var(--tbc-purple-rgb) / 0.15);
+    0 0 30px rgb(var(--color-brand-red-rgb) / 0.15),
+    0 0 60px rgb(var(--color-brand-purple-rgb) / 0.15);
 }
 
 /* Subtle variant: neutral border, gradient only glows on hover */
 .card-tbc-soft {
-  border: 1px solid rgb(255 255 255 / 0.1);
-  border-radius: 1rem;
+  border: 1px solid
+    rgb(var(--color-border-subtle-rgb) / var(--color-border-subtle-alpha));
+  border-radius: var(--radius-lg);
   transition:
     box-shadow 0.3s ease,
     border-color 0.3s ease,
@@ -167,8 +233,10 @@ body {
 }
 
 .card-tbc-soft:hover {
-  border-color: rgb(255 255 255 / 0.25);
-  box-shadow: 0 0 35px rgb(var(--tbc-purple-rgb) / 0.12);
+  border-color: rgb(
+    var(--color-border-strong-rgb) / var(--color-border-strong-alpha)
+  );
+  box-shadow: 0 0 35px rgb(var(--color-brand-purple-rgb) / 0.12);
 }
 
 /* Rounded 2px brand-gradient border for buttons (replaces border-image, which
@@ -176,12 +244,16 @@ body {
 .btn-gradient-tbc {
   border: 2px solid transparent;
   background:
-    linear-gradient(rgb(0 0 0), rgb(0 0 0)) padding-box,
+    linear-gradient(
+        rgb(var(--color-surface-rgb)),
+        rgb(var(--color-surface-rgb))
+      )
+      padding-box,
     linear-gradient(
         135deg,
-        var(--tbc-yellow),
-        var(--tbc-red),
-        var(--tbc-purple)
+        rgb(var(--color-brand-yellow-rgb)),
+        rgb(var(--color-brand-red-rgb)),
+        rgb(var(--color-brand-purple-rgb))
       )
       border-box;
   transition: background 0.3s ease;
@@ -191,16 +263,16 @@ body {
   background:
     linear-gradient(
         to bottom right,
-        rgb(var(--tbc-yellow-rgb) / 0.3),
-        rgb(var(--tbc-red-rgb) / 0.3),
-        rgb(var(--tbc-purple-rgb) / 0.3)
+        rgb(var(--color-brand-yellow-rgb) / 0.3),
+        rgb(var(--color-brand-red-rgb) / 0.3),
+        rgb(var(--color-brand-purple-rgb) / 0.3)
       )
       padding-box,
     linear-gradient(
         135deg,
-        var(--tbc-yellow),
-        var(--tbc-red),
-        var(--tbc-purple)
+        rgb(var(--color-brand-yellow-rgb)),
+        rgb(var(--color-brand-red-rgb)),
+        rgb(var(--color-brand-purple-rgb))
       )
       border-box;
 }
@@ -208,7 +280,7 @@ body {
 .eyebrow-tbc {
   letter-spacing: 0.3em;
   text-transform: uppercase;
-  color: rgb(255 255 255 / 0.5);
+  color: rgb(var(--color-text-faint-rgb) / var(--color-text-faint-alpha));
 }
 
 /* Speaker portraits: grey until hover — but only on devices that can hover.
@@ -230,44 +302,20 @@ body {
 .stat-value:hover {
   background: -webkit-linear-gradient(
     300deg,
-    var(--tbc-yellow) 0%,
-    var(--tbc-red) 49%,
-    var(--tbc-purple) 100%
+    rgb(var(--color-brand-yellow-rgb)) 0%,
+    rgb(var(--color-brand-red-rgb)) 49%,
+    rgb(var(--color-brand-purple-rgb)) 100%
   );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-/*a {
-  @apply underline underline-offset-[6px] decoration-2 decoration-dotted;
-}*/
-
 .border-gradient-tbc {
   border-image: linear-gradient(
       to right bottom,
-      var(--tbc-yellow),
-      var(--tbc-red),
-      var(--tbc-purple)
-    )
-    1;
-}
-
-.border-gradient-manifesto {
-  border-image: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 0) 0%,
-      rgba(0, 0, 0, 1) 100%
-    )
-    1;
-  @apply border-x border-b;
-}
-
-.border-gradient-tbc-from-transparent {
-  border-image: linear-gradient(
-      to right bottom,
-      var(--tbc-yellow) 0%,
-      var(--tbc-red) 49%,
-      var(--tbc-purple) 100%
+      rgb(var(--color-brand-yellow-rgb)),
+      rgb(var(--color-brand-red-rgb)),
+      rgb(var(--color-brand-purple-rgb))
     )
     1;
 }
@@ -275,25 +323,10 @@ body {
 .bg-gradient-tbc {
   background-image: linear-gradient(
     to right bottom,
-    var(--tbc-yellow),
-    var(--tbc-red),
-    var(--tbc-purple)
+    rgb(var(--color-brand-yellow-rgb)),
+    rgb(var(--color-brand-red-rgb)),
+    rgb(var(--color-brand-purple-rgb))
   );
-}
-
-.bg-gradient-tbc-md {
-  background-image: linear-gradient(
-    to right bottom,
-    var(--tbc-yellow),
-    var(--tbc-red),
-    var(--tbc-purple)
-  );
-}
-
-@media screen and (max-width: 768px) {
-  .bg-gradient-tbc-md {
-    background-image: none;
-  }
 }
 
 #footer::after {
@@ -304,9 +337,9 @@ body {
   width: 100%;
   background-image: linear-gradient(
     to right bottom,
-    var(--tbc-yellow),
-    var(--tbc-red),
-    var(--tbc-purple)
+    rgb(var(--color-brand-yellow-rgb)),
+    rgb(var(--color-brand-red-rgb)),
+    rgb(var(--color-brand-purple-rgb))
   );
 }
 

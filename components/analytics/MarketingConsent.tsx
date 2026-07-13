@@ -156,14 +156,14 @@ export function MarketingConsent() {
         aria-label="Cookie consent"
         aria-modal="true"
         role="dialog"
-        className="w-full max-w-2xl rounded-[5px] border border-white/20 bg-black p-5 shadow-2xl md:p-7"
+        className="w-full max-w-2xl rounded-sm border border-line bg-black p-5 shadow-2xl md:p-7"
       >
         <div className="flex flex-col gap-5">
           <div className="space-y-3">
             <p className="text-lg font-semibold text-white md:text-xl">
               Help us sell more tickets
             </p>
-            <p className="text-sm leading-6 text-white/75 md:text-base">
+            <p className="text-sm leading-6 text-secondary md:text-base">
               We use necessary cookies to run this site. If you accept marketing
               cookies, Meta Pixel helps us understand ticket interest and reach
               more people for the conference.
@@ -172,7 +172,7 @@ export function MarketingConsent() {
           <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
             <Button
               buttonType="secondary"
-              className="border border-white/20 px-5 py-3 text-sm"
+              className="border border-line px-5 py-3 text-sm"
               onClick={() => chooseConsent("rejected")}
             >
               Continue without marketing

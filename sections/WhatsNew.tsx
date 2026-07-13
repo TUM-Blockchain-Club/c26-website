@@ -23,7 +23,7 @@ const WhatsNew = () => {
               alt="Digital Assets Day"
               className="h-[70px] sm:h-[86px] w-auto"
             />
-            <div className="mt-5 px-4 py-1.5 rounded-full border border-white/20 bg-white/5">
+            <div className="mt-5 px-4 py-1.5 rounded-full border border-line bg-white/5">
               <Text
                 textType={"small"}
                 className="text-white font-bold tracking-wide"
@@ -53,7 +53,7 @@ const WhatsNew = () => {
               alt="TUM Blockchain Hackathon"
               className="h-[70px] sm:h-[86px] w-auto"
             />
-            <div className="mt-5 px-4 py-1.5 rounded-full border border-white/20 bg-white/5">
+            <div className="mt-5 px-4 py-1.5 rounded-full border border-line bg-white/5">
               <Text
                 textType={"small"}
                 className="text-white font-bold tracking-wide"

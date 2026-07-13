@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { readCssTokenRgbTuple } from "@/util/cssTokens";
 
 const lerp = (x: number, y: number, a: number) => x * (1 - a) + y * a;
 
@@ -11,6 +12,11 @@ const Canvas = (props: any) => {
     if (called) return;
     called = true;
 
+    const [idleR, idleG, idleB] = readCssTokenRgbTuple(
+      "--color-canvas-idle-rgb",
+      "12 12 12",
+    );
+    const idleColor = `rgb(${idleR},${idleG},${idleB})`;
     const width = window.innerWidth;
     const height = document.documentElement.scrollHeight;
 
@@ -30,7 +36,7 @@ const Canvas = (props: any) => {
       constructor(x: number, y: number, index: number) {
         this.x = x;
         this.y = y;
-        this.color = "rgb(12,12,12)";
+        this.color = idleColor;
         this.intensity = 0;
         this.level = 0;
         this.propagating = false;
@@ -80,9 +86,9 @@ const Canvas = (props: any) => {
           g = lerp(52, 203, (this.level - 0.5) * 2);
           b = lerp(165, 109, (this.level - 0.5) * 2);
         }
-        r = lerp(r, 12, 1 - this.intensity);
-        g = lerp(g, 12, 1 - this.intensity);
-        b = lerp(b, 12, 1 - this.intensity);
+        r = lerp(r, idleR, 1 - this.intensity);
+        g = lerp(g, idleG, 1 - this.intensity);
+        b = lerp(b, idleB, 1 - this.intensity);
         this.color = `rgb(${r},${g},${b})`;
         if (this.intensity > 0) {
           this.intensity -= this.intensity * 0.15;
@@ -117,7 +123,7 @@ const Canvas = (props: any) => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.beginPath();
 
-      ctx.fillStyle = "rgb(12,12,12)";
+      ctx.fillStyle = idleColor;
 
       if (Math.round(Math.random() * 35) == 10) {
         arr[Math.floor(Math.random() * arr.length)].propagate(1, 0.5);

@@ -5,9 +5,9 @@ import { Text } from "@/components/text";
 export default function PaperSubmission() {
   return (
     <div className={"overflow-x-hidden"}>
-      <main className={"w-full pt-[25px] lg:pt-0 z-20 2xl:px-[225px] pb-40"}>
+      <main className={"w-full pt-page-pt lg:pt-0 z-20 2xl:px-[225px] pb-40"}>
         <Container className="flex justify-center">
-          <div className={"mt-[100px] md:mt-[20vh] z-10 max-w-3xl"}>
+          <div className={"mt-page-top md:mt-page-top-lg z-10 max-w-3xl"}>
             <Text textType={"sub_hero"} className="text-gradient text-left">
               Student Initiatives Night
             </Text>

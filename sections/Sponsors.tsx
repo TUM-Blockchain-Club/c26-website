@@ -59,7 +59,7 @@ const SponsorCarousel = ({ sponsors, size, reverse }: SponsorCarouselProps) => {
             href={sponsor.link}
             target="_blank"
             rel="noopener noreferrer"
-            className={`sponsor-carousel-card flex shrink-0 items-center justify-center rounded-md border border-white/15 bg-white px-5 transition hover:border-white/50 ${itemClassName}`}
+            className={`sponsor-carousel-card flex shrink-0 items-center justify-center rounded-md border border-line bg-white px-5 transition hover:border-line-strong ${itemClassName}`}
           >
             <Image
               src={sponsor.imageSrc}
@@ -121,7 +121,7 @@ const Sponsors = ({ displayMode = "carousel" }: SponsorsProps) => {
             id="become-a-partner"
             className="flex max-w-3xl flex-col items-center gap-5 text-center scroll-mt-24"
           >
-            <Text as="p" textType="small" className="text-white/75">
+            <Text as="p" textType="small" className="text-secondary">
               Explore a partnership with the TUM Blockchain Conference &
               Hackathon 2026. Fill out the form and we&apos;ll send you the
               sponsorship deck.

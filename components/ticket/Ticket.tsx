@@ -21,8 +21,7 @@ type TicketVariantProps = VariantProps<typeof ticketVariants>;
 
 type TicketElement = React.ElementRef<"div">;
 export interface TicketProps
-  extends React.ComponentPropsWithoutRef<"div">,
-    TicketVariantProps {
+  extends React.ComponentPropsWithoutRef<"div">, TicketVariantProps {
   price: number;
   title: string;
 }
@@ -163,7 +162,7 @@ export const Ticket = React.forwardRef<TicketElement, TicketProps>(
                   />
                 </div>
               </div>
-              <Text textType={"paragraph"} className="ml-2 text-[#DE9E31]">
+              <Text textType={"paragraph"} className="ml-2 text-gold">
                 Opening Aperitivo Access (B2B)
                 <br />
               </Text>
@@ -180,7 +179,7 @@ export const Ticket = React.forwardRef<TicketElement, TicketProps>(
                   />
                 </div>
               </div>
-              <Text textType={"paragraph"} className="ml-2 text-[#DE9E31]">
+              <Text textType={"paragraph"} className="ml-2 text-gold">
                 Food and drinks for both days
                 <br />
               </Text>
@@ -197,7 +196,7 @@ export const Ticket = React.forwardRef<TicketElement, TicketProps>(
                   />
                 </div>
               </div>
-              <Text textType={"paragraph"} className="ml-2 text-[#DE9E31]">
+              <Text textType={"paragraph"} className="ml-2 text-gold">
                 VIP-Speaker Lounge
                 <br />
               </Text>
@@ -212,7 +211,7 @@ export const Ticket = React.forwardRef<TicketElement, TicketProps>(
                   height={100}
                 />
               </div>
-              <Text textType={"paragraph"} className="ml-2 text-[#DE9E31]">
+              <Text textType={"paragraph"} className="ml-2 text-gold">
                 VIP-Entrance
                 <br />
               </Text>

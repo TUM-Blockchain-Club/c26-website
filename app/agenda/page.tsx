@@ -18,9 +18,9 @@ const AgendaPage = async () => {
 
   return (
     <div className={"flex justify-center"}>
-      <main className={"w-full h-full max-w-7xl pt-[25px] lg:pt-0 pb-40"}>
+      <main className={"w-full h-full max-w-7xl pt-page-pt lg:pt-0 pb-40"}>
         <Container>
-          <div className={"mt-[100px] md:mt-[20vh] z-10"}>
+          <div className={"mt-page-top md:mt-page-top-lg z-10"}>
             <div className="flex items-center overflow-hidden h-30">
               <Text
                 textType={"sub_hero"}

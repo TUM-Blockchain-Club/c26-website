@@ -34,7 +34,7 @@ const Statistic = () => {
             </Text>
             <Text
               textType={"small"}
-              className="uppercase tracking-wide text-white/60 text-center break-words max-w-full"
+              className="uppercase tracking-wide text-muted text-center break-words max-w-full"
             >
               {stat.label}
             </Text>

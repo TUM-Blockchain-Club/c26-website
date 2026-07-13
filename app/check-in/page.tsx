@@ -7,6 +7,7 @@ import { Container } from "@/components/container";
 import { Text } from "@/components/text";
 import { CheckInResponse } from "@/app/api/check-in/route";
 import { Button } from "@/components/button";
+import { readCssTokenRgb } from "@/util/cssTokens";
 
 const fetcher = async (url: string, barcode: string, passcode: string) => {
   const response = await fetch(url, {
@@ -130,25 +131,29 @@ const CheckInPage: React.FC = () => {
           );
 
           if (code) {
+            const focusColor = readCssTokenRgb(
+              "--color-focus-rgb",
+              "255 59 88",
+            );
             drawLine(
               code.location.topLeftCorner,
               code.location.topRightCorner,
-              "#FF3B58",
+              focusColor,
             );
             drawLine(
               code.location.topRightCorner,
               code.location.bottomRightCorner,
-              "#FF3B58",
+              focusColor,
             );
             drawLine(
               code.location.bottomRightCorner,
               code.location.bottomLeftCorner,
-              "#FF3B58",
+              focusColor,
             );
             drawLine(
               code.location.bottomLeftCorner,
               code.location.topLeftCorner,
-              "#FF3B58",
+              focusColor,
             );
             if (code.binaryData.length > 0) {
               setQrCodeData(code.data);
@@ -225,9 +230,9 @@ const CheckInPage: React.FC = () => {
 
   return (
     <div className={"flex justify-center"}>
-      <main className={"w-full max-w-7xl pt-[25px] lg:pt-0 z-20 pb-40"}>
+      <main className={"w-full max-w-7xl pt-page-pt lg:pt-0 z-20 pb-40"}>
         <Container>
-          <div className="mt-[100px] md:mt-[20vh] z-10">
+          <div className="mt-page-top md:mt-page-top-lg z-10">
             <div className="lg:flex items-center">
               <Text textType={"sub_hero"} className="text-gradient text-left">
                 Check In

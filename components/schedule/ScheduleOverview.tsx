@@ -17,7 +17,7 @@ const DayPill = ({ day, date }: { day: string; date: string }) => (
     <Text textType="lgsmall" className="font-bold whitespace-nowrap">
       {day}
     </Text>
-    <Text textType="small" className="text-white/60 whitespace-nowrap">
+    <Text textType="small" className="text-muted whitespace-nowrap">
       {date}
     </Text>
   </div>
@@ -26,31 +26,41 @@ const DayPill = ({ day, date }: { day: string; date: string }) => (
 const SideEventsCell = ({
   className = "",
   style,
+  highlight = false,
 }: {
   className?: string;
   style?: CSSProperties;
+  highlight?: boolean;
 }) => (
   <div
     style={style}
-    className={`card-tbc-soft flex items-center justify-center py-6 px-4 ${className}`}
+    className={`${
+      highlight ? "card-tbc" : "card-tbc-soft"
+    } flex items-center justify-center py-6 px-4 ${className}`}
   >
     <Text
       textType="lgsmall"
-      className="uppercase tracking-widest text-white/60"
+      className={`uppercase tracking-widest ${
+        highlight ? "text-gradient font-bold" : "text-muted"
+      }`}
     >
       Side Events
     </Text>
   </div>
 );
 
-const ScheduleOverview = () => {
+const ScheduleOverview = ({
+  highlightSideEvents = false,
+}: {
+  highlightSideEvents?: boolean;
+}) => {
   return (
     <div className="w-full flex flex-col gap-4">
       {/* Mobile / tablet: stacked day cards */}
       <div className="flex flex-col gap-4 lg:hidden">
         <div className="flex flex-col gap-3">
           <DayPill day={days[0].day} date={days[0].date} />
-          <SideEventsCell />
+          <SideEventsCell highlight={highlightSideEvents} />
         </div>
 
         <div className="flex flex-col gap-3">
@@ -62,7 +72,7 @@ const ScheduleOverview = () => {
               className="h-10 w-auto"
             />
           </div>
-          <SideEventsCell />
+          <SideEventsCell highlight={highlightSideEvents} />
         </div>
 
         <div className="flex flex-col gap-3">
@@ -81,7 +91,7 @@ const ScheduleOverview = () => {
               className="h-14 w-auto"
             />
           </div>
-          <SideEventsCell />
+          <SideEventsCell highlight={highlightSideEvents} />
         </div>
 
         <div className="flex flex-col gap-3">
@@ -89,12 +99,12 @@ const ScheduleOverview = () => {
           <div className="card-tbc-soft flex items-center justify-center py-4 px-6">
             <Text
               textType="small"
-              className="uppercase tracking-widest text-white/40"
+              className="uppercase tracking-widest text-faint"
             >
               Hackathon continues
             </Text>
           </div>
-          <SideEventsCell />
+          <SideEventsCell highlight={highlightSideEvents} />
         </div>
       </div>
 
@@ -121,7 +131,10 @@ const ScheduleOverview = () => {
         </div>
 
         {/* Day 0 — nothing but side events, spans the full remaining width */}
-        <SideEventsCell style={{ gridColumn: "2 / span 3", gridRow: 1 }} />
+        <SideEventsCell
+          highlight={highlightSideEvents}
+          style={{ gridColumn: "2 / span 3", gridRow: 1 }}
+        />
 
         {/* Day 1 — main conference, side events fills the hackathon gap */}
         <div
@@ -134,7 +147,10 @@ const ScheduleOverview = () => {
             className="h-12 w-auto"
           />
         </div>
-        <SideEventsCell style={{ gridColumn: "3 / span 2", gridRow: 2 }} />
+        <SideEventsCell
+          highlight={highlightSideEvents}
+          style={{ gridColumn: "3 / span 2", gridRow: 2 }}
+        />
 
         {/* Day 2 — Digital Assets Day, Hackathon starts (spans into Day 3), side events */}
         <div
@@ -157,10 +173,16 @@ const ScheduleOverview = () => {
             className="h-16 w-auto"
           />
         </div>
-        <SideEventsCell style={{ gridColumn: 4, gridRow: 3 }} />
+        <SideEventsCell
+          highlight={highlightSideEvents}
+          style={{ gridColumn: 4, gridRow: 3 }}
+        />
 
         {/* Day 3 — Hackathon continues (cell above spans down), side events */}
-        <SideEventsCell style={{ gridColumn: 4, gridRow: 4 }} />
+        <SideEventsCell
+          highlight={highlightSideEvents}
+          style={{ gridColumn: 4, gridRow: 4 }}
+        />
       </div>
     </div>
   );

@@ -178,7 +178,7 @@ function MoreMenu({ items }: { items: HeaderLink[] }) {
       </summary>
       <div
         className={`
-          absolute right-0 mt-2 min-w-52 rounded-xl border border-white/10
+          absolute right-0 mt-2 min-w-52 rounded-xl border border-line-subtle
           bg-black/90 p-2 backdrop-blur-xl shadow-2xl
         `}
       >

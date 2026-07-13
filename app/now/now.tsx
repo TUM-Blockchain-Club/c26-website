@@ -157,10 +157,10 @@ const Now: React.FC<NowProps> = ({ sessions, speakers, simulatedDate }) => {
 
   return (
     <div className="flex justify-center min-h-screen">
-      <main className="w-full lg:max-w-7xl 2xl:max-w-full pt-[25px] lg:pt-0 z-20 pb-40 min-h-full">
+      <main className="w-full lg:max-w-7xl 2xl:max-w-full pt-page-pt lg:pt-0 z-20 pb-40 min-h-full">
         <Container className="flex flex-col min-h-full">
           {/* Header */}
-          <div className="mt-[100px] md:mt-[20vh] z-10 max-w-3xl">
+          <div className="mt-page-top md:mt-page-top-lg z-10 max-w-3xl">
             <div className="flex flex-col items-start gap-8">
               <Text textType="sub_hero" className="text-gradient text-left">
                 Now

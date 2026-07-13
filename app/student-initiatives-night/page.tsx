@@ -4,7 +4,7 @@ import { Text } from "@/components/text";
 export default function PaperSubmission() {
   return (
     <div className="overflow-x-hidden flex justify-center">
-      <div className="mt-[200px] md:mt-[20vh] max-w-4xl pb-32 px-6">
+      <div className="mt-[200px] md:mt-page-top-lg max-w-4xl pb-32 px-6">
         <Text
           as="p"
           textType={"sub_hero"}

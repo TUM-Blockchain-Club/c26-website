@@ -25,7 +25,7 @@ export default function Home() {
         <Sparkle />
         <main
           className={
-            "w-full flex justify-center items-center pt-[25px] lg:pt-0 z-20"
+            "w-full flex justify-center items-center pt-page-pt lg:pt-0 z-20"
           }
         >
           <Container className={"w-full"}>

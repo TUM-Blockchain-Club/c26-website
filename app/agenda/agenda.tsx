@@ -124,7 +124,7 @@ export const Agenda: React.FC<AgendaProps> = ({ sessions, speakers }) => {
     <div className={"flex flex-col md:flex-row relative gap-8 mt-20"}>
       <div
         id="filter"
-        className="bg-black md:sticky md:top-24 border border-white rounded-[5px] p-6 md:min-w-[250px] flex flex-col gap-4 md:gap-6 h-fit"
+        className="bg-black md:sticky md:top-24 border border-white rounded-sm p-6 md:min-w-[250px] flex flex-col gap-4 md:gap-6 h-fit"
       >
         <Text textType={"sub_title"} className="text-left" as="p">
           Filter
@@ -157,7 +157,7 @@ export const Agenda: React.FC<AgendaProps> = ({ sessions, speakers }) => {
                   pressed={
                     dayFilter !== undefined && isSameDay(dayFilter, date)
                   }
-                  className="rounded-[5px] py-2 w-fit md:w-full w-full rounded-lg text-white border py-2 px-3"
+                  className="rounded-sm py-2 w-fit md:w-full w-full rounded-lg text-white border py-2 px-3"
                   key={index}
                 >
                   <Text

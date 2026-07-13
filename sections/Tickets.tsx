@@ -14,7 +14,7 @@ const Tickets = () => {
         <Text textType={"sub_title"} className="font-bold">
           Tickets are available now
         </Text>
-        <Text as="p" textType="paragraph" className="max-w-md text-white/70">
+        <Text as="p" textType="paragraph" className="max-w-md text-secondary">
           Three days of talks, panels, workshops and networking with the
           brightest minds in blockchain. House of Communication, Munich, October
           29&ndash;31, 2026.

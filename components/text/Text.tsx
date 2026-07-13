@@ -3,7 +3,7 @@
 import { Slot } from "@radix-ui/react-slot";
 import { cva, VariantProps } from "class-variance-authority";
 import classNames from "classnames";
-import { Montserrat, Space_Grotesk } from "next/font/google";
+import { Montserrat, Raleway, Space_Grotesk } from "next/font/google";
 import React from "react";
 
 const montserrat = Montserrat({
@@ -14,6 +14,11 @@ const montserrat = Montserrat({
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
   variable: "--font-space-grotesk",
+});
+
+const raleway = Raleway({
+  subsets: ["latin"],
+  variable: "--font-raleway",
 });
 
 const textVariants = cva("", {
@@ -68,6 +73,7 @@ export const Text = React.forwardRef<TextElement, TextProps>((props, ref) => {
         }),
         spaceGrotesk.variable,
         montserrat.variable,
+        raleway.variable,
       )}
     >
       {asChild ? children : <Tag>{children}</Tag>}

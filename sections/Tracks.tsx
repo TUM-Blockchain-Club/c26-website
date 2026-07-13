@@ -88,42 +88,42 @@ const Tracks = () => {
       <div className="flex flex-col items-center space-y-10 md:space-y-0 md:flex-row md:flex-wrap md:justify-center md:gap-x-10 mt-20 text-center lg:text-left md:text-left">
         <Track
           icon={GraduationCap}
-          iconColor="#4ADE80"
+          iconColor="rgb(var(--color-track-education-rgb))"
           title={trackItems[0].title}
           desc={trackItems[0].description}
           dimension={70}
         />
         <Track
           icon={Globe}
-          iconColor="#2DD4BF"
+          iconColor="rgb(var(--color-track-application-rgb))"
           title={trackItems[1].title}
           desc={trackItems[1].description}
           dimension={70}
         />
         <Track
           icon={TestTube}
-          iconColor="#FACC15"
+          iconColor="rgb(var(--color-track-research-rgb))"
           title={trackItems[2].title}
           desc={trackItems[2].description}
           dimension={70}
         />
         <Track
           icon={FileText}
-          iconColor="#F87171"
+          iconColor="rgb(var(--color-track-regulation-rgb))"
           title={trackItems[3].title}
           desc={trackItems[3].description}
           dimension={70}
         />
         <Track
           icon={Network}
-          iconColor="#60A5FA"
+          iconColor="rgb(var(--color-track-ecosystem-rgb))"
           title={trackItems[4].title}
           desc={trackItems[4].description}
           dimension={70}
         />
         {/* <Track
           icon={School2}
-          iconColor="#FB923C"
+          iconColor="rgb(var(--color-track-academic-rgb))"
           title={trackItems[5].title}
           desc={trackItems[5].description}
           dimension={70}

@@ -29,12 +29,12 @@ const Hero = () => {
             </div>
 
             <div className="flex flex-wrap justify-center items-center gap-3">
-              <div className="rounded-full border border-white/20 bg-white/5 px-4 py-1.5 backdrop-blur-sm">
+              <div className="rounded-full border border-line bg-white/5 px-4 py-1.5 backdrop-blur-sm">
                 <Text as="p" textType="lgsmall" className="font-bold">
                   October 29&ndash;31, 2026
                 </Text>
               </div>
-              <div className="rounded-full border border-white/20 bg-white/5 px-4 py-1.5 backdrop-blur-sm">
+              <div className="rounded-full border border-line bg-white/5 px-4 py-1.5 backdrop-blur-sm">
                 <Text as="p" textType="lgsmall" className="font-bold">
                   House of Communication, Munich
                 </Text>
@@ -45,14 +45,14 @@ const Hero = () => {
               <Text
                 as="p"
                 textType="paragraph"
-                className="max-w-md text-white/75"
+                className="max-w-md text-secondary"
               >
                 Secure your spot for Germany&apos;s leading student-run
                 blockchain conference.
               </Text>
               <LumaTicketButton
                 id="luma-ticket-btn-hero"
-                className="px-8 py-4 text-base font-black uppercase tracking-[0.06em] shadow-[0_0_24px_rgba(255,255,255,0.18)] md:px-10 md:py-5 md:text-lg"
+                className="px-8 py-4 text-base font-black uppercase tracking-[0.06em] shadow-[0_0_24px_rgb(var(--color-text-rgb)/0.18)] md:px-10 md:py-5 md:text-lg"
               >
                 Buy Tickets
               </LumaTicketButton>

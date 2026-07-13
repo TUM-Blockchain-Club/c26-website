@@ -7,9 +7,9 @@ const SponsorsPage = () => {
 
   // return (
   //   <div className={"flex justify-center"}>
-  //     <main className={"w-full max-w-7xl pt-[25px] lg:pt-0 z-20 pb-40"}>
+  //     <main className={"w-full max-w-7xl pt-page-pt lg:pt-0 z-20 pb-40"}>
   //       <Container>
-  //         <div className={"mt-[100px] md:mt-[20vh]"}>
+  //         <div className={"mt-page-top md:mt-page-top-lg"}>
   //           <Sponsors displayMode="grid" />
   //         </div>
   //       </Container>

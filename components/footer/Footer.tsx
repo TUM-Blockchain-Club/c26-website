@@ -24,12 +24,12 @@ export const Footer = React.forwardRef<FooterElement, FooterProps>(
         id={"footer"}
         className={classNames(
           className,
-          "relative flex z-10 justify-center items-center justify-items-center bg-gradient-to-b from-black from-10% to-[rgba(0,0,0,0.66)] to-80%",
+          "relative flex z-10 justify-center items-center justify-items-center bg-gradient-to-b from-black from-10% to-[rgb(var(--color-background-rgb)/0.66)] to-80%",
         )}
         ref={ref}
       >
         {/* Background Image */}
-        <div className="absolute inset-0 w-full h-full bg-gradient-to-b from-black from-10% to-[rgba(0,0,0,0.66)] to-80%">
+        <div className="absolute inset-0 w-full h-full bg-gradient-to-b from-black from-10% to-[rgb(var(--color-background-rgb)/0.66)] to-80%">
           <Image
             src={lineBg}
             alt="Background Pattern"
@@ -137,6 +137,11 @@ export const Footer = React.forwardRef<FooterElement, FooterProps>(
                     </Link>
                   </Text>
                   <div className="flex space-x-4"></div>
+                </div>
+                <div className="flex flex-col space-y-2 items-left">
+                  <Text asChild>
+                    <Link href={"/partners"}>Partners</Link>
+                  </Text>
                 </div>
               </div>
             </div>

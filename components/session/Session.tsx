@@ -83,13 +83,15 @@ export const Session = React.forwardRef<SessionElement, SessionProps>(
           className,
           "border w-full flex p-4 flex-col gap-4 bg-gradient-to-b bg-opacity-60 from-black from-0% via-black via-30% ",
           {
-            "to-[#06b6d4]/40 to-100%": session.track === "Application", // Cyan
-            "to-[#1e3a8a]/40 to-100%": session.track === "Ecosystem", // Blue
-            "to-[#15803d]/40 to-100%": session.track === "Education", // Green
-            "to-[#7a6a00]/50 to-100%": session.track === "Research", // Olive / brass
-            "to-[#b91c1c]/40 to-100%": session.track === "Regulation", // Red
-            "to-[#7c3aed]/30 to-100%": session.track === "Workshop", // Purple
-            "to-[#f97316]/30 to-100%": session.track === "Academic Forum", // Orange
+            "to-track-application-bg/40 to-100%":
+              session.track === "Application",
+            "to-track-ecosystem-bg/40 to-100%": session.track === "Ecosystem",
+            "to-track-education-bg/40 to-100%": session.track === "Education",
+            "to-track-research-bg/50 to-100%": session.track === "Research",
+            "to-track-regulation-bg/40 to-100%": session.track === "Regulation",
+            "to-track-workshop-bg/30 to-100%": session.track === "Workshop",
+            "to-track-academic-bg/30 to-100%":
+              session.track === "Academic Forum",
           },
         )}
         ref={ref}
@@ -112,14 +114,14 @@ export const Session = React.forwardRef<SessionElement, SessionProps>(
             </div>
             <div className="grid grid-cols-2 min-h-fit gap-2 h-fit text-center w-[240px] justify-end">
               {session.isSpecialSession && (
-                <div className="rounded-[5px] min-w-fit border h-fit">
+                <div className="rounded-sm min-w-fit border h-fit">
                   <Text textType={"small"} className="text-white">
                     Keynote
                   </Text>
                 </div>
               )}
               {session.type && (
-                <div className="rounded-[5px] border h-fit">
+                <div className="rounded-sm border h-fit">
                   <Text textType={"small"} className="text-white">
                     {session.type}
                   </Text>
@@ -127,30 +129,27 @@ export const Session = React.forwardRef<SessionElement, SessionProps>(
               )}
               {session.track && (
                 <div
-                  className={classNames(
-                    "border rounded-[5px] h-fit col-start-2",
-                    {
-                      "border-[#22d3ee]": session.track === "Application", // Lighter cyan
-                      "border-[#60a5fa]": session.track === "Ecosystem", // Lighter blue
-                      "border-[#4ade80]": session.track === "Education", // Lighter green
-                      "border-[#fde047]": session.track === "Research", // Lighter yellow
-                      "border-[#f87171]": session.track === "Regulation", // Lighter red
-                      "border-[#c4b5fd]": session.track === "Workshop", // Lighter purple
-                      "border-[#fdba74]": session.track === "Academic Forum", // Lighter orange
-                      "gradient-border": session.track === "TBC'25", // Gradient for TBC
-                    },
-                  )}
+                  className={classNames("border rounded-sm h-fit col-start-2", {
+                    "border-track-application": session.track === "Application",
+                    "border-track-ecosystem": session.track === "Ecosystem",
+                    "border-track-education": session.track === "Education",
+                    "border-track-research": session.track === "Research",
+                    "border-track-regulation": session.track === "Regulation",
+                    "border-track-workshop": session.track === "Workshop",
+                    "border-track-academic": session.track === "Academic Forum",
+                    "gradient-border": session.track === "TBC'25", // Gradient for TBC
+                  })}
                 >
                   <Text
                     textType={"small"}
                     className={classNames({
-                      "text-[#22d3ee]": session.track === "Application", // Lighter cyan
-                      "text-[#60a5fa]": session.track === "Ecosystem", // Lighter blue
-                      "text-[#4ade80]": session.track === "Education", // Lighter green
-                      "text-[#fde047]": session.track === "Research", // Lighter yellow
-                      "text-[#f87171]": session.track === "Regulation", // Lighter red
-                      "text-[#c4b5fd]": session.track === "Workshop", // Lighter purple
-                      "text-[#fdba74]": session.track === "Academic Forum", // Lighter orange
+                      "text-track-application": session.track === "Application",
+                      "text-track-ecosystem": session.track === "Ecosystem",
+                      "text-track-education": session.track === "Education",
+                      "text-track-research": session.track === "Research",
+                      "text-track-regulation": session.track === "Regulation",
+                      "text-track-workshop": session.track === "Workshop",
+                      "text-track-academic": session.track === "Academic Forum",
                     })}
                   >
                     {session.track}
@@ -236,14 +235,14 @@ export const Session = React.forwardRef<SessionElement, SessionProps>(
             <Text
               onClick={() => setClamped(!clamped)}
               className={classNames("cursor-pointer", {
-                "text-green-400": session.track === "Education",
-                "text-yellow-400":
+                "text-track-education": session.track === "Education",
+                "text-track-research":
                   session.track === "Research" || !session.track,
-                "text-blue-400": session.track === "Ecosystem",
-                "text-orange-400": session.track === "Research",
-                "text-red-400": session.track === "Regulation",
-                "text-[#E9D5FF]": session.track === "Workshop",
-                "text-teal-400": session.track === "Application",
+                "text-track-ecosystem": session.track === "Ecosystem",
+                "text-track-academic": session.track === "Research",
+                "text-track-regulation": session.track === "Regulation",
+                "text-track-workshop": session.track === "Workshop",
+                "text-track-application": session.track === "Application",
               })}
             >
               {clamped ? "Show More" : "Show Less"}

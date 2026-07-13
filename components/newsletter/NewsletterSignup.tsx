@@ -72,7 +72,7 @@ export function NewsletterSignup({
         >
           {label}
         </label>
-        <p className="font-sans text-sm text-white/70" aria-live="polite">
+        <p className="font-sans text-sm text-secondary" aria-live="polite">
           {status === "success" ? (
             <span className="inline-flex items-center gap-2 text-emerald-400">
               <Check className="h-4 w-4" aria-hidden="true" />
@@ -96,13 +96,13 @@ export function NewsletterSignup({
       </div>
       <div
         className={classNames(
-          "flex min-h-12 overflow-hidden rounded-[5px] border bg-black/55 backdrop-blur",
-          status === "error" ? "border-tbc-red" : "border-white/35",
+          "flex min-h-12 overflow-hidden rounded-sm border bg-black/55 backdrop-blur",
+          status === "error" ? "border-tbc-red" : "border-line-strong",
         )}
       >
         <input
           id="newsletter-email"
-          className="min-w-0 flex-1 bg-transparent px-4 py-3 font-sans text-sm text-white outline-none placeholder:text-white/45"
+          className="min-w-0 flex-1 bg-transparent px-4 py-3 font-sans text-sm text-white outline-none placeholder:text-faint"
           type="email"
           name="email"
           placeholder="you@example.com"

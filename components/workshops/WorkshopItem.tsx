@@ -102,7 +102,7 @@ export const WorkshopItem = React.forwardRef<WorkshopElement, WorkshopProps>(
         )}
         {...restProps}
       >
-        <div className="relative w-full overflow-hidden rounded-[4px] aspect-[16/9] sm:aspect-[3/1]">
+        <div className="relative w-full overflow-hidden rounded-sm aspect-[16/9] sm:aspect-[3/1]">
           <Image
             src={backgroundImg || "/workshops/default-workshop.png"}
             alt={`${title} — workshop banner`}
