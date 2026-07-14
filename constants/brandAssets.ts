@@ -1,8 +1,6 @@
 /**
  * Manifest of real logo files in /public/logos for conference 26. Only
- * variants that actually exist in the repo are listed here — anything the
- * brand guide should show but doesn't have a file for is rendered as an
- * explicit TODO placeholder in the Logo section instead of being invented.
+ * variants that actually exist in the repo are listed here.
  */
 export type LogoAsset = {
   id: string;
@@ -24,7 +22,7 @@ export const logoAssets: LogoAsset[] = [
   {
     id: "tbc-wordmark",
     name: "TUM Blockchain Club Wordmark",
-    description: 'Organizer mark, used as "Organized by" in the footer.',
+    description: "The mark of TUM Blockchain Club, the host of the conference.",
     svgSrc: "/logos/tbc-wordmark.svg",
     background: "dark",
   },

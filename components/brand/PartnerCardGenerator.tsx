@@ -96,19 +96,18 @@ export const PartnerCardGenerator = () => {
   };
 
   const persistUpload = async (selected: File, companyName: string) => {
+    // Best effort and invisible to the partner: whether the logo could be
+    // stored server-side is an internal concern and never blocks the card.
     try {
       const formData = new FormData();
       formData.append("logo", selected);
       formData.append("companyName", companyName);
-      const res = await fetch("/api/partner-logo-upload", {
+      await fetch("/api/partner-logo-upload", {
         method: "POST",
         body: formData,
       });
-      const data = await res.json();
-      if (!res.ok) setNote(data.error ?? null);
-      else if (data.persisted === false) setNote(data.error);
     } catch {
-      // Non-blocking: saving the logo server-side is best effort.
+      // Ignore: the generator works entirely client-side.
     }
   };
 
