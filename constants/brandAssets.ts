@@ -14,8 +14,8 @@ export type LogoAsset = {
 export const logoAssets: LogoAsset[] = [
   {
     id: "c26-wordmark",
-    name: "Conference 26 Wordmark",
-    description: "Primary wordmark for this year's conference.",
+    name: "TUM Blockchain Conference 26 + Hackathon",
+    description: "Primary wordmark for this year's edition.",
     svgSrc: "/logos/c26-wordmark.svg",
     background: "dark",
   },

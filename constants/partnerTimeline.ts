@@ -117,7 +117,7 @@ Whether you are deep in the space or simply curious, everyone is welcome. You do
 
 Here is what the three days look like:
 
-Day 1, Main Conference: the talks, panels and people shaping Web3, across many tracks.
+Day 1, First Conference Day: the talks, panels and people shaping Web3, across many tracks.
 
 Day 2, Digital Assets Day by Bundesblock: where traditional finance meets the onchain economy.
 

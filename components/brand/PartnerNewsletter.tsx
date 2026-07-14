@@ -2,8 +2,13 @@ import { Text } from "@/components/text";
 import { CopyButton } from "@/components/brand/CopyButton";
 import { partnerNewsletter } from "@/constants/partnerTimeline";
 
-export const PartnerNewsletter = () => {
-  const paragraphs = partnerNewsletter.body.split("\n\n");
+export const PartnerNewsletter = ({
+  newsletter = partnerNewsletter,
+}: {
+  /** Defaults to the community partner draft; the media portal passes its own. */
+  newsletter?: { subject: string; body: string };
+}) => {
+  const paragraphs = newsletter.body.split("\n\n");
 
   return (
     <div className="card-tbc flex flex-col gap-6 p-7 lg:p-9">
@@ -13,9 +18,9 @@ export const PartnerNewsletter = () => {
         </Text>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Text textType="lgsmall" className="font-bold">
-            {partnerNewsletter.subject}
+            {newsletter.subject}
           </Text>
-          <CopyButton value={partnerNewsletter.subject} label="Copy subject" />
+          <CopyButton value={newsletter.subject} label="Copy subject" />
         </div>
       </div>
 
@@ -33,10 +38,7 @@ export const PartnerNewsletter = () => {
       </div>
 
       <div className="pt-1">
-        <CopyButton
-          value={partnerNewsletter.body}
-          label="Copy newsletter text"
-        />
+        <CopyButton value={newsletter.body} label="Copy newsletter text" />
       </div>
     </div>
   );
