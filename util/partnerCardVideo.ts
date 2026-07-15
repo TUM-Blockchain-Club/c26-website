@@ -610,14 +610,6 @@ function drawLandscape(
       maxWidth: w - P * 2,
     },
   );
-  drawSpacedText(ctx, CONFERENCE_URL, w / 2, by + 62, {
-    size: 30,
-    spacing: 3,
-    color: "rgba(255,255,255,0.55)",
-    alpha: infoIn,
-    align: "center",
-    maxWidth: w - P * 2,
-  });
 }
 
 function drawPortrait(

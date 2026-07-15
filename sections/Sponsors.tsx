@@ -123,18 +123,30 @@ const Sponsors = ({ displayMode = "carousel" }: SponsorsProps) => {
           >
             <Text as="p" textType="small" className="text-secondary">
               Explore a partnership with the TUM Blockchain Conference &
-              Hackathon 2026. Fill out the form and we&apos;ll send you the
-              sponsorship deck.
+              Hackathon 2026. Request the sponsorship deck, or join us as a
+              Community or Media Partner and help spread the word.
             </Text>
-            <Button buttonType="cta" asChild>
-              <Link
-                href={PARTNERSHIP_DECK_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Request Partnership Deck
-              </Link>
-            </Button>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <Button buttonType="cta" asChild>
+                <Link
+                  href={PARTNERSHIP_DECK_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Request Partnership Deck
+                </Link>
+              </Button>
+              <Button buttonType="primary" asChild>
+                <Link href="/become-partner?type=community">
+                  Become a Community Partner
+                </Link>
+              </Button>
+              <Button buttonType="primary" asChild>
+                <Link href="/become-partner?type=media">
+                  Become a Media Partner
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
 
