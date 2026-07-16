@@ -1,6 +1,5 @@
 "use client";
 
-import * as Select from "@/components/select/Select";
 import { Session as SessionComponent } from "@/components/session";
 import { Text } from "@/components/text";
 import { Toggle } from "@/components/toggle";
@@ -8,30 +7,49 @@ import { Toggle } from "@/components/toggle";
 import * as Separator from "@radix-ui/react-separator";
 import classNames from "classnames";
 import React, { useState } from "react";
+import { Session, Speaker } from "@/components/service/contentStrapi_static";
+import AgendaFeed from "@/components/agenda/AgendaFeed";
 import {
-  Session,
-  Stages,
-  Tracks,
-  Speaker,
-} from "@/components/service/contentStrapi_static";
-import Link from "next/link";
-import { DownloadIcon } from "lucide-react";
-
+  agendaEntries,
+  AGENDA_STAGES,
+  DAD_TRACKS,
+  type DadTrackName,
+} from "@/constants/digitalAssetsDayAgenda";
 type AgendaProps = { sessions: Session[]; speakers: Speaker[] };
+
+// The three main parts of the conference. Sessions are matched via their
+// `event` field once the programme is published; each part keeps its own
+// accent so they are distinguishable at a glance (Digital Assets Day is
+// bluish like its logo, the Hackathon red like its logo).
+const EVENTS = [
+  {
+    key: "conference",
+    label: "First Conference Day",
+    dot: "bg-gradient-tbc",
+    active: "border-tbc-yellow bg-tbc-yellow/15 text-white",
+  },
+  {
+    key: "digital-assets-day",
+    label: "Digital Assets Day",
+    dot: "bg-blue-400",
+    active: "border-blue-400 bg-blue-400/15 text-white",
+  },
+  {
+    key: "hackathon",
+    label: "Hackathon",
+    dot: "bg-red-500",
+    active: "border-red-500 bg-red-500/15 text-white",
+  },
+] as const;
+
+type EventKey = (typeof EVENTS)[number]["key"];
 
 export const Agenda: React.FC<AgendaProps> = ({ sessions, speakers }) => {
   const [titleFilter, setTitleFilter] = useState<string>("");
   const [dayFilter, setDayFilter] = useState<Date>();
-  const [trackFilter, setTrackFilter] = useState<Session["track"] & "all">();
-  const [stageFilter, setStageFilter] = useState<Session["room"] & "all">();
-
-  const stageDisplayNames: Record<string, string> = {
-    "Stage 1": "Turing Stage",
-    "Stage 2": "Hopper Stage",
-    "Stage 3": "Nakamoto Stage",
-    "Workshop Room": "Lovelace Room",
-    Gern: "Gern",
-  };
+  const [eventFilter, setEventFilter] = useState<EventKey>();
+  const [stageFilter, setStageFilter] = useState<string>();
+  const [dadTrackFilter, setDadTrackFilter] = useState<DadTrackName>();
 
   const STAGE_PRIORITY: Record<string, number> = {
     "Stage 3": 0, // Nakamoto — highest priority
@@ -51,16 +69,55 @@ export const Agenda: React.FC<AgendaProps> = ({ sessions, speakers }) => {
     );
   }
 
+  // The published programme entries (one entity per talk) follow every
+  // filter. Breaks, milestones and open slots only accompany the full flow.
+  const feedQuery = titleFilter.trim().toLowerCase();
+  const visibleEntries = agendaEntries.filter((entry) => {
+    if (dayFilter && !isSameDay(dayFilter, new Date(entry.day))) return false;
+    if (eventFilter && entry.event !== eventFilter) return false;
+
+    if (entry.kind !== "talk") {
+      if (feedQuery || dadTrackFilter) return false;
+      if (
+        stageFilter &&
+        "stage" in entry &&
+        entry.stage &&
+        entry.stage !== stageFilter
+      )
+        return false;
+      return true;
+    }
+
+    if (stageFilter && entry.stage !== stageFilter) return false;
+    if (dadTrackFilter && entry.track !== dadTrackFilter) return false;
+    if (feedQuery) {
+      const haystack = [
+        entry.title,
+        entry.format,
+        entry.formatDetail,
+        entry.track,
+        entry.stage,
+        entry.speaker,
+      ]
+        .filter(Boolean)
+        .join(" | ")
+        .toLowerCase();
+      if (!haystack.includes(feedQuery)) return false;
+    }
+    return true;
+  });
+  const visibleTalksCount = visibleEntries.filter(
+    (entry) => entry.kind === "talk",
+  ).length;
+  const feedHasOwnFilters = !!(feedQuery || stageFilter || dadTrackFilter);
+
   let filteredSessions = null;
 
   if (sessions) {
     filteredSessions = sessions.filter((item) => {
       const matchesDay =
         !dayFilter || isSameDay(dayFilter, new Date(item.startTime));
-      const matchesTrack =
-        trackFilter === "all" || !trackFilter || trackFilter === item.track;
-      const matchesStage =
-        stageFilter === "all" || !stageFilter || stageFilter === item.room;
+      const matchesEvent = !eventFilter || (item as any).event === eventFilter;
 
       const q = titleFilter.trim().toLowerCase();
 
@@ -94,7 +151,7 @@ export const Agenda: React.FC<AgendaProps> = ({ sessions, speakers }) => {
 
       const matchesTitle = !q || haystack.includes(q);
 
-      return matchesDay && matchesTrack && matchesStage && matchesTitle;
+      return matchesDay && matchesEvent && matchesTitle;
     });
 
     filteredSessions.sort((a, b) => {
@@ -143,129 +200,156 @@ export const Agenda: React.FC<AgendaProps> = ({ sessions, speakers }) => {
         </div>
         <div className="flex flex-col gap-3 h-fit">
           <Text textType={"paragraph"} className="font-bold text-left" as="p">
+            Event
+          </Text>
+          <div className="flex flex-row md:flex-col flex-wrap gap-2">
+            {EVENTS.map((event) => {
+              const selected = eventFilter === event.key;
+              return (
+                <button
+                  key={event.key}
+                  type="button"
+                  onClick={() =>
+                    setEventFilter(selected ? undefined : event.key)
+                  }
+                  className={classNames(
+                    "flex items-center gap-2.5 rounded-lg border py-2 px-3 text-left transition-colors w-fit md:w-full",
+                    selected
+                      ? event.active
+                      : "border-line text-secondary hover:border-line-strong hover:text-white",
+                  )}
+                >
+                  <span
+                    className={classNames(
+                      "inline-block h-3 w-3 shrink-0 rounded-full",
+                      event.dot,
+                    )}
+                    aria-hidden
+                  />
+                  <Text
+                    textType={"small"}
+                    className="!text-inherit text-left"
+                    as="p"
+                  >
+                    {event.label}
+                  </Text>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        <div className="flex flex-col gap-3 h-fit">
+          <Text textType={"paragraph"} className="font-bold text-left" as="p">
             Days
           </Text>
           <div className="flex flex-row md:flex-col gap-2">
-            {[new Date("2026-09-11"), new Date("2026-09-12")].map(
-              (date, index) => (
-                <Toggle
-                  onClick={() =>
-                    dayFilter !== undefined && isSameDay(dayFilter, date)
-                      ? setDayFilter(undefined)
-                      : setDayFilter(date)
-                  }
-                  pressed={
-                    dayFilter !== undefined && isSameDay(dayFilter, date)
-                  }
-                  className="rounded-sm py-2 w-fit md:w-full w-full rounded-lg text-white border py-2 px-3"
-                  key={index}
+            {[
+              new Date("2026-10-29"),
+              new Date("2026-10-30"),
+              new Date("2026-10-31"),
+            ].map((date, index) => (
+              <Toggle
+                onClick={() =>
+                  dayFilter !== undefined && isSameDay(dayFilter, date)
+                    ? setDayFilter(undefined)
+                    : setDayFilter(date)
+                }
+                pressed={dayFilter !== undefined && isSameDay(dayFilter, date)}
+                className="rounded-sm py-2 w-fit md:w-full w-full rounded-lg text-white border py-2 px-3"
+                key={index}
+              >
+                <Text
+                  textType={"small"}
+                  className="!text-inherit text-center"
+                  as="p"
                 >
-                  <Text
-                    textType={"small"}
-                    className="!text-inherit text-center"
-                    as="p"
-                  >
+                  {date.toLocaleDateString("en-DE", {
+                    weekday: "long",
+                    timeZone: "Europe/Berlin",
+                  })}
+                  <span className="hidden md:inline">
+                    ,{" "}
                     {date.toLocaleDateString("en-DE", {
-                      weekday: "long",
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
                       timeZone: "Europe/Berlin",
                     })}
-                    <span className="hidden md:inline">
-                      ,{" "}
-                      {date.toLocaleDateString("en-DE", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                        timeZone: "Europe/Berlin",
-                      })}
-                    </span>
-                  </Text>
-                </Toggle>
-              ),
-            )}
+                  </span>
+                </Text>
+              </Toggle>
+            ))}
           </div>
         </div>
-        <div className="flex flex-row gap-6 md:flex-col w-full">
-          <div className="flex flex-col gap-3">
-            <Text textType={"paragraph"} className="font-bold text-left" as="p">
-              Stages
-            </Text>
-            <div className="flex md:flex-col flex-wrap gap-2">
-              <Select.Root
-                onValueChange={(value: (typeof Stages)[number] & "all") => {
-                  setStageFilter(value);
-                }}
+        <div className="flex flex-col gap-3 h-fit">
+          <Text textType={"paragraph"} className="font-bold text-left" as="p">
+            Stages
+          </Text>
+          <div className="flex flex-row md:flex-col flex-wrap gap-2">
+            {AGENDA_STAGES.map((stage) => (
+              <Toggle
+                key={stage}
+                onClick={() =>
+                  setStageFilter(stageFilter === stage ? undefined : stage)
+                }
+                pressed={stageFilter === stage}
+                className="rounded-sm py-2 w-fit md:w-full rounded-lg text-white border py-2 px-3"
               >
-                <Select.Trigger
-                  placeholder={"Any Stage"}
-                  className="w-full rounded-lg text-white border py-2 px-3"
-                />
-                <Select.Content>
-                  <Select.Item value={"all"}>Any Stage</Select.Item>
-                  {Stages.map((stage, index) => (
-                    <Select.Item value={stage} key={index}>
-                      {stageDisplayNames[stage] || stage}
-                    </Select.Item>
-                  ))}
-                </Select.Content>
-              </Select.Root>
-            </div>
+                <Text
+                  textType={"small"}
+                  className="!text-inherit text-center"
+                  as="p"
+                >
+                  {stage}
+                </Text>
+              </Toggle>
+            ))}
           </div>
-          <div className="flex flex-col gap-3">
+        </div>
+        <div className="flex flex-col gap-3 h-fit">
+          <div className="flex flex-col gap-1">
             <Text textType={"paragraph"} className="font-bold text-left" as="p">
               Tracks
             </Text>
-            <div className="flex md:flex-col flex-wrap gap-2">
-              <Select.Root
-                onValueChange={(value: (typeof Tracks)[number] & "all") => {
-                  setTrackFilter(value);
-                }}
-              >
-                <Select.Trigger
-                  placeholder={"Any Track"}
-                  className="w-full rounded-lg text-white border py-2 px-3"
-                />
-                <Select.Content>
-                  <Select.Item value="all">Any Track</Select.Item>
-                  {Tracks.filter((track) => track !== "TBC'25").map(
-                    (track, index) => (
-                      <Select.Item
-                        value={track}
-                        key={index}
-                        className="flex items-center gap-2"
-                      >
-                        <span
-                          className={classNames(
-                            "inline-block w-3 h-3 rounded-full mr-2",
-                            track === "Education" && "bg-green-400",
-                            track === "Research" && "bg-yellow-400",
-                            track === "Ecosystem" && "bg-blue-400",
-                            track === "Regulation" && "bg-red-400",
-                            track === "Workshop" && "bg-purple-400",
-                            track === "Application" && "bg-teal-400",
-                            track === "Academic Forum" && "bg-orange-400",
-                          )}
-                        />
-                        {track}
-                      </Select.Item>
-                    ),
-                  )}
-                </Select.Content>
-              </Select.Root>
-            </div>
+            <Text textType={"small"} className="text-muted text-left" as="p">
+              These tracks exist on the Digital Assets Day only.
+            </Text>
           </div>
-        </div>
-        <div className="mt-6 pt-4 border-t border-gray-700">
-          <Text textType={"paragraph"} className="font-bold text-left" as="p">
-            Venue
-          </Text>
-          <Link
-            href="/map/TBC_25_venue_map.pdf"
-            download
-            className="mt-2 inline-flex items-center gap-2 text-sm font-medium text-blue-400 hover:underline"
-          >
-            <DownloadIcon className="h-4 w-4" />
-            View Venue Map (PDF)
-          </Link>
+          <div className="flex flex-row md:flex-col flex-wrap gap-2">
+            {DAD_TRACKS.map((track) => {
+              const selected = dadTrackFilter === track.name;
+              return (
+                <button
+                  key={track.name}
+                  type="button"
+                  onClick={() =>
+                    setDadTrackFilter(selected ? undefined : track.name)
+                  }
+                  className={classNames(
+                    "flex items-center gap-2.5 rounded-lg border py-2 px-3 text-left transition-colors w-fit md:w-full",
+                    selected
+                      ? track.active
+                      : "border-line text-secondary hover:border-line-strong hover:text-white",
+                  )}
+                >
+                  <span
+                    className={classNames(
+                      "inline-block h-3 w-3 shrink-0 rounded-full",
+                      track.dot,
+                    )}
+                    aria-hidden
+                  />
+                  <Text
+                    textType={"small"}
+                    className="!text-inherit text-left"
+                    as="p"
+                  >
+                    {track.name}
+                  </Text>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
       <div id="sessions" className="flex w-full flex-col gap-y-4">
@@ -332,11 +416,45 @@ export const Agenda: React.FC<AgendaProps> = ({ sessions, speakers }) => {
             );
           })}
 
-          {filteredSessions?.length === 0 && (
-            <Text className="text-gray-500">
-              There is no session with that filter :(
-            </Text>
-          )}
+          {visibleTalksCount > 0 && <AgendaFeed entries={visibleEntries} />}
+
+          {sessions.length === 0 &&
+            (visibleTalksCount > 0 ? (
+              !eventFilter &&
+              !feedHasOwnFilters && (
+                <div className="card-tbc-soft mt-8 flex w-full flex-col items-center gap-2 px-6 py-10 text-center">
+                  <Text as="p" textType="lgsmall" className="font-bold">
+                    More to come
+                  </Text>
+                  <Text
+                    as="p"
+                    textType="small"
+                    className="text-secondary max-w-md"
+                  >
+                    The First Conference Day and Hackathon programmes are in the
+                    making and will be published right here. Stay tuned!
+                  </Text>
+                </div>
+              )
+            ) : feedHasOwnFilters ? (
+              <Text className="text-gray-500">
+                There is no session with that filter :(
+              </Text>
+            ) : (
+              <div className="card-tbc-soft flex w-full flex-col items-center gap-3 px-6 py-16 text-center">
+                <Text as="p" textType="sub_title" className="font-bold">
+                  This programme is in the making
+                </Text>
+                <Text
+                  as="p"
+                  textType="paragraph"
+                  className="text-secondary max-w-md"
+                >
+                  We are putting it together and will publish every session
+                  right here. Stay tuned!
+                </Text>
+              </div>
+            ))}
         </div>
       </div>
     </div>

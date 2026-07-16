@@ -64,7 +64,7 @@ export const partnerCheckpoints: PartnerCheckpoint[] = [
         variants: {
           short: `Early Bird tickets for the TUM Blockchain Conference 26 are now open until July 31. Oct 29 to 31 in Munich, hosted by TUM Blockchain Club. Grab yours: ${LINK}\n\n#TUMBlockchainConference26`,
           medium: `Early Bird tickets for the TUM Blockchain Conference 26 are now open, running until July 31.\n\nTaking place October 29 to 31 in Munich, it is Germany's leading student run blockchain conference: talks, workshops and a 30 hour Hackathon.\n\nAs a proud Community Partner, we are excited to support this year's edition, hosted by TUM Blockchain Club. Secure your ticket: ${LINK}\n\n#TUMBlockchainConference26`,
-          long: `Early Bird tickets for the TUM Blockchain Conference 26 are now open, running until July 31.\n\nTaking place October 29 to 31 in Munich, it is Germany's leading student run blockchain conference: three days of talks, panels, workshops, a Digital Assets Day by Bundesblock and a 30 hour Hackathon. Whether you are a student, a builder or from industry, everyone is welcome.\n\nAs a proud Community Partner, we are excited to support this year's edition, hosted by TUM Blockchain Club. Secure your ticket before the deadline: ${LINK}\n\n#TUMBlockchainConference26`,
+          long: `Early Bird tickets for the TUM Blockchain Conference 26 are now open, running until July 31.\n\nTaking place October 29 to 31 in Munich, it is Germany's leading student run blockchain conference: three days of talks, panels, workshops, a Digital Assets Day by Bundesblock and a 30 hour Hackathon. From people simply curious about the space to the industry leaders shaping it, everyone comes together here and everyone is welcome.\n\nAs a proud Community Partner, we are excited to support this year's edition, hosted by TUM Blockchain Club. Secure your ticket before the deadline: ${LINK}\n\n#TUMBlockchainConference26`,
         },
       },
     ],
@@ -99,7 +99,7 @@ export const partnerCheckpoints: PartnerCheckpoint[] = [
         variants: {
           short: `We are proud to be a Community Partner of the TUM Blockchain Conference 26. Oct 29 to 31 in Munich, hosted by TUM Blockchain Club. Join us: ${LINK}\n\n#TUMBlockchainConference26`,
           medium: `We are proud to announce that we are a Community Partner of the TUM Blockchain Conference 26.\n\nTaking place October 29 to 31 in Munich, it is Germany's leading student run blockchain conference: talks, workshops and a 30 hour Hackathon, hosted by TUM Blockchain Club.\n\nJoin us: ${LINK}\n\n#TUMBlockchainConference26`,
-          long: `We are proud to announce that we are a Community Partner of the TUM Blockchain Conference 26.\n\nTaking place October 29 to 31 in Munich, it is Germany's leading student run blockchain conference: three days of talks, panels, workshops, a Digital Assets Day by Bundesblock and a 30 hour Hackathon, hosted by TUM Blockchain Club. Whether you are a student, a builder or from industry, everyone is welcome.\n\nWe are excited to support this year's edition. Join us: ${LINK}\n\n#TUMBlockchainConference26`,
+          long: `We are proud to announce that we are a Community Partner of the TUM Blockchain Conference 26.\n\nTaking place October 29 to 31 in Munich, it is Germany's leading student run blockchain conference: three days of talks, panels, workshops, a Digital Assets Day by Bundesblock and a 30 hour Hackathon, hosted by TUM Blockchain Club. From people simply curious about the space to the industry leaders shaping it, everyone comes together here and everyone is welcome.\n\nWe are excited to support this year's edition. Join us: ${LINK}\n\n#TUMBlockchainConference26`,
         },
       },
     ],
@@ -111,9 +111,9 @@ export const partnerNewsletter = {
   subject: "Join us at the TUM Blockchain Conference 26 in Munich",
   body: `We are proud to be a Community Partner of the TUM Blockchain Conference 26, and we wanted to share it with you directly.
 
-Taking place October 29 to 31 at the House of Communication in Munich, it is Germany's leading student run blockchain conference. Over three days you can expect talks, panels, workshops and a 30 hour Hackathon, bringing together builders, researchers, founders and policymakers from across the ecosystem.
+Taking place October 29 to 31 at the House of Communication in Munich, it is Germany's leading student run blockchain conference. Over three days you can expect talks, panels, workshops and a 30 hour Hackathon, where curious newcomers, students, builders, researchers, founders, policymakers and industry leaders all come together.
 
-Whether you are deep in the space or simply curious, everyone is welcome. You do not need to be a student or an expert to take part.
+Whether you are simply interested in the space or leading a team in the industry, everyone is welcome. You do not need to be a student or an expert to take part.
 
 Here is what the three days look like:
 
