@@ -201,7 +201,7 @@ export const typeScale: TypeScaleEntry[] = [
     textType: "paragraph",
     label: "Paragraph",
     sample:
-      "Germany's leading student-run conference exploring the frontiers of blockchain technology.",
+      "Germany's leading conference exploring the frontiers of blockchain technology, an initiative at TUM.",
   },
   {
     textType: "lgsmall",

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Text } from "@/components/text";
 import { Button } from "@/components/button";
 
@@ -13,18 +14,21 @@ const TYPE_OPTIONS: {
   key: PartnerType;
   title: string;
   description: string;
+  assetsHref: string;
 }[] = [
   {
     key: "community",
     title: "Community Partner",
     description:
       "You run a community, a student club or a network and want to spread the word to your members.",
+    assetsHref: "/partners",
   },
   {
     key: "media",
     title: "Media Partner",
     description:
       "You run a publication, podcast, newsletter or channel and want to cover the conference.",
+    assetsHref: "/media",
   },
 ];
 
@@ -47,6 +51,8 @@ export const BecomePartnerForm = ({
 
   const typeLabel =
     type === "community" ? "Community Partner" : "Media Partner";
+  const activeOption =
+    TYPE_OPTIONS.find((option) => option.key === type) ?? TYPE_OPTIONS[0];
 
   const handleSend = () => {
     if (!allFilled) {
@@ -87,34 +93,47 @@ export const BecomePartnerForm = ({
 
   return (
     <div className="card-tbc flex flex-col gap-6 p-7">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {TYPE_OPTIONS.map((option) => (
-          <button
-            key={option.key}
-            type="button"
-            onClick={() => setType(option.key)}
-            className={`flex flex-col gap-2 rounded-lg border p-5 text-left transition-colors ${
-              type === option.key
-                ? "border-line-strong bg-white/[0.05]"
-                : "border-line-subtle hover:border-line"
-            }`}
-          >
-            <span className="flex items-center gap-2.5">
-              <span
-                className={`h-3 w-3 shrink-0 rounded-full ${
-                  type === option.key ? "bg-gradient-tbc" : "border border-line"
-                }`}
-                aria-hidden
-              />
-              <Text as="span" textType="lgsmall" className="font-bold">
-                {option.title}
+      <div className="flex flex-col gap-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {TYPE_OPTIONS.map((option) => (
+            <button
+              key={option.key}
+              type="button"
+              onClick={() => setType(option.key)}
+              className={`flex flex-col gap-2 rounded-lg border p-5 text-left transition-colors ${
+                type === option.key
+                  ? "border-line-strong bg-white/[0.05]"
+                  : "border-line-subtle hover:border-line"
+              }`}
+            >
+              <span className="flex items-center gap-2.5">
+                <span
+                  className={`h-3 w-3 shrink-0 rounded-full ${
+                    type === option.key
+                      ? "bg-gradient-tbc"
+                      : "border border-line"
+                  }`}
+                  aria-hidden
+                />
+                <Text as="span" textType="lgsmall" className="font-bold">
+                  {option.title}
+                </Text>
+              </span>
+              <Text as="span" textType="small" className="text-muted">
+                {option.description}
               </Text>
-            </span>
-            <Text as="span" textType="small" className="text-muted">
-              {option.description}
-            </Text>
-          </button>
-        ))}
+            </button>
+          ))}
+        </div>
+        <Text as="p" textType="small" className="text-muted">
+          Curious what you would get as a {typeLabel}?{" "}
+          <Link
+            href={activeOption.assetsHref}
+            className="font-bold text-white underline underline-offset-4 hover:text-secondary"
+          >
+            See the {typeLabel} assets
+          </Link>
+        </Text>
       </div>
 
       <div className="flex flex-col gap-4">

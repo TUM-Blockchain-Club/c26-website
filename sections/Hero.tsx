@@ -31,7 +31,7 @@ const Hero = () => {
             <div className="flex flex-wrap justify-center items-center gap-3">
               <div className="rounded-full border border-line bg-white/5 px-4 py-1.5 backdrop-blur-sm">
                 <Text as="p" textType="lgsmall" className="font-bold">
-                  October 29&ndash;31, 2026
+                  October 29 to 31, 2026
                 </Text>
               </div>
               <div className="rounded-full border border-line bg-white/5 px-4 py-1.5 backdrop-blur-sm">
@@ -47,8 +47,8 @@ const Hero = () => {
                 textType="paragraph"
                 className="max-w-md text-secondary"
               >
-                Secure your spot for Germany&apos;s leading student-run
-                blockchain conference.
+                Secure your spot for Germany&apos;s leading blockchain
+                conference, an initiative at TUM.
               </Text>
               <LumaTicketButton
                 id="luma-ticket-btn-hero"
