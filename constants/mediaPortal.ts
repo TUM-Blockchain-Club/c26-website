@@ -39,7 +39,7 @@ export const lastYearStats = [
 ];
 
 export const lastYearParagraphs = [
-  "The TUM Blockchain Conference 25 brought together more than 1,200 attendees in Munich and confirmed the event as Germany's leading blockchain conference, an initiative at TUM. Curious newcomers, students, builders, researchers, founders, policymakers and industry leaders came together for 57 talks, 12 panels and 4 workshops covering the whole spectrum of Web3, from infrastructure and applications to regulation and research, alongside an Ideathon and a Researchathon.",
+  "The TUM Blockchain Conference 25 brought together more than 1,200 attendees in Munich and confirmed the event as Germany's leading university blockchain conference, an initiative at TUM. Curious newcomers, students, builders, researchers, founders, policymakers and industry leaders came together for 57 talks, 12 panels and 4 workshops covering the whole spectrum of Web3, from infrastructure and applications to regulation and research, alongside an Ideathon and a Researchathon.",
   "On stage were more than 125 speakers, including Paul Brody (EY), Justin Drake (Ethereum Foundation), Friederike Ernst (Gnosis) and Patrick Hansen (Circle), supported by 18 sponsors from across the ecosystem. The aftermovie above captures the atmosphere better than any summary could, and you are welcome to use it in your coverage.",
 ];
 
@@ -58,7 +58,7 @@ export const thisYearParagraphs = (earlyBird: boolean) => {
 
 export const mediaNewsletter = (earlyBird: boolean) => ({
   subject: "The TUM Blockchain Conference returns to Munich this October",
-  body: `The TUM Blockchain Conference 26 takes place October 29 to 31 at the House of Communication in Munich. It is Germany's leading blockchain conference, an initiative at TUM, the Technical University of Munich, one of the leading universities in Europe. Hosted by TUM Blockchain Club, it is a place where people simply interested in the space and the industry leaders shaping it come together, and everyone is welcome.
+  body: `The TUM Blockchain Conference 26 takes place October 29 to 31 at the House of Communication in Munich. It is Germany's leading university blockchain conference, an initiative at TUM, the Technical University of Munich, one of the leading universities in Europe. Hosted by TUM Blockchain Club, it is a place where people simply interested in the space and the industry leaders shaping it come together, and everyone is welcome.
 
 Here is what the three days look like:
 

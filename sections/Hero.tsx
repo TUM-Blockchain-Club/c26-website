@@ -47,8 +47,8 @@ const Hero = () => {
                 textType="paragraph"
                 className="max-w-md text-secondary"
               >
-                Secure your spot for Germany&apos;s leading blockchain
-                conference, an initiative at TUM.
+                Born at TUM, one of Europe&apos;s leading universities. Built
+                for the entire blockchain ecosystem. Secure your spot.
               </Text>
               <LumaTicketButton
                 id="luma-ticket-btn-hero"

@@ -48,7 +48,7 @@ export const partnerCheckpoints: PartnerCheckpoint[] = [
         variants: {
           short: `🎉 Early Bird tickets for the TUM Blockchain Conference 26 are live! Oct 29 to 31 in Munich. Grab yours before July 31 → ${LINK} #TUMBlockchainConference26`,
           medium: `🎉 Early Bird tickets for the TUM Blockchain Conference 26 are live!\n\nOct 29 to 31 in Munich: talks, a Digital Assets Day by ${BB_X} and a 30h Hackathon. Grab yours before July 31 → ${LINK}\n\nHosted by ${X}. #TUMBlockchainConference26`,
-          long: `🎉 Early Bird tickets for the TUM Blockchain Conference 26 are live!\n\nOct 29 to 31 in Munich, Germany's leading blockchain conference, an initiative at TUM. Three days of talks, a Digital Assets Day by ${BB_X} and a 30h Hackathon.\n\nGrab yours before Early Bird ends July 31 → ${LINK}\n\nHosted by ${X}. #TUMBlockchainConference26`,
+          long: `🎉 Early Bird tickets for the TUM Blockchain Conference 26 are live!\n\nOct 29 to 31 in Munich, Germany's leading university blockchain conference, an initiative at TUM. Three days of talks, a Digital Assets Day by ${BB_X} and a 30h Hackathon.\n\nGrab yours before Early Bird ends July 31 → ${LINK}\n\nHosted by ${X}. #TUMBlockchainConference26`,
         },
       },
       {
@@ -56,15 +56,15 @@ export const partnerCheckpoints: PartnerCheckpoint[] = [
         variants: {
           short: `🎉 Early Bird tickets for the TUM Blockchain Conference 26 are live! Oct 29 to 31 in Munich. Get yours before July 31, link in bio. Hosted by ${IG}. #TUMBlockchainConference26 #Web3 #Munich`,
           medium: `🎉 Early Bird tickets for the TUM Blockchain Conference 26 are officially live!\n\nJoin us Oct 29 to 31 in Munich for talks, workshops and a 30h Hackathon. Get yours before July 31 (link in bio: ${LINK}) 🚀\n\nHosted by ${IG}. #TUMBlockchainConference26 #Web3 #Munich`,
-          long: `🎉 Early Bird tickets for the TUM Blockchain Conference 26 are officially live!\n\nJoin us Oct 29 to 31 in Munich for Germany's leading blockchain conference, an initiative at TUM. Three days of talks, workshops, a Digital Assets Day by Bundesblock and a 30h Hackathon. Get yours before Early Bird ends July 31 (link in bio: ${LINK}) 🚀\n\nHosted by ${IG}. #TUMBlockchainConference26 #Web3 #Munich`,
+          long: `🎉 Early Bird tickets for the TUM Blockchain Conference 26 are officially live!\n\nJoin us Oct 29 to 31 in Munich for Germany's leading university blockchain conference, an initiative at TUM. Three days of talks, workshops, a Digital Assets Day by Bundesblock and a 30h Hackathon. Get yours before Early Bird ends July 31 (link in bio: ${LINK}) 🚀\n\nHosted by ${IG}. #TUMBlockchainConference26 #Web3 #Munich`,
         },
       },
       {
         platform: "LinkedIn",
         variants: {
           short: `Early Bird tickets for the TUM Blockchain Conference 26 are now open until July 31. Oct 29 to 31 in Munich, hosted by TUM Blockchain Club. Grab yours: ${LINK}\n\n#TUMBlockchainConference26`,
-          medium: `Early Bird tickets for the TUM Blockchain Conference 26 are now open, running until July 31.\n\nTaking place October 29 to 31 in Munich, it is Germany's leading blockchain conference, an initiative at TUM: talks, workshops and a 30 hour Hackathon.\n\nAs a proud Community Partner, we are excited to support this year's edition, hosted by TUM Blockchain Club. Secure your ticket: ${LINK}\n\n#TUMBlockchainConference26`,
-          long: `Early Bird tickets for the TUM Blockchain Conference 26 are now open, running until July 31.\n\nTaking place October 29 to 31 in Munich, it is Germany's leading blockchain conference, an initiative at TUM, the Technical University of Munich: three days of talks, panels, workshops, a Digital Assets Day by Bundesblock and a 30 hour Hackathon. From people simply curious about the space to the industry leaders shaping it, everyone comes together here and everyone is welcome.\n\nAs a proud Community Partner, we are excited to support this year's edition, hosted by TUM Blockchain Club. Secure your ticket before the deadline: ${LINK}\n\n#TUMBlockchainConference26`,
+          medium: `Early Bird tickets for the TUM Blockchain Conference 26 are now open, running until July 31.\n\nTaking place October 29 to 31 in Munich, it is Germany's leading university blockchain conference, an initiative at TUM: talks, workshops and a 30 hour Hackathon.\n\nAs a proud Community Partner, we are excited to support this year's edition, hosted by TUM Blockchain Club. Secure your ticket: ${LINK}\n\n#TUMBlockchainConference26`,
+          long: `Early Bird tickets for the TUM Blockchain Conference 26 are now open, running until July 31.\n\nTaking place October 29 to 31 in Munich, it is Germany's leading university blockchain conference, an initiative at TUM, the Technical University of Munich: three days of talks, panels, workshops, a Digital Assets Day by Bundesblock and a 30 hour Hackathon. From people simply curious about the space to the industry leaders shaping it, everyone comes together here and everyone is welcome.\n\nAs a proud Community Partner, we are excited to support this year's edition, hosted by TUM Blockchain Club. Secure your ticket before the deadline: ${LINK}\n\n#TUMBlockchainConference26`,
         },
       },
     ],
@@ -83,7 +83,7 @@ export const partnerCheckpoints: PartnerCheckpoint[] = [
         variants: {
           short: `📣 We're proud to be a Community Partner of the TUM Blockchain Conference 26! Oct 29 to 31 in Munich, hosted by ${X}. See you there → ${LINK} #TUMBlockchainConference26`,
           medium: `📣 We're proud to be a Community Partner of the TUM Blockchain Conference 26!\n\nOct 29 to 31 in Munich: talks, a Digital Assets Day by ${BB_X} and a 30h Hackathon. Hosted by ${X}.\n\nSee you there → ${LINK} #TUMBlockchainConference26`,
-          long: `📣 We're proud to be a Community Partner of the TUM Blockchain Conference 26!\n\nJoin us Oct 29 to 31 in Munich, Germany's leading blockchain conference, an initiative at TUM: talks, a Digital Assets Day by ${BB_X} and a 30h Hackathon. Hosted by ${X}.\n\nSee you there → ${LINK} #TUMBlockchainConference26`,
+          long: `📣 We're proud to be a Community Partner of the TUM Blockchain Conference 26!\n\nJoin us Oct 29 to 31 in Munich, Germany's leading university blockchain conference, an initiative at TUM: talks, a Digital Assets Day by ${BB_X} and a 30h Hackathon. Hosted by ${X}.\n\nSee you there → ${LINK} #TUMBlockchainConference26`,
         },
       },
       {
@@ -91,15 +91,15 @@ export const partnerCheckpoints: PartnerCheckpoint[] = [
         variants: {
           short: `📣 We're a proud Community Partner of the TUM Blockchain Conference 26! Oct 29 to 31 in Munich, link in bio. Hosted by ${IG}. #TUMBlockchainConference26 #Web3 #Munich`,
           medium: `📣 We're a proud Community Partner of the TUM Blockchain Conference 26!\n\nJoin us Oct 29 to 31 in Munich for talks, workshops and a 30h Hackathon (link in bio: ${LINK}) 🎉\n\nHosted by ${IG}. #TUMBlockchainConference26 #Web3 #Munich`,
-          long: `📣 We're a proud Community Partner of the TUM Blockchain Conference 26!\n\nJoin us Oct 29 to 31 in Munich for Germany's leading blockchain conference, an initiative at TUM. Three days of talks, workshops, a Digital Assets Day by Bundesblock and a 30h Hackathon (link in bio: ${LINK}) 🎉\n\nHosted by ${IG}. #TUMBlockchainConference26 #Web3 #Munich`,
+          long: `📣 We're a proud Community Partner of the TUM Blockchain Conference 26!\n\nJoin us Oct 29 to 31 in Munich for Germany's leading university blockchain conference, an initiative at TUM. Three days of talks, workshops, a Digital Assets Day by Bundesblock and a 30h Hackathon (link in bio: ${LINK}) 🎉\n\nHosted by ${IG}. #TUMBlockchainConference26 #Web3 #Munich`,
         },
       },
       {
         platform: "LinkedIn",
         variants: {
           short: `We are proud to be a Community Partner of the TUM Blockchain Conference 26. Oct 29 to 31 in Munich, hosted by TUM Blockchain Club. Join us: ${LINK}\n\n#TUMBlockchainConference26`,
-          medium: `We are proud to announce that we are a Community Partner of the TUM Blockchain Conference 26.\n\nTaking place October 29 to 31 in Munich, it is Germany's leading blockchain conference, an initiative at TUM: talks, workshops and a 30 hour Hackathon, hosted by TUM Blockchain Club.\n\nJoin us: ${LINK}\n\n#TUMBlockchainConference26`,
-          long: `We are proud to announce that we are a Community Partner of the TUM Blockchain Conference 26.\n\nTaking place October 29 to 31 in Munich, it is Germany's leading blockchain conference, an initiative at TUM, the Technical University of Munich: three days of talks, panels, workshops, a Digital Assets Day by Bundesblock and a 30 hour Hackathon, hosted by TUM Blockchain Club. From people simply curious about the space to the industry leaders shaping it, everyone comes together here and everyone is welcome.\n\nWe are excited to support this year's edition. Join us: ${LINK}\n\n#TUMBlockchainConference26`,
+          medium: `We are proud to announce that we are a Community Partner of the TUM Blockchain Conference 26.\n\nTaking place October 29 to 31 in Munich, it is Germany's leading university blockchain conference, an initiative at TUM: talks, workshops and a 30 hour Hackathon, hosted by TUM Blockchain Club.\n\nJoin us: ${LINK}\n\n#TUMBlockchainConference26`,
+          long: `We are proud to announce that we are a Community Partner of the TUM Blockchain Conference 26.\n\nTaking place October 29 to 31 in Munich, it is Germany's leading university blockchain conference, an initiative at TUM, the Technical University of Munich: three days of talks, panels, workshops, a Digital Assets Day by Bundesblock and a 30 hour Hackathon, hosted by TUM Blockchain Club. From people simply curious about the space to the industry leaders shaping it, everyone comes together here and everyone is welcome.\n\nWe are excited to support this year's edition. Join us: ${LINK}\n\n#TUMBlockchainConference26`,
         },
       },
     ],
@@ -111,7 +111,7 @@ export const partnerNewsletter = {
   subject: "Join us at the TUM Blockchain Conference 26 in Munich",
   body: `We are proud to be a Community Partner of the TUM Blockchain Conference 26, and we wanted to share it with you directly.
 
-Taking place October 29 to 31 at the House of Communication in Munich, it is Germany's leading blockchain conference, an initiative at TUM, the Technical University of Munich, one of the leading universities in Europe. Over three days you can expect talks, panels, workshops and a 30 hour Hackathon, where curious newcomers, students, builders, researchers, founders, policymakers and industry leaders all come together.
+Taking place October 29 to 31 at the House of Communication in Munich, it is Germany's leading university blockchain conference, an initiative at TUM, the Technical University of Munich, one of the leading universities in Europe. Over three days you can expect talks, panels, workshops and a 30 hour Hackathon, where curious newcomers, students, builders, researchers, founders, policymakers and industry leaders all come together.
 
 Whether you are simply interested in the space or leading a team in the industry, everyone is welcome. You do not need to be a student or an expert to take part.
 

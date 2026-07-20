@@ -9,7 +9,7 @@ import "./globals.css";
 
 const montserrat = Montserrat({ subsets: ["latin"] });
 const description =
-  "Germany's leading conference exploring the frontiers of blockchain technology, an initiative at TUM";
+  "Germany's leading university conference exploring the frontiers of blockchain technology, an initiative at TUM";
 
 const siteUrl = new URL(
   process.env.VERCEL_PROJECT_PRODUCTION_URL
