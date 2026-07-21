@@ -94,7 +94,6 @@ export const Agenda: React.FC<AgendaProps> = ({ sessions, speakers }) => {
       const haystack = [
         entry.title,
         entry.format,
-        entry.formatDetail,
         entry.track,
         entry.stage,
         entry.speaker,

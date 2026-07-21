@@ -277,6 +277,54 @@ body {
       border-box;
 }
 
+/* Blue variants for the Digital Assets Day page (its accent colour). Same
+   rounded double-background technique as the brand variants. Defined after
+   .btn-gradient-tbc so .btn-blue wins when both classes are present. */
+.card-blue {
+  border: 1px solid transparent;
+  border-radius: var(--radius-lg);
+  background:
+    linear-gradient(
+        rgb(var(--color-surface-rgb)),
+        rgb(var(--color-surface-rgb))
+      )
+      padding-box,
+    linear-gradient(135deg, rgb(66 133 244 / 0.75), rgb(120 170 255 / 0.5))
+      border-box;
+  transition:
+    box-shadow 0.3s ease,
+    transform 0.3s ease;
+}
+
+.card-blue:hover {
+  box-shadow:
+    0 0 30px rgb(66 133 244 / 0.18),
+    0 0 60px rgb(66 133 244 / 0.12);
+}
+
+.btn-blue {
+  border: 2px solid transparent;
+  background:
+    linear-gradient(
+        rgb(var(--color-surface-rgb)),
+        rgb(var(--color-surface-rgb))
+      )
+      padding-box,
+    linear-gradient(135deg, rgb(66 133 244), rgb(120 170 255)) border-box;
+  transition: background 0.3s ease;
+}
+
+.btn-blue:hover {
+  background:
+    linear-gradient(
+        to bottom right,
+        rgb(66 133 244 / 0.3),
+        rgb(120 170 255 / 0.3)
+      )
+      padding-box,
+    linear-gradient(135deg, rgb(66 133 244), rgb(120 170 255)) border-box;
+}
+
 .eyebrow-tbc {
   letter-spacing: 0.3em;
   text-transform: uppercase;

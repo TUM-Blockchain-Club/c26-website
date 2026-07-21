@@ -2,6 +2,7 @@ import { Text } from "@/components/text";
 import { PartnerPostCard } from "@/components/brand/PartnerPostCard";
 import { PartnerVideoAsset } from "@/components/brand/PartnerVideoAsset";
 import { TimelineRail } from "@/components/brand/TimelineRail";
+import { EarlyBirdCountdown } from "@/components/brand/EarlyBirdCountdown";
 import { partnerCheckpoints } from "@/constants/partnerTimeline";
 
 const StatusBadge = ({ done, next }: { done: boolean; next: boolean }) => {
@@ -52,7 +53,11 @@ export const PartnerTimeline = () => {
                       {cp.periodLabel}
                     </Text>
                   </div>
-                  <StatusBadge done={done} next={isNext} />
+                  {cp.id === "early-bird" ? (
+                    <EarlyBirdCountdown />
+                  ) : (
+                    <StatusBadge done={done} next={isNext} />
+                  )}
                 </div>
 
                 <Text

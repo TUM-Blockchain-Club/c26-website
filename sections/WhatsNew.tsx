@@ -6,8 +6,7 @@ import { HACKATHON_URL } from "@/constants/Links";
 import DigitalAssetsDayLogo from "@/public/logos/digital-assets-day-logo.png";
 import HackathonLogo from "@/public/logos/hackathon-logo.png";
 
-const DIGITAL_ASSETS_DAY_URL =
-  "https://www.canva.com/design/DAHPRPSDUTQ/JpFOcfDLmVRT0uZcoVEgnA/view?utm_content=DAHPRPSDUTQ&utm_campaign=designshare&utm_medium=link&utm_source=viewer";
+const DIGITAL_ASSETS_DAY_URL = "/digital-assets-day";
 
 const WhatsNew = () => {
   return (
@@ -46,13 +45,7 @@ const WhatsNew = () => {
             </Text>
             <div className="mt-auto pt-8">
               <Button buttonType={"cta"} asChild className="w-fit">
-                <Link
-                  href={DIGITAL_ASSETS_DAY_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Learn More
-                </Link>
+                <Link href={DIGITAL_ASSETS_DAY_URL}>Learn More</Link>
               </Button>
             </div>
           </div>

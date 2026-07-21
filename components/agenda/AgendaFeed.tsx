@@ -70,32 +70,6 @@ const EntryRow = ({ entry }: { entry: AgendaEntry }) => {
     );
   }
 
-  if (entry.kind === "break") {
-    return (
-      <div className="flex items-center justify-center gap-2 rounded-lg border border-dashed border-line-subtle px-4 py-2.5">
-        <Text as="p" textType="small" className="text-faint">
-          <span className="font-bold text-muted">{entry.time}</span> ·{" "}
-          {entry.label}
-          {entry.stage ? ` · ${entry.stage}` : ""} · {entry.duration} min
-        </Text>
-      </div>
-    );
-  }
-
-  if (entry.kind === "placeholder") {
-    return (
-      <div className="flex items-center justify-between gap-3 rounded-lg border border-dashed border-line px-5 py-3.5">
-        <Text as="p" textType="small" className="text-muted italic">
-          <span className="font-bold not-italic">{entry.time}</span> · Slot to
-          be announced · {entry.stage}
-        </Text>
-        <Text as="p" textType="small" className="shrink-0 text-faint">
-          {entry.duration} min
-        </Text>
-      </div>
-    );
-  }
-
   const badge = EVENT_BADGES[entry.event];
   const style = trackStyle(entry.track);
 
@@ -121,18 +95,12 @@ const EntryRow = ({ entry }: { entry: AgendaEntry }) => {
         <span className="rounded-full border border-line px-2.5 py-0.5 text-xs text-secondary">
           {entry.stage}
         </span>
-        <span className="ml-auto text-xs text-faint">{entry.duration} min</span>
+        {entry.format && (
+          <span className="ml-auto text-xs text-faint">{entry.format}</span>
+        )}
       </div>
 
       <div className="flex flex-col gap-1">
-        <Text as="p" textType="small" className="font-bold text-white">
-          {entry.format}
-          {entry.formatDetail && (
-            <span className="ml-2 font-normal text-faint">
-              {entry.formatDetail}
-            </span>
-          )}
-        </Text>
         {entry.title ? (
           <Text as="p" textType="lgsmall" className="font-bold leading-snug">
             {entry.title}
