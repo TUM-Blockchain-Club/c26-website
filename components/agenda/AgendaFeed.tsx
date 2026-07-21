@@ -76,7 +76,7 @@ const EntryRow = ({ entry }: { entry: AgendaEntry }) => {
   return (
     <div
       className={classNames(
-        "flex flex-col gap-3 rounded-lg border border-line border-l-4 bg-white/[0.02] px-5 py-4",
+        "flex flex-col gap-3 rounded-lg border border-l-4 bg-white/[0.02] px-5 py-4",
         style.accent,
       )}
     >

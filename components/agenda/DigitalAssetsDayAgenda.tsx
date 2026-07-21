@@ -28,7 +28,7 @@ const SessionRow = ({ talk }: { talk: Talk }) => {
   return (
     <div
       className={classNames(
-        "flex flex-col gap-2 rounded-lg border border-line border-l-4 bg-white/[0.02] px-4 py-3.5",
+        "flex flex-col gap-2 rounded-lg border border-l-4 bg-white/[0.02] px-4 py-3.5",
         style.accent,
       )}
     >

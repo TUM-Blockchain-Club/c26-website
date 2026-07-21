@@ -7,7 +7,7 @@ import { Link } from "@/components/link";
 import { LumaTicketButton } from "@/components/luma-ticket-button";
 import { DigitalAssetsDayAgenda } from "@/components/agenda/DigitalAssetsDayAgenda";
 import { BundesblockContactForm } from "@/components/brand/BundesblockContactForm";
-import DigitalAssetsDayLogo from "@/public/logos/digital-assets-day-logo.png";
+import DigitalAssetsDayLogoWhite from "@/public/logos/digital-assets-day-logo-white.png";
 
 export const metadata: Metadata = {
   title: "Digital Assets Day · TUM Blockchain Conference 26",
@@ -60,38 +60,66 @@ export default function DigitalAssetsDayPage() {
     <div className="flex justify-center">
       <main className="w-full max-w-7xl pt-page-pt lg:pt-0 z-20 pb-40">
         <Container>
-          {/* Header */}
-          <div className="mt-page-top md:mt-page-top-lg z-10 flex flex-col gap-7">
-            <Image
-              src={DigitalAssetsDayLogo}
-              alt="Digital Assets Day by Bundesblock"
-              className="h-16 w-auto self-start sm:h-20"
-              priority
-            />
-            <Text
-              as="p"
-              textType="sub_title"
-              className="max-w-3xl font-semibold leading-snug text-blue-100"
+          {/* Header with a large blue conference ring behind a white wordmark */}
+          <div className="relative overflow-hidden">
+            {/* Huge, blurry blue ring */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute left-1/2 top-[44%] z-0 h-[175vw] w-[175vw] max-h-[1200px] max-w-[1200px] -translate-x-1/2 -translate-y-1/2 opacity-60 blur-[40px]"
             >
-              The curated conference and meeting point for strategists and
-              managers in charge of digital assets, the new money stack and our
-              industrial digital infrastructure.
-            </Text>
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="rounded-full border border-blue-400/40 bg-blue-400/[0.08] px-4 py-1.5">
-                <Text
-                  as="span"
-                  textType="lgsmall"
-                  className="font-bold text-blue-100"
-                >
-                  Munich · Friday, October 30, 2026
-                </Text>
-              </span>
-              <span className="rounded-full border border-blue-400/25 bg-blue-400/[0.04] px-4 py-1.5">
-                <Text as="span" textType="small" className="text-secondary">
-                  Day 2 · Curated by Bundesblock
-                </Text>
-              </span>
+              <div className="hero-ring-wobble relative h-full w-full">
+                <Image
+                  src="/hero/mask-group-1.png"
+                  alt=""
+                  fill
+                  priority
+                  sizes="1200px"
+                  className="object-contain"
+                  style={{
+                    filter:
+                      "grayscale(1) brightness(1.1) sepia(1) hue-rotate(185deg) saturate(4)",
+                  }}
+                />
+              </div>
+            </div>
+            {/* Readability veil */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-b from-black/45 via-black/10 to-black/65"
+            />
+
+            <div className="relative z-10 mt-page-top md:mt-page-top-lg flex flex-col gap-8 py-10 lg:py-20">
+              <Image
+                src={DigitalAssetsDayLogoWhite}
+                alt="Digital Assets Day by Bundesblock"
+                className="h-14 w-auto self-start drop-shadow-[0_2px_28px_rgb(66_133_244_/_0.5)] sm:h-16 lg:h-20"
+                priority
+              />
+              <Text
+                as="p"
+                textType="sub_title"
+                className="max-w-3xl font-semibold leading-snug text-blue-50"
+              >
+                The curated conference and meeting point for strategists and
+                managers in charge of digital assets, the new money stack and
+                our industrial digital infrastructure.
+              </Text>
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="rounded-full border border-blue-400/40 bg-blue-400/[0.08] px-4 py-1.5 backdrop-blur-sm">
+                  <Text
+                    as="span"
+                    textType="lgsmall"
+                    className="font-bold text-blue-100"
+                  >
+                    Munich · Friday, October 30, 2026
+                  </Text>
+                </span>
+                <span className="rounded-full border border-blue-400/25 bg-blue-400/[0.04] px-4 py-1.5 backdrop-blur-sm">
+                  <Text as="span" textType="small" className="text-secondary">
+                    Day 2 · Curated by Bundesblock
+                  </Text>
+                </span>
+              </div>
             </div>
           </div>
 
