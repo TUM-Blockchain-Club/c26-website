@@ -146,11 +146,7 @@ export default function DigitalAssetsDayPage() {
 
             {/* Agenda structure */}
             <section className="flex flex-col gap-10">
-              <SectionHeader
-                eyebrow="Programme"
-                title="Agenda Structure"
-                intro="A preliminary look at the two stages of the Digital Assets Day. Session titles are excerpts and may still change."
-              />
+              <SectionHeader eyebrow="Programme" title="Agenda Structure" />
               <DigitalAssetsDayAgenda />
               <div>
                 <Button
