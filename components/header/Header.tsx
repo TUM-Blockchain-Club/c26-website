@@ -39,6 +39,11 @@ const links: HeaderLink[] = [
   //   showsAtHome: true,
   // },
   { label: "Agenda", link: "/agenda", showsAtHome: true },
+  {
+    label: "Digital Assets Day",
+    link: "/digital-assets-day",
+    showsAtHome: true,
+  },
   { label: "Side Events", link: "/side-events", showsAtHome: true },
   {
     label: "Become a Partner",
@@ -105,6 +110,7 @@ const PRIORITY: string[] = [
   // "Sponsors",
   // "Academic Forum",
   "Agenda",
+  "Digital Assets Day",
   "Side Events",
   // "Workshops",
   // "Apply as Speaker",
