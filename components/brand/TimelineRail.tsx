@@ -108,12 +108,12 @@ export const TimelineRail = ({
             as="span"
             textType="small"
             className="absolute top-0 -translate-x-1/2 whitespace-nowrap font-bold text-white"
-            style={{ left: `${Math.min(62, Math.max(4, progress))}%` }}
+            style={{ left: `${Math.min(48, Math.max(4, progress))}%` }}
           >
             Today
           </Text>
         )}
-        <div className="absolute right-0 top-0 flex flex-col items-end gap-1 text-right">
+        <div className="absolute right-0 top-0 flex max-w-[7.5rem] flex-col items-end gap-1 text-right sm:max-w-none">
           <Text
             as="span"
             textType="lgsmall"
