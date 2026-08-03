@@ -4,26 +4,11 @@ import {
   PARTNER_TIMELINE_END,
 } from "@/constants/partnerTimeline";
 
-const EARLY_BIRD_END = "2026-07-31";
-
-const percentAlong = (dateIso: string) => {
-  const start = new Date(PARTNER_TIMELINE_START).getTime();
-  const end = new Date(PARTNER_TIMELINE_END).getTime();
-  const date = new Date(dateIso).getTime();
-  return Math.min(100, Math.max(0, ((date - start) / (end - start)) * 100));
-};
-
 /**
  * The campaign progress rail: a gradient track filling day by day towards the
- * conference, with the Early Bird deadline flagged above it. Shared between
- * the partner and media portals.
+ * conference. Shared between the partner and media portals.
  */
-export const TimelineRail = ({
-  hideEarlyBirdWhenOver = false,
-}: {
-  /** Remove the Early Bird flag entirely once the deadline has passed. */
-  hideEarlyBirdWhenOver?: boolean;
-}) => {
+export const TimelineRail = () => {
   const now = Date.now();
   const start = new Date(PARTNER_TIMELINE_START).getTime();
   const end = new Date(PARTNER_TIMELINE_END).getTime();
@@ -32,45 +17,8 @@ export const TimelineRail = ({
     Math.max(0, ((now - start) / (end - start)) * 100),
   );
 
-  const earlyBirdPct = percentAlong(EARLY_BIRD_END);
-  const earlyBirdOver = now > new Date(EARLY_BIRD_END).getTime();
-  const showEarlyBird = !(earlyBirdOver && hideEarlyBirdWhenOver);
-
   return (
     <div className="flex flex-col">
-      {/* Early Bird deadline, above the rail with a connector down to it */}
-      {showEarlyBird && (
-        <div className="relative h-16">
-          <div
-            className="absolute bottom-0 flex -translate-x-1/2 flex-col items-center"
-            style={{ left: `${earlyBirdPct}%` }}
-          >
-            <Text
-              as="span"
-              textType="small"
-              className={`whitespace-nowrap font-bold ${
-                earlyBirdOver ? "text-faint" : "text-tbc-yellow"
-              }`}
-            >
-              {earlyBirdOver ? "Early Bird ended" : "Early Bird ends"}
-            </Text>
-            <Text
-              as="span"
-              textType="small"
-              className="mt-0.5 whitespace-nowrap text-secondary"
-            >
-              31 Jul
-            </Text>
-            <span
-              className={`mt-1.5 h-4 w-px ${
-                earlyBirdOver ? "bg-white/25" : "bg-tbc-yellow/80"
-              }`}
-              aria-hidden
-            />
-          </div>
-        </div>
-      )}
-
       <div className="relative h-3 w-full">
         {/* Full journey, faintly tinted in the brand gradient */}
         <div className="absolute inset-0 rounded-full bg-gradient-tbc opacity-25" />

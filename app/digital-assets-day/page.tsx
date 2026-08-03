@@ -184,14 +184,14 @@ export default function DigitalAssetsDayPage() {
               <SectionHeader
                 eyebrow="Join us"
                 title="Tickets"
-                intro="The Digital Assets Day is Day 2 of the TUM Blockchain Conference 26 + Hackathon, so one conference ticket gets you into all of it. Early Bird tickets are available until July 31."
+                intro="The Digital Assets Day is Day 2 of the TUM Blockchain Conference 26 + Hackathon, so one conference ticket gets you into all of it."
               />
               <div className="card-blue flex flex-col gap-4 p-7">
                 <LumaTicketButton
                   id="luma-ticket-btn-dad"
                   className="btn-blue w-fit px-8 py-4 text-base font-bold"
                 >
-                  Get Early Bird Tickets
+                  Get Tickets
                 </LumaTicketButton>
                 <Text
                   as="p"

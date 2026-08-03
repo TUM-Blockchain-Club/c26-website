@@ -21,7 +21,7 @@ export type PartnerCheckpoint = {
 };
 
 export const partnerGuidelineIntro =
-  "Here is what we would suggest: two quick posts. The first announces Early Bird tickets, the second announces your partnership one to two months before the conference. Everything is prepared below, with a teaser video for the first and a card generator for the second, so it only takes a few minutes. But this is just a suggestion. You know your audience best, so feel free to implement the posts however fits your brand and channels.";
+  "Here is what we would suggest: two quick posts about the conference. The first introduces the TUM Blockchain Conference 26 to your audience, the second announces your partnership one to two months before the conference. Everything is prepared below, with a teaser video for the first and a card generator for the second, so it only takes a few minutes. But this is just a suggestion. You know your audience best, so feel free to implement the posts however fits your brand and channels.";
 
 // Campaign window used only to position the progress rail.
 export const PARTNER_TIMELINE_START = "2026-06-01";
@@ -34,37 +34,36 @@ const BB_X = bundesblockAccounts.x.handle;
 
 export const partnerCheckpoints: PartnerCheckpoint[] = [
   {
-    id: "early-bird",
-    date: "2026-07-17",
-    periodLabel:
-      "As soon as possible, while Early Bird is live (until 31 July)",
-    label: "Post 1 · Early Bird Announcement",
+    id: "conference-intro",
+    date: "2026-08-15",
+    periodLabel: "As soon as possible",
+    label: "Post 1 · Conference Announcement",
     channel: "Social Media",
-    task: "Our suggestion for your first post: share the teaser video below with one of these captions to push Early Bird sign ups while there is still time. Or put it in your own words, whatever feels right for your audience.",
+    task: "Our suggestion for your first post: share the teaser video below with one of these captions to put the conference on your audience's radar. Or put it in your own words, whatever feels right for your audience.",
     showVideo: true,
     posts: [
       {
         platform: "X",
         variants: {
-          short: `🎉 Early Bird tickets for the TUM Blockchain Conference 26 are live! Oct 29 to 31 in Munich. Grab yours before July 31 → ${LINK} #TUMBlockchainConference26`,
-          medium: `🎉 Early Bird tickets for the TUM Blockchain Conference 26 are live!\n\nOct 29 to 31 in Munich: talks, a Digital Assets Day by ${BB_X} and a 30h Hackathon. Grab yours before July 31 → ${LINK}\n\nHosted by ${X}. #TUMBlockchainConference26`,
-          long: `🎉 Early Bird tickets for the TUM Blockchain Conference 26 are live!\n\nOct 29 to 31 in Munich. Born at TUM, one of Europe's leading universities, and built for the entire blockchain ecosystem. Three days of talks, a Digital Assets Day by ${BB_X} and a 30h Hackathon.\n\nGrab yours before Early Bird ends July 31 → ${LINK}\n\nHosted by ${X}. #TUMBlockchainConference26`,
+          short: `🎉 The TUM Blockchain Conference 26 is coming to Munich, Oct 29 to 31! Three days for the entire blockchain ecosystem → ${LINK} #TUMBlockchainConference26`,
+          medium: `🎉 The TUM Blockchain Conference 26 is coming to Munich, Oct 29 to 31!\n\nThree days of talks, a Digital Assets Day by ${BB_X} and a 30h Hackathon, built for the entire blockchain ecosystem → ${LINK}\n\nHosted by ${X}. #TUMBlockchainConference26`,
+          long: `🎉 The TUM Blockchain Conference 26 is coming to Munich, Oct 29 to 31!\n\nBorn at TUM, one of Europe's leading universities, and built for the entire blockchain ecosystem. Three days of talks, a Digital Assets Day by ${BB_X} and a 30h Hackathon.\n\nSee the full programme and grab your ticket → ${LINK}\n\nHosted by ${X}. #TUMBlockchainConference26`,
         },
       },
       {
         platform: "Instagram",
         variants: {
-          short: `🎉 Early Bird tickets for the TUM Blockchain Conference 26 are live! Oct 29 to 31 in Munich. Get yours before July 31, link in bio. Hosted by ${IG}. #TUMBlockchainConference26 #Web3 #Munich`,
-          medium: `🎉 Early Bird tickets for the TUM Blockchain Conference 26 are officially live!\n\nJoin us Oct 29 to 31 in Munich for talks, workshops and a 30h Hackathon. Get yours before July 31 (link in bio: ${LINK}) 🚀\n\nHosted by ${IG}. #TUMBlockchainConference26 #Web3 #Munich`,
-          long: `🎉 Early Bird tickets for the TUM Blockchain Conference 26 are officially live!\n\nJoin us Oct 29 to 31 in Munich. Born at TUM, one of Europe's leading universities, and built for the entire blockchain ecosystem. Three days of talks, workshops, a Digital Assets Day by Bundesblock and a 30h Hackathon. Get yours before Early Bird ends July 31 (link in bio: ${LINK}) 🚀\n\nHosted by ${IG}. #TUMBlockchainConference26 #Web3 #Munich`,
+          short: `🎉 The TUM Blockchain Conference 26 is coming to Munich, Oct 29 to 31! Built for the entire blockchain ecosystem, link in bio. Hosted by ${IG}. #TUMBlockchainConference26 #Web3 #Munich`,
+          medium: `🎉 The TUM Blockchain Conference 26 is coming to Munich, Oct 29 to 31!\n\nThree days of talks, workshops and a 30h Hackathon for the entire blockchain ecosystem (link in bio: ${LINK}) 🚀\n\nHosted by ${IG}. #TUMBlockchainConference26 #Web3 #Munich`,
+          long: `🎉 The TUM Blockchain Conference 26 is coming to Munich, Oct 29 to 31!\n\nBorn at TUM, one of Europe's leading universities, and built for the entire blockchain ecosystem. Three days of talks, workshops, a Digital Assets Day by Bundesblock and a 30h Hackathon (link in bio: ${LINK}) 🚀\n\nHosted by ${IG}. #TUMBlockchainConference26 #Web3 #Munich`,
         },
       },
       {
         platform: "LinkedIn",
         variants: {
-          short: `Early Bird tickets for the TUM Blockchain Conference 26 are now open until July 31. Oct 29 to 31 in Munich, hosted by TUM Blockchain Club. Grab yours: ${LINK}\n\n#TUMBlockchainConference26`,
-          medium: `Early Bird tickets for the TUM Blockchain Conference 26 are now open, running until July 31.\n\nTaking place October 29 to 31 in Munich, it was born at TUM, one of Europe's leading universities, and it is built for the entire blockchain ecosystem: talks, workshops and a 30 hour Hackathon.\n\nAs a proud Community Partner, we are excited to support this year's edition, hosted by TUM Blockchain Club. Secure your ticket: ${LINK}\n\n#TUMBlockchainConference26`,
-          long: `Early Bird tickets for the TUM Blockchain Conference 26 are now open, running until July 31.\n\nTaking place October 29 to 31 in Munich, it was born at TUM, the Technical University of Munich and one of Europe's leading universities, and it is built for the entire blockchain ecosystem: three days of talks, panels, workshops, a Digital Assets Day by Bundesblock and a 30 hour Hackathon. From people simply curious about the space to the industry leaders shaping it, everyone comes together here and everyone is welcome.\n\nAs a proud Community Partner, we are excited to support this year's edition, hosted by TUM Blockchain Club. Secure your ticket before the deadline: ${LINK}\n\n#TUMBlockchainConference26`,
+          short: `The TUM Blockchain Conference 26 takes place Oct 29 to 31 in Munich, hosted by TUM Blockchain Club. Built for the entire blockchain ecosystem. See the programme: ${LINK}\n\n#TUMBlockchainConference26`,
+          medium: `The TUM Blockchain Conference 26 takes place October 29 to 31 in Munich.\n\nBorn at TUM, one of Europe's leading universities, and built for the entire blockchain ecosystem: talks, workshops and a 30 hour Hackathon.\n\nAs a proud Community Partner, we are excited to support this year's edition, hosted by TUM Blockchain Club. See the programme: ${LINK}\n\n#TUMBlockchainConference26`,
+          long: `The TUM Blockchain Conference 26 takes place October 29 to 31 in Munich.\n\nBorn at TUM, the Technical University of Munich and one of Europe's leading universities, and built for the entire blockchain ecosystem: three days of talks, panels, workshops, a Digital Assets Day by Bundesblock and a 30 hour Hackathon. From people simply curious about the space to the industry leaders shaping it, everyone comes together here and everyone is welcome.\n\nAs a proud Community Partner, we are excited to support this year's edition, hosted by TUM Blockchain Club. See the programme and grab your ticket: ${LINK}\n\n#TUMBlockchainConference26`,
         },
       },
     ],
@@ -127,7 +126,7 @@ Last year's edition brought together more than 1,200 attendees, 125 speakers and
 
 Not based in Munich? Travel support is in the works, so keep an eye out.
 
-Early Bird tickets are the best value while they last. You can see the full programme and grab your ticket here: ${LINK}
+You can see the full programme and grab your ticket here: ${LINK}
 
 We hope to see you there.`,
 };

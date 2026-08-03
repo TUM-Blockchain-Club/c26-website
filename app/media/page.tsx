@@ -12,7 +12,6 @@ import {
   lastYearStats,
   thisYearParagraphs,
   mediaNewsletter,
-  isEarlyBirdLive,
   MEDIA_LINK,
   AFTERMOVIE_EMBED_URL,
   AFTERMOVIE_WATCH_URL,
@@ -24,8 +23,8 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-// Re-render server side at least hourly so date driven content (the timeline
-// and every Early Bird mention) stays current without a redeploy.
+// Re-render server side at least hourly so date driven content (the progress
+// timeline) stays current without a redeploy.
 export const revalidate = 3600;
 
 const SectionHeader = ({
@@ -59,8 +58,6 @@ const SectionHeader = ({
 );
 
 export default function MediaPage() {
-  const earlyBird = isEarlyBirdLive();
-
   return (
     <div className="flex justify-center">
       <main className="w-full max-w-7xl pt-page-pt lg:pt-0 z-20 pb-40">
@@ -175,7 +172,7 @@ export default function MediaPage() {
               />
 
               <div className="flex flex-col gap-4">
-                {thisYearParagraphs(earlyBird).map((paragraph, i) => (
+                {thisYearParagraphs().map((paragraph, i) => (
                   <Text
                     key={i}
                     as="p"
@@ -201,7 +198,7 @@ export default function MediaPage() {
                 </Text>
               </div>
 
-              <TimelineRail hideEarlyBirdWhenOver />
+              <TimelineRail />
             </section>
 
             <section className="flex flex-col gap-12">
@@ -210,7 +207,7 @@ export default function MediaPage() {
                 title="Newsletter"
                 intro="If you run a newsletter, here is a draft you can drop straight in. It is written in a neutral voice on purpose, so you can shorten it, rewrite it or just take the facts, whatever fits your format."
               />
-              <PartnerNewsletter newsletter={mediaNewsletter(earlyBird)} />
+              <PartnerNewsletter newsletter={mediaNewsletter()} />
             </section>
 
             <section className="flex flex-col gap-12">

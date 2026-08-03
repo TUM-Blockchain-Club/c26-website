@@ -1,7 +1,7 @@
 import { Text } from "@/components/text";
 import { Button } from "@/components/button";
 
-const VIDEO_SRC = "/partner/early-bird-teaser.mp4";
+const VIDEO_SRC = "/partner/conference-teaser.mp4";
 
 export const PartnerVideoAsset = () => (
   <div className="card-tbc flex flex-col gap-6 p-7 lg:flex-row lg:items-center lg:gap-10">
@@ -26,7 +26,7 @@ export const PartnerVideoAsset = () => (
       </Text>
       <Text as="p" textType="small" className="text-muted max-w-md">
         Ready to post as it is, alongside any of the captions below. Perfect for
-        your Early Bird or Community Partner announcement.
+        your first post about the conference.
       </Text>
       <div className="mt-3">
         <Button buttonType="primary" asChild className="w-fit px-5">
