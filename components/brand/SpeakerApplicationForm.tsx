@@ -3,9 +3,8 @@ import { Button } from "@/components/button";
 // Tally form: applicants fill this in on Tally, in a new tab.
 const TALLY_FORM_URL = "https://tally.so/r/Xx7WVP";
 
-// Applications are not open yet — the button is disabled for now. Flip this to
-// true to re-enable the link without touching anything else.
-const APPLICATIONS_OPEN = false;
+// Flip this to false to disable the button (keeps the link in place).
+const APPLICATIONS_OPEN = true;
 
 export const SpeakerApplicationForm = () => (
   <Button
