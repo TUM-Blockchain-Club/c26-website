@@ -147,6 +147,9 @@ const Sponsors = ({ displayMode = "carousel" }: SponsorsProps) => {
                 </Link>
               </Button>
             </div>
+            <Button buttonType="primary" asChild>
+              <Link href="/speakers#apply">Become a Speaker</Link>
+            </Button>
           </div>
         </div>
 
