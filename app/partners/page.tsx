@@ -4,7 +4,6 @@ import { Text } from "@/components/text";
 import { PartnerTimeline } from "@/components/brand/PartnerTimeline";
 import { PartnerNewsletter } from "@/components/brand/PartnerNewsletter";
 import { PartnerCommunityPosts } from "@/components/brand/PartnerCommunityPosts";
-import { PartnerCardGenerator } from "@/components/brand/PartnerCardGenerator";
 import { SideEventInquiryForm } from "@/components/brand/SideEventInquiryForm";
 import { LogoDownloads } from "@/components/brand/LogoShowcase";
 import ScheduleOverview from "@/components/schedule/ScheduleOverview";
@@ -81,18 +80,6 @@ export default function PartnersPage() {
                 intro={partnerGuidelineIntro}
               />
               <PartnerTimeline />
-            </section>
-
-            <section
-              id="card-generator"
-              className="flex flex-col gap-12 scroll-mt-24"
-            >
-              <SectionHeader
-                eyebrow="Tool"
-                title="Card Generator"
-                intro="Generate an animated partner card in our brand: the conference ring, our colors, the date and location, paired with your logo and name. Download it in 16:9 or 4:5 to go with your announcement post."
-              />
-              <PartnerCardGenerator />
             </section>
 
             <section className="flex flex-col gap-12">

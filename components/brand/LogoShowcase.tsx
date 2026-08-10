@@ -4,7 +4,12 @@ import { useState } from "react";
 import Image from "next/image";
 import { Text } from "@/components/text";
 import { Button } from "@/components/button";
-import { logoAssets, type LogoAsset } from "@/constants/brandAssets";
+import {
+  logoAssets,
+  pngLogoAssets,
+  type LogoAsset,
+  type PngLogoAsset,
+} from "@/constants/brandAssets";
 import { downloadBlob, svgToPngBlob } from "@/util/exportLogo";
 
 const PNG_EXPORT_WIDTH = 1600;
@@ -66,7 +71,45 @@ const LogoCard = ({ asset }: { asset: LogoAsset }) => {
   );
 };
 
-/** Public-facing: just the two real logo files, ready to download. */
+const PngLogoCard = ({ asset }: { asset: PngLogoAsset }) => (
+  <div className="card-tbc-soft flex flex-col overflow-hidden">
+    <div className="flex h-40 items-center justify-center bg-black p-8">
+      <Image
+        src={asset.previewSrc}
+        alt={asset.name}
+        width={400}
+        height={140}
+        className="h-full w-auto object-contain"
+      />
+    </div>
+    <div className="flex flex-col gap-4 p-6">
+      <div className="flex flex-col gap-1.5">
+        <Text as="p" textType="lgsmall" className="font-bold">
+          {asset.name}
+        </Text>
+        <Text as="p" textType="small" className="text-muted">
+          {asset.description}
+        </Text>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {asset.downloads.map((d) => (
+          <Button
+            key={d.src}
+            buttonType="secondary"
+            asChild
+            className="text-xs px-3 py-1.5"
+          >
+            <a href={d.src} download={d.fileName}>
+              Download {d.label}
+            </a>
+          </Button>
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
+/** Public-facing: the real logo files, ready to download. */
 export const LogoDownloads = () => {
   const [zipping, setZipping] = useState(false);
 
@@ -81,6 +124,13 @@ export const LogoDownloads = () => {
         zip.file(`${asset.id}.svg`, svgText);
         const pngBlob = await svgToPngBlob(asset.svgSrc, PNG_EXPORT_WIDTH);
         zip.file(`${asset.id}.png`, pngBlob);
+      }
+
+      for (const asset of pngLogoAssets) {
+        for (const d of asset.downloads) {
+          const blob = await fetch(d.src).then((r) => r.blob());
+          zip.file(d.fileName, blob);
+        }
       }
 
       const zipBlob = await zip.generateAsync({ type: "blob" });
@@ -103,6 +153,9 @@ export const LogoDownloads = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         {logoAssets.map((asset) => (
           <LogoCard key={asset.id} asset={asset} />
+        ))}
+        {pngLogoAssets.map((asset) => (
+          <PngLogoCard key={asset.id} asset={asset} />
         ))}
       </div>
     </div>

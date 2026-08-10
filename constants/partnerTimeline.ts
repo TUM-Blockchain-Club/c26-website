@@ -21,7 +21,7 @@ export type PartnerCheckpoint = {
 };
 
 export const partnerGuidelineIntro =
-  "Here is what we would suggest: two quick posts about the conference. The first introduces the TUM Blockchain Conference 26 to your audience, the second announces your partnership one to two months before the conference. Everything is prepared below, with a teaser video for the first and a card generator for the second, so it only takes a few minutes. But this is just a suggestion. You know your audience best, so feel free to implement the posts however fits your brand and channels.";
+  "Here is what we would suggest: two quick posts about the conference. The first announces your partnership as a Community Partner, the second puts the conference on your audience's radar one to two months before it happens. Everything is prepared below, with a card generator for the first and a teaser video for the second, so it only takes a few minutes. But this is just a suggestion. You know your audience best, so feel free to implement the posts however fits your brand and channels.";
 
 // Campaign window used only to position the progress rail.
 export const PARTNER_TIMELINE_START = "2026-06-01";
@@ -31,50 +31,20 @@ const LINK = buildPartnerUtmLink();
 const X = tbcAccounts.x.handle;
 const IG = tbcAccounts.instagram.handle;
 const BB_X = bundesblockAccounts.x.handle;
+// LinkedIn mentions: the exact page names prefixed with @, so partners tag us
+// (and the Digital Assets Day page) on LinkedIn and we can interact with their
+// posts. Caps on the DAD name match the page so LinkedIn surfaces it faster.
+const TBC_LI = `@${tbcAccounts.linkedin.handle}`;
+const DAD_LI = "@DIGITAL ASSETS DAY by Bundesblock";
 
 export const partnerCheckpoints: PartnerCheckpoint[] = [
   {
-    id: "conference-intro",
+    id: "partner-announcement",
     date: "2026-08-15",
     periodLabel: "As soon as possible",
-    label: "Post 1 · Conference Announcement",
+    label: "Post 1 · Community Partner Announcement",
     channel: "Social Media",
-    task: "Our suggestion for your first post: share the teaser video below with one of these captions to put the conference on your audience's radar. Or put it in your own words, whatever feels right for your audience.",
-    showVideo: true,
-    posts: [
-      {
-        platform: "X",
-        variants: {
-          short: `🎉 The TUM Blockchain Conference 26 is coming to Munich, Oct 29 to 31! Three days for the entire blockchain ecosystem → ${LINK} #TUMBlockchainConference26`,
-          medium: `🎉 The TUM Blockchain Conference 26 is coming to Munich, Oct 29 to 31!\n\nThree days of talks, a Digital Assets Day by ${BB_X} and a 30h Hackathon, built for the entire blockchain ecosystem → ${LINK}\n\nHosted by ${X}. #TUMBlockchainConference26`,
-          long: `🎉 The TUM Blockchain Conference 26 is coming to Munich, Oct 29 to 31!\n\nBorn at TUM, one of Europe's leading universities, and built for the entire blockchain ecosystem. Three days of talks, a Digital Assets Day by ${BB_X} and a 30h Hackathon.\n\nSee the full programme and grab your ticket → ${LINK}\n\nHosted by ${X}. #TUMBlockchainConference26`,
-        },
-      },
-      {
-        platform: "Instagram",
-        variants: {
-          short: `🎉 The TUM Blockchain Conference 26 is coming to Munich, Oct 29 to 31! Built for the entire blockchain ecosystem, link in bio. Hosted by ${IG}. #TUMBlockchainConference26 #Web3 #Munich`,
-          medium: `🎉 The TUM Blockchain Conference 26 is coming to Munich, Oct 29 to 31!\n\nThree days of talks, workshops and a 30h Hackathon for the entire blockchain ecosystem (link in bio: ${LINK}) 🚀\n\nHosted by ${IG}. #TUMBlockchainConference26 #Web3 #Munich`,
-          long: `🎉 The TUM Blockchain Conference 26 is coming to Munich, Oct 29 to 31!\n\nBorn at TUM, one of Europe's leading universities, and built for the entire blockchain ecosystem. Three days of talks, workshops, a Digital Assets Day by Bundesblock and a 30h Hackathon (link in bio: ${LINK}) 🚀\n\nHosted by ${IG}. #TUMBlockchainConference26 #Web3 #Munich`,
-        },
-      },
-      {
-        platform: "LinkedIn",
-        variants: {
-          short: `The TUM Blockchain Conference 26 takes place Oct 29 to 31 in Munich, hosted by TUM Blockchain Club. Built for the entire blockchain ecosystem. See the programme: ${LINK}\n\n#TUMBlockchainConference26`,
-          medium: `The TUM Blockchain Conference 26 takes place October 29 to 31 in Munich.\n\nBorn at TUM, one of Europe's leading universities, and built for the entire blockchain ecosystem: talks, workshops and a 30 hour Hackathon.\n\nAs a proud Community Partner, we are excited to support this year's edition, hosted by TUM Blockchain Club. See the programme: ${LINK}\n\n#TUMBlockchainConference26`,
-          long: `The TUM Blockchain Conference 26 takes place October 29 to 31 in Munich.\n\nBorn at TUM, the Technical University of Munich and one of Europe's leading universities, and built for the entire blockchain ecosystem: three days of talks, panels, workshops, a Digital Assets Day by Bundesblock and a 30 hour Hackathon. From people simply curious about the space to the industry leaders shaping it, everyone comes together here and everyone is welcome.\n\nAs a proud Community Partner, we are excited to support this year's edition, hosted by TUM Blockchain Club. See the programme and grab your ticket: ${LINK}\n\n#TUMBlockchainConference26`,
-        },
-      },
-    ],
-  },
-  {
-    id: "partner-announcement",
-    date: "2026-09-29",
-    periodLabel: "One to two months before the conference",
-    label: "Post 2 · Community Partner Announcement",
-    channel: "Social Media",
-    task: "Our suggestion for your second post: announce that you are a Community Partner and pair it with a card from the generator further down. As always, adapt it however you like.",
+    task: "Our suggestion for your first post: announce that you are a Community Partner and pair it with a card from the generator below. As always, adapt it however you like.",
     suggestCardGenerator: true,
     posts: [
       {
@@ -96,9 +66,44 @@ export const partnerCheckpoints: PartnerCheckpoint[] = [
       {
         platform: "LinkedIn",
         variants: {
-          short: `We are proud to be a Community Partner of the TUM Blockchain Conference 26. Oct 29 to 31 in Munich, hosted by TUM Blockchain Club. Join us: ${LINK}\n\n#TUMBlockchainConference26`,
-          medium: `We are proud to announce that we are a Community Partner of the TUM Blockchain Conference 26.\n\nTaking place October 29 to 31 in Munich, it was born at TUM, one of Europe's leading universities, and it is built for the entire blockchain ecosystem: talks, workshops and a 30 hour Hackathon, hosted by TUM Blockchain Club.\n\nJoin us: ${LINK}\n\n#TUMBlockchainConference26`,
-          long: `We are proud to announce that we are a Community Partner of the TUM Blockchain Conference 26.\n\nTaking place October 29 to 31 in Munich, it was born at TUM, the Technical University of Munich and one of Europe's leading universities, and it is built for the entire blockchain ecosystem: three days of talks, panels, workshops, a Digital Assets Day by Bundesblock and a 30 hour Hackathon, hosted by TUM Blockchain Club. From people simply curious about the space to the industry leaders shaping it, everyone comes together here and everyone is welcome.\n\nWe are excited to support this year's edition. Join us: ${LINK}\n\n#TUMBlockchainConference26`,
+          short: `We are proud to be a Community Partner of the TUM Blockchain Conference 26. Oct 29 to 31 in Munich, hosted by ${TBC_LI}. Join us: ${LINK}\n\n#TUMBlockchainConference26`,
+          medium: `We are proud to announce that we are a Community Partner of the TUM Blockchain Conference 26.\n\nTaking place October 29 to 31 in Munich, it was born at TUM, one of Europe's leading universities, and it is built for the entire blockchain ecosystem: talks, workshops and a 30 hour Hackathon, hosted by ${TBC_LI}.\n\nJoin us: ${LINK}\n\n#TUMBlockchainConference26`,
+          long: `We are proud to announce that we are a Community Partner of the TUM Blockchain Conference 26.\n\nTaking place October 29 to 31 in Munich, it was born at TUM, the Technical University of Munich and one of Europe's leading universities, and it is built for the entire blockchain ecosystem: three days of talks, panels, workshops, a ${DAD_LI} and a 30 hour Hackathon, hosted by ${TBC_LI}. From people simply curious about the space to the industry leaders shaping it, everyone comes together here and everyone is welcome.\n\nWe are excited to support this year's edition. Join us: ${LINK}\n\n#TUMBlockchainConference26`,
+        },
+      },
+    ],
+  },
+  {
+    id: "conference-intro",
+    date: "2026-09-29",
+    periodLabel: "One to two months before the conference",
+    label: "Post 2 · Conference Announcement",
+    channel: "Social Media",
+    task: "Our suggestion for your second post: share the teaser video below with one of these captions to put the conference on your audience's radar. Or put it in your own words, whatever feels right for your audience.",
+    showVideo: true,
+    posts: [
+      {
+        platform: "X",
+        variants: {
+          short: `🎉 The TUM Blockchain Conference 26 is coming to Munich, Oct 29 to 31! Three days for the entire blockchain ecosystem → ${LINK} #TUMBlockchainConference26`,
+          medium: `🎉 The TUM Blockchain Conference 26 is coming to Munich, Oct 29 to 31!\n\nThree days of talks, a Digital Assets Day by ${BB_X} and a 30h Hackathon, built for the entire blockchain ecosystem → ${LINK}\n\nHosted by ${X}. #TUMBlockchainConference26`,
+          long: `🎉 The TUM Blockchain Conference 26 is coming to Munich, Oct 29 to 31!\n\nBorn at TUM, one of Europe's leading universities, and built for the entire blockchain ecosystem. Three days of talks, a Digital Assets Day by ${BB_X} and a 30h Hackathon.\n\nSee the full programme and grab your ticket → ${LINK}\n\nHosted by ${X}. #TUMBlockchainConference26`,
+        },
+      },
+      {
+        platform: "Instagram",
+        variants: {
+          short: `🎉 The TUM Blockchain Conference 26 is coming to Munich, Oct 29 to 31! Built for the entire blockchain ecosystem, link in bio. Hosted by ${IG}. #TUMBlockchainConference26 #Web3 #Munich`,
+          medium: `🎉 The TUM Blockchain Conference 26 is coming to Munich, Oct 29 to 31!\n\nThree days of talks, workshops and a 30h Hackathon for the entire blockchain ecosystem (link in bio: ${LINK}) 🚀\n\nHosted by ${IG}. #TUMBlockchainConference26 #Web3 #Munich`,
+          long: `🎉 The TUM Blockchain Conference 26 is coming to Munich, Oct 29 to 31!\n\nBorn at TUM, one of Europe's leading universities, and built for the entire blockchain ecosystem. Three days of talks, workshops, a Digital Assets Day by Bundesblock and a 30h Hackathon (link in bio: ${LINK}) 🚀\n\nHosted by ${IG}. #TUMBlockchainConference26 #Web3 #Munich`,
+        },
+      },
+      {
+        platform: "LinkedIn",
+        variants: {
+          short: `The TUM Blockchain Conference 26 takes place Oct 29 to 31 in Munich, hosted by ${TBC_LI}. Built for the entire blockchain ecosystem. See the programme: ${LINK}\n\n#TUMBlockchainConference26`,
+          medium: `The TUM Blockchain Conference 26 takes place October 29 to 31 in Munich.\n\nBorn at TUM, one of Europe's leading universities, and built for the entire blockchain ecosystem: talks, workshops and a 30 hour Hackathon.\n\nAs a proud Community Partner, we are excited to support this year's edition, hosted by ${TBC_LI}. See the programme: ${LINK}\n\n#TUMBlockchainConference26`,
+          long: `The TUM Blockchain Conference 26 takes place October 29 to 31 in Munich.\n\nBorn at TUM, the Technical University of Munich and one of Europe's leading universities, and built for the entire blockchain ecosystem: three days of talks, panels, workshops, a ${DAD_LI} and a 30 hour Hackathon. From people simply curious about the space to the industry leaders shaping it, everyone comes together here and everyone is welcome.\n\nAs a proud Community Partner, we are excited to support this year's edition, hosted by ${TBC_LI}. See the programme and grab your ticket: ${LINK}\n\n#TUMBlockchainConference26`,
         },
       },
     ],

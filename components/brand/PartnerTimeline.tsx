@@ -1,6 +1,7 @@
 import { Text } from "@/components/text";
 import { PartnerPostCard } from "@/components/brand/PartnerPostCard";
 import { PartnerVideoAsset } from "@/components/brand/PartnerVideoAsset";
+import { PartnerCardGenerator } from "@/components/brand/PartnerCardGenerator";
 import { TimelineRail } from "@/components/brand/TimelineRail";
 import { partnerCheckpoints } from "@/constants/partnerTimeline";
 
@@ -67,20 +68,19 @@ export const PartnerTimeline = () => {
               {cp.showVideo && <PartnerVideoAsset />}
 
               {cp.suggestCardGenerator && (
-                <a
-                  href="#card-generator"
-                  className="card-tbc-soft flex items-center justify-between gap-3 p-4 no-underline transition-colors hover:border-line-strong hover:no-underline"
-                >
-                  <Text textType="small" className="text-secondary">
-                    Need a visual for this post? Generate a partner card below.
-                  </Text>
+                <div className="flex flex-col gap-4">
                   <Text
+                    as="p"
                     textType="small"
-                    className="font-bold text-white shrink-0"
+                    className="text-muted max-w-2xl"
                   >
-                    Card Generator ↓
+                    Generate an animated partner card in our brand: the
+                    conference ring, our colors, the date and location, paired
+                    with your logo and name. Download it in 16:9 or 4:5 to go
+                    with this post.
                   </Text>
-                </a>
+                  <PartnerCardGenerator />
+                </div>
               )}
 
               <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
