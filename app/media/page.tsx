@@ -6,6 +6,7 @@ import { PartnerNewsletter } from "@/components/brand/PartnerNewsletter";
 import { TimelineRail } from "@/components/brand/TimelineRail";
 import { MediaGallery } from "@/components/brand/MediaGallery";
 import { LogoDownloads } from "@/components/brand/LogoShowcase";
+import WhatsNew from "@/sections/WhatsNew";
 import {
   mediaIntro,
   lastYearParagraphs,
@@ -171,6 +172,8 @@ export default function MediaPage() {
                 title="Conference 26"
                 intro="And now we are making it even bigger. Here is everything about this year's edition, and how far along the road we already are."
               />
+
+              <WhatsNew />
 
               <div className="flex flex-col gap-4">
                 {thisYearParagraphs().map((paragraph, i) => (

@@ -27,10 +27,12 @@ const CONFERENCE_SPAN =
   "TUM BLOCKCHAIN CONFERENCE 26 · OCTOBER 29 TO 31, 2026 · MUNICH";
 
 // Digital Assets Day accent, matching the .card-blue / .btn-blue tokens.
+// Kept within that same light-to-mid blue range on purpose — earlier drafts
+// darkened the third stop into a navy, which read as too dark on the card.
 const DAD_COLORS = {
-  yellow: "rgb(120,170,255)",
+  yellow: "rgb(130,180,255)",
   red: "rgb(66,133,244)",
-  purple: "rgb(44,92,200)",
+  purple: "rgb(96,155,255)",
 };
 
 /**
@@ -39,7 +41,7 @@ const DAD_COLORS = {
  * contained on the subtle glass panel, never a white chip).
  */
 export type CardConfig = {
-  kind: "partner" | "speaker";
+  kind: "partner" | "speaker" | "attendee";
   eyebrow: string;
   /** Force the glass panel instead of a white chip — used for photos. */
   photo?: boolean;
@@ -53,6 +55,13 @@ export const PARTNER_CARD_CONFIG: CardConfig = {
 export const SPEAKER_CARD_CONFIG: CardConfig = {
   kind: "speaker",
   eyebrow: "I'M SPEAKING AT",
+  photo: true,
+};
+
+/** Generic attendee card: no day split, always the conference brand and logo. */
+export const ATTENDEE_CARD_CONFIG: CardConfig = {
+  kind: "attendee",
+  eyebrow: "I'M ATTENDING",
   photo: true,
 };
 
@@ -562,11 +571,11 @@ function drawCard(
   ctx.stroke();
   ctx.restore();
 
-  if (a.kind === "speaker") {
+  if (a.kind === "speaker" || a.kind === "attendee") {
     if (orientation === "landscape") {
-      drawSpeakerLandscape(ctx, dims, a, p, gradient, content);
+      drawPersonLandscape(ctx, dims, a, p, gradient, content);
     } else {
-      drawSpeakerPortrait(ctx, dims, a, p, gradient, content);
+      drawPersonPortrait(ctx, dims, a, p, gradient, content);
     }
   } else if (orientation === "landscape") {
     drawLandscape(ctx, dims, a, p, gradient, content.name);
@@ -936,7 +945,7 @@ function drawParagraph(
   }
 }
 
-function drawSpeakerLandscape(
+function drawPersonLandscape(
   ctx: CanvasRenderingContext2D,
   { w, h }: { w: number; h: number },
   a: Assets,
@@ -946,7 +955,8 @@ function drawSpeakerLandscape(
 ) {
   const P = 150;
   const day: SpeakerDay = content.day ?? "day1";
-  const topLogo = day === "day2" ? a.dadLogo : a.confLogo;
+  const isAttendee = a.kind === "attendee";
+  const topLogo = !isAttendee && day === "day2" ? a.dadLogo : a.confLogo;
 
   // Small logo, top-right corner only (Digital Assets Day mark on day 2).
   const logoIn = easeOut(phase(p, 0.06, 0.18));
@@ -1031,29 +1041,43 @@ function drawSpeakerLandscape(
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(P, h - 196, (w - P * 2) * infoIn, 2);
   ctx.restore();
-  drawSpacedText(ctx, DAY_PRIMARY[day], w / 2, h - 138, {
-    size: 36,
-    spacing: 6,
-    color: "rgba(255,255,255,0.95)",
-    alpha: infoIn,
-    align: "center",
-    weight: 800,
-    font: brandFont(),
-    maxWidth: w - P * 2,
-  });
-  drawSpacedText(ctx, CONFERENCE_SPAN, w / 2, h - 90, {
-    size: 26,
-    spacing: 4,
-    color: "rgba(255,255,255,0.62)",
-    alpha: infoIn,
-    align: "center",
-    weight: 600,
-    font: brandFont(),
-    maxWidth: w - P * 2,
-  });
+  if (isAttendee) {
+    // No day split for attendees — just the whole conference, one line.
+    drawSpacedText(ctx, CONFERENCE_SPAN, w / 2, h - 112, {
+      size: 32,
+      spacing: 5,
+      color: "rgba(255,255,255,0.95)",
+      alpha: infoIn,
+      align: "center",
+      weight: 800,
+      font: brandFont(),
+      maxWidth: w - P * 2,
+    });
+  } else {
+    drawSpacedText(ctx, DAY_PRIMARY[day], w / 2, h - 138, {
+      size: 36,
+      spacing: 6,
+      color: "rgba(255,255,255,0.95)",
+      alpha: infoIn,
+      align: "center",
+      weight: 800,
+      font: brandFont(),
+      maxWidth: w - P * 2,
+    });
+    drawSpacedText(ctx, CONFERENCE_SPAN, w / 2, h - 90, {
+      size: 26,
+      spacing: 4,
+      color: "rgba(255,255,255,0.62)",
+      alpha: infoIn,
+      align: "center",
+      weight: 600,
+      font: brandFont(),
+      maxWidth: w - P * 2,
+    });
+  }
 }
 
-function drawSpeakerPortrait(
+function drawPersonPortrait(
   ctx: CanvasRenderingContext2D,
   { w, h }: { w: number; h: number },
   a: Assets,
@@ -1063,7 +1087,8 @@ function drawSpeakerPortrait(
 ) {
   const P = 110;
   const day: SpeakerDay = content.day ?? "day1";
-  const topLogo = day === "day2" ? a.dadLogo : a.confLogo;
+  const isAttendee = a.kind === "attendee";
+  const topLogo = !isAttendee && day === "day2" ? a.dadLogo : a.confLogo;
 
   const logoIn = easeOut(phase(p, 0.06, 0.18));
   if (logoIn > 0) {
@@ -1138,26 +1163,39 @@ function drawSpeakerPortrait(
   }
 
   const infoIn = easeOut(phase(p, 0.54, 0.66));
-  drawSpacedText(ctx, DAY_PRIMARY[day], w / 2, h - 122, {
-    size: 30,
-    spacing: 4,
-    color: "rgba(255,255,255,0.95)",
-    alpha: infoIn,
-    align: "center",
-    weight: 800,
-    font: brandFont(),
-    maxWidth: w - P * 2,
-  });
-  drawSpacedText(ctx, CONFERENCE_SPAN, w / 2, h - 78, {
-    size: 22,
-    spacing: 2,
-    color: "rgba(255,255,255,0.62)",
-    alpha: infoIn,
-    align: "center",
-    weight: 600,
-    font: brandFont(),
-    maxWidth: w - P * 2,
-  });
+  if (isAttendee) {
+    drawSpacedText(ctx, CONFERENCE_SPAN, w / 2, h - 96, {
+      size: 26,
+      spacing: 3,
+      color: "rgba(255,255,255,0.95)",
+      alpha: infoIn,
+      align: "center",
+      weight: 800,
+      font: brandFont(),
+      maxWidth: w - P * 2,
+    });
+  } else {
+    drawSpacedText(ctx, DAY_PRIMARY[day], w / 2, h - 122, {
+      size: 30,
+      spacing: 4,
+      color: "rgba(255,255,255,0.95)",
+      alpha: infoIn,
+      align: "center",
+      weight: 800,
+      font: brandFont(),
+      maxWidth: w - P * 2,
+    });
+    drawSpacedText(ctx, CONFERENCE_SPAN, w / 2, h - 78, {
+      size: 22,
+      spacing: 2,
+      color: "rgba(255,255,255,0.62)",
+      alpha: infoIn,
+      align: "center",
+      weight: 600,
+      font: brandFont(),
+      maxWidth: w - P * 2,
+    });
+  }
 }
 
 /** Samples an image's alpha to tell a cut-out subject from an opaque photo. */
@@ -1222,7 +1260,7 @@ async function loadAssets(
 ): Promise<Assets> {
   const [confLogo, dadLogo, ring, partnerLogo] = await Promise.all([
     loadImage("/logos/c26-wordmark.svg"),
-    loadImage("/logos/digital-assets-day-logo-white.png"),
+    loadImage("/logos/digital-assets-day-logo.png"),
     loadImage("/hero/mask-group-1.png"),
     loadImage(partnerLogoUrl),
   ]);
@@ -1231,19 +1269,20 @@ async function loadAssets(
     red: readCssTokenRgb("--color-brand-red-rgb", "244 67 54"),
     purple: readCssTokenRgb("--color-brand-purple-rgb", "111 61 226"),
   };
+  // Only the speaker card has a per-day theme; attendees always see the
+  // conference brand, regardless of what `day` defaults to.
+  const isDad = config.kind === "speaker" && day === "day2";
   return {
     confLogo,
     dadLogo,
-    ring: day === "day2" ? tintRingBlue(ring) : ring,
+    ring: isDad ? tintRingBlue(ring) : ring,
     partnerLogo,
     // Photos always sit on the glass panel; only logos may get a white chip.
     useLightChip: config.photo ? false : partnerNeedsLightChip(partnerLogo),
-    photoHasAlpha:
-      config.kind === "speaker" ? detectHasAlpha(partnerLogo) : false,
+    photoHasAlpha: config.photo ? detectHasAlpha(partnerLogo) : false,
     kind: config.kind,
     eyebrow: config.eyebrow,
-    // Digital Assets Day (day 2) recolors the whole card blue.
-    colors: day === "day2" ? DAD_COLORS : brandColors,
+    colors: isDad ? DAD_COLORS : brandColors,
   };
 }
 
@@ -1410,3 +1449,25 @@ export const renderSpeakerCardStill = (
   content: CardContent,
 ): Promise<Blob> =>
   renderPartnerCardStill(photoUrl, orientation, content, SPEAKER_CARD_CONFIG);
+
+/** Attendee card: same brand animation, "I'M ATTENDING", no day split. */
+export const renderAttendeeCardVideo = (
+  photoUrl: string,
+  orientation: CardOrientation,
+  content: CardContent,
+  onProgress?: (p: number) => void,
+): Promise<VideoResult> =>
+  renderPartnerCardVideo(
+    photoUrl,
+    orientation,
+    content,
+    onProgress,
+    ATTENDEE_CARD_CONFIG,
+  );
+
+export const renderAttendeeCardStill = (
+  photoUrl: string,
+  orientation: CardOrientation,
+  content: CardContent,
+): Promise<Blob> =>
+  renderPartnerCardStill(photoUrl, orientation, content, ATTENDEE_CARD_CONFIG);

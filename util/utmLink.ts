@@ -20,3 +20,10 @@ export function buildSpeakerUtmLink(): string {
   url.searchParams.set("utm_source", "speaker");
   return url.toString();
 }
+
+/** Link for attendees sharing that they are going. */
+export function buildAttendeeUtmLink(): string {
+  const url = new URL(SITE_URL);
+  url.searchParams.set("utm_source", "attendee");
+  return url.toString();
+}
