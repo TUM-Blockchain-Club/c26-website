@@ -15,11 +15,76 @@ const CONFERENCE_LOCATION = "MUNICH · HOUSE OF COMMUNICATION";
 const CONFERENCE_URL = "conference26.tum-blockchain.com";
 const ORGANISED_BY = "ORGANISED BY TUM BLOCKCHAIN CLUB";
 
+export type SpeakerDay = "day1" | "day2";
+
+/** Bottom of the card: line 1 is the speaker's own day, line 2 is the whole
+ * conference (which always runs October 29 to 31), shown on every card. */
+const DAY_PRIMARY: Record<SpeakerDay, string> = {
+  day1: "FIRST CONFERENCE DAY · OCT 29",
+  day2: "DIGITAL ASSETS DAY · OCT 30",
+};
+const CONFERENCE_SPAN =
+  "TUM BLOCKCHAIN CONFERENCE 26 · OCTOBER 29 TO 31, 2026 · MUNICH";
+
+// Digital Assets Day accent, matching the .card-blue / .btn-blue tokens.
+const DAD_COLORS = {
+  yellow: "rgb(120,170,255)",
+  red: "rgb(66,133,244)",
+  purple: "rgb(44,92,200)",
+};
+
+/**
+ * What differs between the partner card and the speaker card: the eyebrow line
+ * and whether the uploaded image is a logo (auto light chip) or a photo (always
+ * contained on the subtle glass panel, never a white chip).
+ */
+export type CardConfig = {
+  kind: "partner" | "speaker";
+  eyebrow: string;
+  /** Force the glass panel instead of a white chip — used for photos. */
+  photo?: boolean;
+};
+
+export const PARTNER_CARD_CONFIG: CardConfig = {
+  kind: "partner",
+  eyebrow: "COMMUNITY PARTNER",
+};
+
+export const SPEAKER_CARD_CONFIG: CardConfig = {
+  kind: "speaker",
+  eyebrow: "I'M SPEAKING AT",
+  photo: true,
+};
+
+/**
+ * The text on the card. Partners only fill `name`; speakers also add their
+ * `job` and a short `blurb` about their talk.
+ */
+export type CardContent = {
+  name: string;
+  job?: string;
+  blurb?: string;
+  /** Which day the speaker is on. Day 2 is the Digital Assets Day (blue). */
+  day?: SpeakerDay;
+};
+
+/** How many characters each field can hold and still lay out cleanly. */
+export const SPEAKER_LIMITS = {
+  name: 26,
+  job: 40,
+  blurb: 160,
+} as const;
+
 type Assets = {
   confLogo: HTMLImageElement;
-  ring: HTMLImageElement;
+  dadLogo: HTMLImageElement;
+  ring: HTMLImageElement | HTMLCanvasElement;
   partnerLogo: HTMLImageElement;
   useLightChip: boolean;
+  /** Whether the uploaded image has real transparency (a cut-out subject). */
+  photoHasAlpha: boolean;
+  kind: CardConfig["kind"];
+  eyebrow: string;
   colors: { yellow: string; red: string; purple: string };
 };
 
@@ -441,7 +506,7 @@ function drawCard(
   p: number,
   elapsed: number,
   orientation: CardOrientation,
-  partnerName: string,
+  content: CardContent,
 ) {
   const { w, h } = dims;
 
@@ -497,10 +562,16 @@ function drawCard(
   ctx.stroke();
   ctx.restore();
 
-  if (orientation === "landscape") {
-    drawLandscape(ctx, dims, a, p, gradient, partnerName);
+  if (a.kind === "speaker") {
+    if (orientation === "landscape") {
+      drawSpeakerLandscape(ctx, dims, a, p, gradient, content);
+    } else {
+      drawSpeakerPortrait(ctx, dims, a, p, gradient, content);
+    }
+  } else if (orientation === "landscape") {
+    drawLandscape(ctx, dims, a, p, gradient, content.name);
   } else {
-    drawPortrait(ctx, dims, a, p, gradient, partnerName);
+    drawPortrait(ctx, dims, a, p, gradient, content.name);
   }
 
   // Gentle fade in from black at the very start
@@ -531,7 +602,7 @@ function drawLandscape(
     gradient,
     easeOut(phase(p, 0.06, 0.16)),
   );
-  drawSpacedText(ctx, "COMMUNITY PARTNER", P, h * 0.13 + (1 - eyebrowIn) * 14, {
+  drawSpacedText(ctx, a.eyebrow, P, h * 0.13 + (1 - eyebrowIn) * 14, {
     size: 58,
     spacing: 18,
     color: "#ffffff",
@@ -632,22 +703,16 @@ function drawPortrait(
     easeOut(phase(p, 0.06, 0.16)),
     true,
   );
-  drawSpacedText(
-    ctx,
-    "COMMUNITY PARTNER",
-    w / 2,
-    h * 0.09 + (1 - eyebrowIn) * 14,
-    {
-      size: 44,
-      spacing: 14,
-      color: "#ffffff",
-      alpha: eyebrowIn,
-      align: "center",
-      weight: 800,
-      font: brandFont(),
-      maxWidth: w - P * 2,
-    },
-  );
+  drawSpacedText(ctx, a.eyebrow, w / 2, h * 0.09 + (1 - eyebrowIn) * 14, {
+    size: 44,
+    spacing: 14,
+    color: "#ffffff",
+    alpha: eyebrowIn,
+    align: "center",
+    weight: 800,
+    font: brandFont(),
+    maxWidth: w - P * 2,
+  });
 
   const chipW = w - P * 2;
   const chipH = 290;
@@ -740,32 +805,460 @@ function drawPortrait(
   });
 }
 
-async function loadAssets(partnerLogoUrl: string): Promise<Assets> {
-  const [confLogo, ring, partnerLogo] = await Promise.all([
+/** Cover-fills an opaque photo into a rounded rect. */
+function drawPhotoCover(
+  ctx: CanvasRenderingContext2D,
+  img: HTMLImageElement,
+  box: { x: number; y: number; w: number; h: number },
+  radius: number,
+  alpha: number,
+) {
+  if (alpha <= 0) return;
+  const iw = img.naturalWidth || img.width || box.w;
+  const ih = img.naturalHeight || img.height || box.h;
+  const scale = Math.max(box.w / iw, box.h / ih);
+  const dw = iw * scale;
+  const dh = ih * scale;
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.shadowColor = "rgba(0,0,0,0.5)";
+  ctx.shadowBlur = 50;
+  ctx.shadowOffsetY = 18;
+  roundRectPath(ctx, box.x, box.y, box.w, box.h, radius);
+  ctx.fillStyle = "#000";
+  ctx.fill();
+  ctx.restore();
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  roundRectPath(ctx, box.x, box.y, box.w, box.h, radius);
+  ctx.clip();
+  ctx.drawImage(
+    img,
+    box.x + (box.w - dw) / 2,
+    box.y + (box.h - dh) / 2,
+    dw,
+    dh,
+  );
+  ctx.restore();
+
+  ctx.save();
+  ctx.globalAlpha = alpha * 0.6;
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = "rgba(255,255,255,0.16)";
+  roundRectPath(ctx, box.x, box.y, box.w, box.h, radius);
+  ctx.stroke();
+  ctx.restore();
+}
+
+/**
+ * The speaker's photo. A cut-out (transparent) image floats straight on the
+ * brand background; a normal photo is cover-filled into a rounded tile.
+ */
+function drawSpeakerPhoto(
+  ctx: CanvasRenderingContext2D,
+  a: Assets,
+  box: { x: number; y: number; w: number; h: number },
+  alpha: number,
+  radius: number,
+) {
+  if (alpha <= 0) return;
+  if (a.photoHasAlpha) {
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    drawContain(ctx, a.partnerLogo, box);
+    ctx.restore();
+  } else {
+    drawPhotoCover(ctx, a.partnerLogo, box, radius, alpha);
+  }
+}
+
+/** Wraps text into lines that fit maxWidth, capped at maxLines. */
+function wrapLines(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  o: { size: number; weight: number; maxWidth: number; maxLines: number },
+): string[] {
+  setFont(ctx, o.weight, o.size, brandFont());
+  const words = text.split(/\s+/).filter(Boolean);
+  const lines: string[] = [];
+  let line = "";
+  for (const word of words) {
+    const trial = line ? `${line} ${word}` : word;
+    if (ctx.measureText(trial).width <= o.maxWidth || !line) {
+      line = trial;
+    } else {
+      lines.push(line);
+      line = word;
+      if (lines.length === o.maxLines - 1) break;
+    }
+  }
+  if (line && lines.length < o.maxLines) lines.push(line);
+  return lines;
+}
+
+/** Draws a wrapped paragraph. */
+function drawParagraph(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  o: {
+    size: number;
+    weight: number;
+    color: string;
+    alpha: number;
+    maxWidth: number;
+    maxLines: number;
+    align?: "left" | "center";
+    lineGap?: number;
+  },
+) {
+  if (o.alpha <= 0 || !text) return;
+  const lines = wrapLines(ctx, text, {
+    size: o.size,
+    weight: o.weight,
+    maxWidth: o.maxWidth,
+    maxLines: o.maxLines,
+  });
+  const gap = o.lineGap ?? o.size * 1.34;
+  let cy = y;
+  for (const line of lines) {
+    drawFittedText(ctx, line, x, cy, {
+      size: o.size,
+      color: o.color,
+      alpha: o.alpha,
+      weight: o.weight,
+      align: o.align ?? "left",
+      maxWidth: o.maxWidth,
+    });
+    cy += gap;
+  }
+}
+
+function drawSpeakerLandscape(
+  ctx: CanvasRenderingContext2D,
+  { w, h }: { w: number; h: number },
+  a: Assets,
+  p: number,
+  gradient: CanvasGradient,
+  content: CardContent,
+) {
+  const P = 150;
+  const day: SpeakerDay = content.day ?? "day1";
+  const topLogo = day === "day2" ? a.dadLogo : a.confLogo;
+
+  // Small logo, top-right corner only (Digital Assets Day mark on day 2).
+  const logoIn = easeOut(phase(p, 0.06, 0.18));
+  if (logoIn > 0) {
+    ctx.save();
+    ctx.globalAlpha = logoIn;
+    drawContain(ctx, topLogo, { x: w - P - 430, y: 92, w: 430, h: 116 });
+    ctx.restore();
+  }
+
+  // Eyebrow, top-left.
+  const eyebrowIn = easeOut(phase(p, 0.1, 0.2));
+  drawAccentRule(
+    ctx,
+    P,
+    156 - 40,
+    116,
+    gradient,
+    easeOut(phase(p, 0.08, 0.18)),
+  );
+  drawSpacedText(ctx, a.eyebrow, P, 156 + (1 - eyebrowIn) * 14, {
+    size: 46,
+    spacing: 14,
+    color: "#ffffff",
+    alpha: eyebrowIn,
+    weight: 800,
+    font: brandFont(),
+    maxWidth: w * 0.5,
+  });
+
+  // Photo, left.
+  const photoIn = easeOut(phase(p, 0.16, 0.32));
+  drawSpeakerPhoto(
+    ctx,
+    a,
+    { x: P - (1 - photoIn) * 30, y: 250, w: 560, h: 660 },
+    photoIn,
+    40,
+  );
+
+  // Text column, right of the photo.
+  const colX = P + 560 + 80;
+  const colW = w - colX - P;
+
+  drawFittedText(ctx, content.name, colX, 430, {
+    size: 100,
+    color: "#ffffff",
+    alpha: easeOut(phase(p, 0.28, 0.4)),
+    weight: 800,
+    align: "left",
+    maxWidth: colW,
+  });
+
+  if (content.job) {
+    drawFittedText(ctx, content.job, colX, 524, {
+      size: 46,
+      color: a.colors.yellow,
+      alpha: easeOut(phase(p, 0.36, 0.46)),
+      weight: 700,
+      align: "left",
+      maxWidth: colW,
+    });
+  }
+
+  if (content.blurb) {
+    drawParagraph(ctx, content.blurb, colX, 620, {
+      size: 40,
+      weight: 500,
+      color: "rgba(255,255,255,0.82)",
+      alpha: easeOut(phase(p, 0.44, 0.56)),
+      maxWidth: colW,
+      maxLines: 4,
+      align: "left",
+      lineGap: 56,
+    });
+  }
+
+  // Date and location along the bottom.
+  const infoIn = easeOut(phase(p, 0.52, 0.64));
+  ctx.save();
+  ctx.globalAlpha = infoIn * 0.16;
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(P, h - 196, (w - P * 2) * infoIn, 2);
+  ctx.restore();
+  drawSpacedText(ctx, DAY_PRIMARY[day], w / 2, h - 138, {
+    size: 36,
+    spacing: 6,
+    color: "rgba(255,255,255,0.95)",
+    alpha: infoIn,
+    align: "center",
+    weight: 800,
+    font: brandFont(),
+    maxWidth: w - P * 2,
+  });
+  drawSpacedText(ctx, CONFERENCE_SPAN, w / 2, h - 90, {
+    size: 26,
+    spacing: 4,
+    color: "rgba(255,255,255,0.62)",
+    alpha: infoIn,
+    align: "center",
+    weight: 600,
+    font: brandFont(),
+    maxWidth: w - P * 2,
+  });
+}
+
+function drawSpeakerPortrait(
+  ctx: CanvasRenderingContext2D,
+  { w, h }: { w: number; h: number },
+  a: Assets,
+  p: number,
+  gradient: CanvasGradient,
+  content: CardContent,
+) {
+  const P = 110;
+  const day: SpeakerDay = content.day ?? "day1";
+  const topLogo = day === "day2" ? a.dadLogo : a.confLogo;
+
+  const logoIn = easeOut(phase(p, 0.06, 0.18));
+  if (logoIn > 0) {
+    ctx.save();
+    ctx.globalAlpha = logoIn;
+    drawContain(ctx, topLogo, { x: w - P - 300, y: 96, w: 300, h: 88 });
+    ctx.restore();
+  }
+
+  const eyebrowIn = easeOut(phase(p, 0.1, 0.2));
+  drawAccentRule(
+    ctx,
+    w / 2,
+    240 - 40,
+    104,
+    gradient,
+    easeOut(phase(p, 0.08, 0.18)),
+    true,
+  );
+  drawSpacedText(ctx, a.eyebrow, w / 2, 240 + (1 - eyebrowIn) * 14, {
+    size: 40,
+    spacing: 12,
+    color: "#ffffff",
+    alpha: eyebrowIn,
+    align: "center",
+    weight: 800,
+    font: brandFont(),
+    maxWidth: w - P * 2,
+  });
+
+  const photoIn = easeOut(phase(p, 0.16, 0.32));
+  const pw = 560;
+  drawSpeakerPhoto(
+    ctx,
+    a,
+    { x: (w - pw) / 2, y: 300 - (1 - photoIn) * 20, w: pw, h: 560 },
+    photoIn,
+    44,
+  );
+
+  drawFittedText(ctx, content.name, w / 2, 950, {
+    size: 74,
+    color: "#ffffff",
+    alpha: easeOut(phase(p, 0.3, 0.42)),
+    weight: 800,
+    align: "center",
+    maxWidth: w - P * 2,
+  });
+
+  if (content.job) {
+    drawFittedText(ctx, content.job, w / 2, 1018, {
+      size: 38,
+      color: a.colors.yellow,
+      alpha: easeOut(phase(p, 0.38, 0.48)),
+      weight: 700,
+      align: "center",
+      maxWidth: w - P * 2,
+    });
+  }
+
+  if (content.blurb) {
+    drawParagraph(ctx, content.blurb, w / 2, 1082, {
+      size: 34,
+      weight: 500,
+      color: "rgba(255,255,255,0.82)",
+      alpha: easeOut(phase(p, 0.46, 0.58)),
+      maxWidth: w - P * 2,
+      maxLines: 3,
+      align: "center",
+      lineGap: 46,
+    });
+  }
+
+  const infoIn = easeOut(phase(p, 0.54, 0.66));
+  drawSpacedText(ctx, DAY_PRIMARY[day], w / 2, h - 122, {
+    size: 30,
+    spacing: 4,
+    color: "rgba(255,255,255,0.95)",
+    alpha: infoIn,
+    align: "center",
+    weight: 800,
+    font: brandFont(),
+    maxWidth: w - P * 2,
+  });
+  drawSpacedText(ctx, CONFERENCE_SPAN, w / 2, h - 78, {
+    size: 22,
+    spacing: 2,
+    color: "rgba(255,255,255,0.62)",
+    alpha: infoIn,
+    align: "center",
+    weight: 600,
+    font: brandFont(),
+    maxWidth: w - P * 2,
+  });
+}
+
+/** Samples an image's alpha to tell a cut-out subject from an opaque photo. */
+function detectHasAlpha(img: HTMLImageElement): boolean {
+  const s = 48;
+  const c = document.createElement("canvas");
+  c.width = s;
+  c.height = s;
+  const cx = c.getContext("2d");
+  if (!cx) return false;
+  const iw = img.naturalWidth || img.width || s;
+  const ih = img.naturalHeight || img.height || s;
+  const scale = Math.min(s / iw, s / ih);
+  const dw = iw * scale;
+  const dh = ih * scale;
+  cx.clearRect(0, 0, s, s);
+  cx.drawImage(img, (s - dw) / 2, (s - dh) / 2, dw, dh);
+  try {
+    const data = cx.getImageData(0, 0, s, s).data;
+    let transparent = 0;
+    const total = s * s;
+    for (let i = 3; i < data.length; i += 4) {
+      if (data[i] < 16) transparent++;
+    }
+    // The letterbox around a contained image is transparent too; only count
+    // transparency beyond that as a genuine cut-out.
+    const letterbox = 1 - (dw * dh) / (s * s);
+    return transparent / total - letterbox > 0.06;
+  } catch {
+    return false;
+  }
+}
+
+/** Recolours the brand ring into the Digital Assets Day blue gradient, keeping
+ * its shape and alpha, so the background graphic matches the day 2 theme. */
+function tintRingBlue(
+  img: HTMLImageElement,
+): HTMLImageElement | HTMLCanvasElement {
+  const w = img.naturalWidth || img.width;
+  const h = img.naturalHeight || img.height;
+  if (!w || !h) return img;
+  const c = document.createElement("canvas");
+  c.width = w;
+  c.height = h;
+  const cx = c.getContext("2d");
+  if (!cx) return img;
+  cx.drawImage(img, 0, 0, w, h);
+  cx.globalCompositeOperation = "source-in";
+  const g = cx.createLinearGradient(0, 0, w, h);
+  g.addColorStop(0, DAD_COLORS.yellow);
+  g.addColorStop(0.5, DAD_COLORS.red);
+  g.addColorStop(1, DAD_COLORS.purple);
+  cx.fillStyle = g;
+  cx.fillRect(0, 0, w, h);
+  return c;
+}
+
+async function loadAssets(
+  partnerLogoUrl: string,
+  config: CardConfig,
+  day: SpeakerDay = "day1",
+): Promise<Assets> {
+  const [confLogo, dadLogo, ring, partnerLogo] = await Promise.all([
     loadImage("/logos/c26-wordmark.svg"),
+    loadImage("/logos/digital-assets-day-logo-white.png"),
     loadImage("/hero/mask-group-1.png"),
     loadImage(partnerLogoUrl),
   ]);
+  const brandColors = {
+    yellow: readCssTokenRgb("--color-brand-yellow-rgb", "255 193 16"),
+    red: readCssTokenRgb("--color-brand-red-rgb", "244 67 54"),
+    purple: readCssTokenRgb("--color-brand-purple-rgb", "111 61 226"),
+  };
   return {
     confLogo,
-    ring,
+    dadLogo,
+    ring: day === "day2" ? tintRingBlue(ring) : ring,
     partnerLogo,
-    useLightChip: partnerNeedsLightChip(partnerLogo),
-    colors: {
-      yellow: readCssTokenRgb("--color-brand-yellow-rgb", "255 193 16"),
-      red: readCssTokenRgb("--color-brand-red-rgb", "244 67 54"),
-      purple: readCssTokenRgb("--color-brand-purple-rgb", "111 61 226"),
-    },
+    // Photos always sit on the glass panel; only logos may get a white chip.
+    useLightChip: config.photo ? false : partnerNeedsLightChip(partnerLogo),
+    photoHasAlpha:
+      config.kind === "speaker" ? detectHasAlpha(partnerLogo) : false,
+    kind: config.kind,
+    eyebrow: config.eyebrow,
+    // Digital Assets Day (day 2) recolors the whole card blue.
+    colors: day === "day2" ? DAD_COLORS : brandColors,
   };
 }
+
+/** A plain name (partner) or the full content object (speaker). */
+const toContent = (x: string | CardContent): CardContent =>
+  typeof x === "string" ? { name: x } : x;
 
 /** Renders one frame at progress p / elapsed ms. Exposed for previews. */
 export async function renderPartnerCardFrame(
   partnerLogoUrl: string,
   orientation: CardOrientation,
-  partnerName: string,
+  nameOrContent: string | CardContent,
   p: number,
   elapsedMs: number,
+  config: CardConfig = PARTNER_CARD_CONFIG,
 ): Promise<HTMLCanvasElement> {
   const dims = DIMENSIONS[orientation];
   const canvas = document.createElement("canvas");
@@ -780,8 +1273,9 @@ export async function renderPartnerCardFrame(
     // System fonts are fine as a fallback.
   }
 
-  const assets = await loadAssets(partnerLogoUrl);
-  drawCard(ctx, dims, assets, p, elapsedMs, orientation, partnerName);
+  const content = toContent(nameOrContent);
+  const assets = await loadAssets(partnerLogoUrl, config, content.day);
+  drawCard(ctx, dims, assets, p, elapsedMs, orientation, content);
   return canvas;
 }
 
@@ -789,14 +1283,16 @@ export async function renderPartnerCardFrame(
 export async function renderPartnerCardStill(
   partnerLogoUrl: string,
   orientation: CardOrientation,
-  partnerName: string,
+  nameOrContent: string | CardContent,
+  config: CardConfig = PARTNER_CARD_CONFIG,
 ): Promise<Blob> {
   const canvas = await renderPartnerCardFrame(
     partnerLogoUrl,
     orientation,
-    partnerName,
+    nameOrContent,
     1,
     6500,
+    config,
   );
   return new Promise((resolve, reject) => {
     canvas.toBlob((blob) => {
@@ -823,12 +1319,14 @@ export type VideoResult = { blob: Blob; extension: "mp4" | "webm" };
 export async function renderPartnerCardVideo(
   partnerLogoUrl: string,
   orientation: CardOrientation,
-  partnerName: string,
+  nameOrContent: string | CardContent,
   onProgress?: (p: number) => void,
+  config: CardConfig = PARTNER_CARD_CONFIG,
 ): Promise<VideoResult> {
   if (typeof MediaRecorder === "undefined") {
     throw new Error("Your browser does not support video recording.");
   }
+  const content = toContent(nameOrContent);
 
   const dims = DIMENSIONS[orientation];
   const canvas = document.createElement("canvas");
@@ -843,10 +1341,10 @@ export async function renderPartnerCardVideo(
     // System fonts are fine as a fallback.
   }
 
-  const assets = await loadAssets(partnerLogoUrl);
+  const assets = await loadAssets(partnerLogoUrl, config, content.day);
 
   // Draw the first frame before capturing so the stream starts populated.
-  drawCard(ctx, dims, assets, 0, 0, orientation, partnerName);
+  drawCard(ctx, dims, assets, 0, 0, orientation, content);
 
   const stream = canvas.captureStream(FPS);
   const mimeType = pickMimeType();
@@ -870,7 +1368,7 @@ export async function renderPartnerCardVideo(
     const frame = (now: number) => {
       const elapsed = now - start;
       const p = Math.min(1, elapsed / DURATION_MS);
-      drawCard(ctx, dims, assets, p, elapsed, orientation, partnerName);
+      drawCard(ctx, dims, assets, p, elapsed, orientation, content);
       onProgress?.(p);
       if (elapsed < DURATION_MS) {
         requestAnimationFrame(frame);
@@ -890,3 +1388,25 @@ export async function renderPartnerCardVideo(
     extension: finalType.startsWith("video/mp4") ? "mp4" : "webm",
   };
 }
+
+/** Speaker card: same brand animation, "I'M SPEAKING AT", photo + name/job/blurb. */
+export const renderSpeakerCardVideo = (
+  photoUrl: string,
+  orientation: CardOrientation,
+  content: CardContent,
+  onProgress?: (p: number) => void,
+): Promise<VideoResult> =>
+  renderPartnerCardVideo(
+    photoUrl,
+    orientation,
+    content,
+    onProgress,
+    SPEAKER_CARD_CONFIG,
+  );
+
+export const renderSpeakerCardStill = (
+  photoUrl: string,
+  orientation: CardOrientation,
+  content: CardContent,
+): Promise<Blob> =>
+  renderPartnerCardStill(photoUrl, orientation, content, SPEAKER_CARD_CONFIG);

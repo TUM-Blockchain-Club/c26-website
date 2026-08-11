@@ -13,3 +13,10 @@ export function buildMediaUtmLink(): string {
   url.searchParams.set("utm_source", "media_partner");
   return url.toString();
 }
+
+/** Link for speakers sharing that they are on the programme. */
+export function buildSpeakerUtmLink(): string {
+  const url = new URL(SITE_URL);
+  url.searchParams.set("utm_source", "speaker");
+  return url.toString();
+}
