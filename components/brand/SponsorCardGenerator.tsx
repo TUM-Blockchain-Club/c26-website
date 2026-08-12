@@ -18,7 +18,13 @@ import {
 type Status = "idle" | "generating" | "ready" | "error";
 type LogoEntry = { file: File; url: string };
 
-const MAX_LOGO_SIZE = 8 * 1024 * 1024;
+// Reject only truly huge files early; anything smaller is downscaled to fit.
+const MAX_UPLOAD = 25 * 1024 * 1024;
+// Longest side we keep — comfortably more than a logo ever needs at its
+// largest on-card size, so nothing visible is lost.
+const MAX_LOGO_DIM = 1400;
+// Skip processing entirely if the file is already this modest.
+const KEEP_ORIGINAL_UNDER = 1.5 * 1024 * 1024;
 
 const TIER_SWATCH: Record<SponsorTier, string> = {
   platinum: "linear-gradient(135deg, #ffffff, #96b9ff)",
@@ -26,6 +32,61 @@ const TIER_SWATCH: Record<SponsorTier, string> = {
   silver: "linear-gradient(135deg, #ebeff3, #788696)",
   bronze: "linear-gradient(135deg, #e4aa78, #7a4828)",
 };
+
+function loadImageElement(url: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error("Not a decodable image"));
+    img.src = url;
+  });
+}
+
+/**
+ * Downscales an oversized logo and re-encodes it as PNG — lossless, unlike
+ * JPEG, so transparency and sharp edges survive. Only the resolution shrinks,
+ * and only down to more than a logo ever needs at its largest on-card size.
+ * SVGs are vector and already tiny, so they pass through untouched.
+ */
+async function prepareLogo(file: File): Promise<{ url: string; file: File }> {
+  if (file.type === "image/svg+xml") {
+    return { url: URL.createObjectURL(file), file };
+  }
+
+  const srcUrl = URL.createObjectURL(file);
+  let img: HTMLImageElement;
+  try {
+    img = await loadImageElement(srcUrl);
+  } catch (err) {
+    URL.revokeObjectURL(srcUrl);
+    throw err;
+  }
+
+  const w = img.naturalWidth || img.width;
+  const h = img.naturalHeight || img.height;
+  const scale = Math.min(1, MAX_LOGO_DIM / Math.max(w, h || 1));
+
+  if (scale === 1 && file.size <= KEEP_ORIGINAL_UNDER) {
+    return { url: srcUrl, file };
+  }
+
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(w * scale));
+  canvas.height = Math.max(1, Math.round(h * scale));
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return { url: srcUrl, file };
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  URL.revokeObjectURL(srcUrl);
+
+  const blob = await new Promise<Blob | null>((resolve) =>
+    canvas.toBlob((b) => resolve(b), "image/png"),
+  );
+  if (!blob) throw new Error("Could not compress the image");
+
+  const base = file.name.replace(/\.[^.]+$/, "") || "logo";
+  const compressed = new File([blob], `${base}.png`, { type: "image/png" });
+  return { url: URL.createObjectURL(blob), file: compressed };
+}
 
 export const SponsorCardGenerator = () => {
   const [tier, setTier] = useState<SponsorTier>("platinum");
@@ -76,7 +137,7 @@ export const SponsorCardGenerator = () => {
     setErrorMsg(null);
   };
 
-  const handleFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFilesChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = Array.from(e.target.files ?? []);
     e.target.value = "";
     if (!selected.length) return;
@@ -84,26 +145,35 @@ export const SponsorCardGenerator = () => {
     clearOutput();
     setErrorMsg(null);
 
-    const room = requiredCount - logos.length;
-    const oversized = selected.some((f) => f.size > MAX_LOGO_SIZE);
-    if (oversized) {
-      setErrorMsg("One of those files is larger than 8MB. Use a smaller logo.");
+    const tooHuge = selected.some((f) => f.size > MAX_UPLOAD);
+    if (tooHuge) {
+      setErrorMsg("One of those files is very large. Use a file under 25MB.");
       return;
     }
 
+    const room = requiredCount - logos.length;
     const accepted = selected.slice(0, room);
-    if (selected.length > room) {
-      const tierLabel = tier[0].toUpperCase() + tier.slice(1);
-      setErrorMsg(
-        `${tierLabel} posts need exactly ${requiredCount} logo${requiredCount === 1 ? "" : "s"} — only added ${accepted.length} more.`,
-      );
+    const roomMsg =
+      selected.length > room
+        ? `${tier[0].toUpperCase() + tier.slice(1)} posts need exactly ${requiredCount} logo${requiredCount === 1 ? "" : "s"} — only added ${accepted.length} more.`
+        : null;
+
+    // Large logos are downscaled and re-encoded as PNG automatically, which
+    // is lossless, so this never trades away sharpness or transparency.
+    const results = await Promise.allSettled(accepted.map(prepareLogo));
+    const entries: LogoEntry[] = [];
+    let failed = 0;
+    for (const r of results) {
+      if (r.status === "fulfilled") entries.push(r.value);
+      else failed++;
     }
 
-    const entries = accepted.map((file) => ({
-      file,
-      url: URL.createObjectURL(file),
-    }));
     setLogos((prev) => [...prev, ...entries]);
+    setErrorMsg(
+      failed > 0
+        ? `${failed} file${failed === 1 ? "" : "s"} could not be loaded as an image.`
+        : roomMsg,
+    );
   };
 
   const removeLogo = (index: number) => {
@@ -258,7 +328,8 @@ export const SponsorCardGenerator = () => {
           />
           <div className="flex items-center justify-between">
             <Text textType="small" className="text-muted">
-              PNG or SVG with a transparent background works best.
+              PNG or SVG with a transparent background works best. Large files
+              are downscaled automatically, losslessly.
             </Text>
             <Text
               textType="small"
