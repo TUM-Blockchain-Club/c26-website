@@ -38,6 +38,16 @@ const DAD_COLORS: GradientPalette = {
   purple: "rgb(96,155,255)",
 };
 
+/** The site's own brand gradient (yellow → red → purple), read live from the
+ * CSS tokens so canvas text/fills always match the rest of the page. */
+function brandColorsPalette(): GradientPalette {
+  return {
+    yellow: readCssTokenRgb("--color-brand-yellow-rgb", "255 193 16"),
+    red: readCssTokenRgb("--color-brand-red-rgb", "244 67 54"),
+    purple: readCssTokenRgb("--color-brand-purple-rgb", "111 61 226"),
+  };
+}
+
 /** A single gradient colour stop. */
 type GradientStop = { offset: number; color: string };
 
@@ -1321,11 +1331,7 @@ async function loadAssets(
     loadImage("/hero/mask-group-1.png"),
     loadImage(partnerLogoUrl),
   ]);
-  const brandColors = {
-    yellow: readCssTokenRgb("--color-brand-yellow-rgb", "255 193 16"),
-    red: readCssTokenRgb("--color-brand-red-rgb", "244 67 54"),
-    purple: readCssTokenRgb("--color-brand-purple-rgb", "111 61 226"),
-  };
+  const brandColors = brandColorsPalette();
   // Only the speaker card has a per-day theme; attendees always see the
   // conference brand, regardless of what `day` defaults to.
   const isDad = config.kind === "speaker" && day === "day2";
@@ -1611,10 +1617,14 @@ export const TIER_LOGO_COUNT: Record<SponsorTier, number> = {
 export const SPONSOR_MAX_LOGOS = 6;
 
 export type SponsorCardContent = {
-  tier: SponsorTier;
-  /** Exactly TIER_LOGO_COUNT[tier] logo image URLs. */
+  /** Omit for the generic, self-serve external sponsor card: no tier theme,
+   * brand colours, headline just reads "OFFICIAL SPONSOR". */
+  tier?: SponsorTier;
+  /** Exactly TIER_LOGO_COUNT[tier] logo image URLs (or exactly 1, untiered). */
   logoUrls: string[];
 };
+
+const GENERIC_SPONSOR_LABEL = "OFFICIAL SPONSOR";
 
 type SponsorAssets = {
   confLogo: HTMLImageElement;
@@ -1710,7 +1720,10 @@ function drawSponsorLandscape(
   // The tier headline — big, filled with its own colour sweep.
   const headIn = easeOut(phase(p, 0.12, 0.26));
   const headGradient = localGradient(ctx, P, 170, 960, 130, a.colors);
-  drawFittedText(ctx, TIER_LABEL[content.tier], P, 250, {
+  const headline = content.tier
+    ? TIER_LABEL[content.tier]
+    : GENERIC_SPONSOR_LABEL;
+  drawFittedText(ctx, headline, P, 250, {
     size: 116,
     color: headGradient,
     alpha: headIn,
@@ -1744,7 +1757,11 @@ function drawSponsorLandscape(
   ctx.restore();
   drawSpacedText(
     ctx,
-    `OFFICIAL SPONSOR  ·  ${CONFERENCE_DATE}  ·  ${CONFERENCE_LOCATION}`,
+    // The generic (untiered) headline already says "Official Sponsor" —
+    // repeating it here would read as a mistake, so drop the prefix.
+    content.tier
+      ? `OFFICIAL SPONSOR  ·  ${CONFERENCE_DATE}  ·  ${CONFERENCE_LOCATION}`
+      : `${CONFERENCE_DATE}  ·  ${CONFERENCE_LOCATION}`,
     w / 2,
     h - 100,
     {
@@ -1791,7 +1808,10 @@ function drawSponsorPortrait(
 
   const headIn = easeOut(phase(p, 0.12, 0.26));
   const headGradient = localGradient(ctx, P, 250, w - P * 2, 100, a.colors);
-  drawFittedText(ctx, TIER_LABEL[content.tier], w / 2, 270, {
+  const headline = content.tier
+    ? TIER_LABEL[content.tier]
+    : GENERIC_SPONSOR_LABEL;
+  drawFittedText(ctx, headline, w / 2, 270, {
     size: 66,
     color: headGradient,
     alpha: headIn,
@@ -1816,19 +1836,29 @@ function drawSponsorPortrait(
   });
 
   const infoIn = easeOut(phase(p, 0.6, 0.72));
-  drawSpacedText(ctx, "OFFICIAL SPONSOR", w / 2, h - 140, {
-    size: 26,
-    spacing: 4,
-    color: "rgba(255,255,255,0.92)",
-    alpha: infoIn,
-    align: "center",
-    weight: 700,
-    font: brandFont(),
-    maxWidth: w - P * 2,
-  });
+  // The generic (untiered) headline already says "Official Sponsor" —
+  // repeating it here would read as a mistake, so drop the line.
   drawSpacedText(
     ctx,
-    `${CONFERENCE_DATE}  ·  ${CONFERENCE_LOCATION}`,
+    content.tier ? "OFFICIAL SPONSOR" : CONFERENCE_DATE,
+    w / 2,
+    h - 140,
+    {
+      size: 26,
+      spacing: 4,
+      color: "rgba(255,255,255,0.92)",
+      alpha: infoIn,
+      align: "center",
+      weight: 700,
+      font: brandFont(),
+      maxWidth: w - P * 2,
+    },
+  );
+  drawSpacedText(
+    ctx,
+    content.tier
+      ? `${CONFERENCE_DATE}  ·  ${CONFERENCE_LOCATION}`
+      : CONFERENCE_LOCATION,
     w / 2,
     h - 96,
     {
@@ -1877,7 +1907,9 @@ async function loadSponsorAssets(
     loadImage("/hero/mask-group-1.png"),
     ...content.logoUrls.map(loadImage),
   ]);
-  const palette = TIER_COLORS[content.tier];
+  const palette = content.tier
+    ? TIER_COLORS[content.tier]
+    : brandColorsPalette();
   return {
     confLogo,
     ring: tintRing(ring, paletteStops(palette)),
