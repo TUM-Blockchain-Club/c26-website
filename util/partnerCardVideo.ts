@@ -38,6 +38,30 @@ const DAD_COLORS: GradientPalette = {
   purple: "rgb(96,155,255)",
 };
 
+/** A single gradient colour stop. */
+type GradientStop = { offset: number; color: string };
+
+/** The three-stop palette as gradient stops, for tintRing's general form. */
+function paletteStops(p: GradientPalette): GradientStop[] {
+  return [
+    { offset: 0, color: p.yellow },
+    { offset: 0.5, color: p.red },
+    { offset: 1, color: p.purple },
+  ];
+}
+
+// The Digital Assets Day ring gets its own richer stop list — more tonal
+// range (icy light blue through a deeper royal blue and back) than the flat
+// three-stop palette used for the frame/aurora/job accent elsewhere on the
+// card, so the rotating ring itself reads as several shades of blue rather
+// than one flat tint. Still stays shy of navy, per earlier "too dark" note.
+const DAD_RING_STOPS: GradientStop[] = [
+  { offset: 0, color: "rgb(205,225,255)" },
+  { offset: 0.3, color: "rgb(120,170,255)" },
+  { offset: 0.62, color: "rgb(50,110,230)" },
+  { offset: 1, color: "rgb(150,190,255)" },
+];
+
 /**
  * What differs between the partner card and the speaker card: the eyebrow line
  * and whether the uploaded image is a logo (auto light chip) or a photo (always
@@ -1261,12 +1285,13 @@ function detectHasAlpha(img: HTMLImageElement): boolean {
   }
 }
 
-/** Recolours the brand ring into a given palette, keeping its shape and
- * alpha, so the background graphic matches each card theme (day 2's blue,
- * or a sponsor tier's own colour). */
+/** Recolours the brand ring using a list of gradient stops, keeping its
+ * shape and alpha, so the background graphic matches each card theme. Takes
+ * stops directly (rather than a three-value palette) so a theme like the
+ * Digital Assets Day's can use extra stops for more tonal variety. */
 function tintRing(
   img: HTMLImageElement,
-  palette: GradientPalette,
+  stops: GradientStop[],
 ): HTMLImageElement | HTMLCanvasElement {
   const w = img.naturalWidth || img.width;
   const h = img.naturalHeight || img.height;
@@ -1279,9 +1304,7 @@ function tintRing(
   cx.drawImage(img, 0, 0, w, h);
   cx.globalCompositeOperation = "source-in";
   const g = cx.createLinearGradient(0, 0, w, h);
-  g.addColorStop(0, palette.yellow);
-  g.addColorStop(0.5, palette.red);
-  g.addColorStop(1, palette.purple);
+  for (const s of stops) g.addColorStop(s.offset, s.color);
   cx.fillStyle = g;
   cx.fillRect(0, 0, w, h);
   return c;
@@ -1309,7 +1332,7 @@ async function loadAssets(
   return {
     confLogo,
     dadLogo,
-    ring: isDad ? tintRing(ring, DAD_COLORS) : ring,
+    ring: isDad ? tintRing(ring, DAD_RING_STOPS) : ring,
     partnerLogo,
     // Photos always sit on the glass panel; only logos may get a white chip.
     useLightChip: config.photo ? false : partnerNeedsLightChip(partnerLogo),
@@ -1857,7 +1880,7 @@ async function loadSponsorAssets(
   const palette = TIER_COLORS[content.tier];
   return {
     confLogo,
-    ring: tintRing(ring, palette),
+    ring: tintRing(ring, paletteStops(palette)),
     logos: logoImgs.map((img) => ({
       img,
       useLightChip: partnerNeedsLightChip(img),
