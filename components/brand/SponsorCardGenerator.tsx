@@ -9,8 +9,7 @@ import {
   renderSponsorCardVideo,
   renderSponsorCardStill,
   SPONSOR_TIERS,
-  SPONSOR_MAX_LOGOS,
-  TIER_SUGGESTED_LOGO_COUNT,
+  TIER_LOGO_COUNT,
   TIER_LABEL,
   type SponsorTier,
   type CardOrientation,
@@ -39,9 +38,10 @@ export const SponsorCardGenerator = () => {
   const [videoExt, setVideoExt] = useState<"mp4" | "webm">("webm");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  const requiredCount = TIER_LOGO_COUNT[tier];
   const hasLogos = logos.length > 0;
-  const ready = hasLogos;
-  const activeStep = !hasLogos ? 2 : 3;
+  const ready = logos.length === requiredCount;
+  const activeStep = !ready ? 2 : 3;
 
   const clearOutput = () => {
     setVideoUrl((prev) => {
@@ -64,6 +64,18 @@ export const SponsorCardGenerator = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tier, logos, orientation]);
 
+  // Each tier has its own exact logo count — switching tiers starts the
+  // upload over so the count can never end up mismatched.
+  const handleTierChange = (next: SponsorTier) => {
+    if (next === tier) return;
+    setTier(next);
+    setLogos((prev) => {
+      prev.forEach((l) => URL.revokeObjectURL(l.url));
+      return [];
+    });
+    setErrorMsg(null);
+  };
+
   const handleFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = Array.from(e.target.files ?? []);
     e.target.value = "";
@@ -72,7 +84,7 @@ export const SponsorCardGenerator = () => {
     clearOutput();
     setErrorMsg(null);
 
-    const room = SPONSOR_MAX_LOGOS - logos.length;
+    const room = requiredCount - logos.length;
     const oversized = selected.some((f) => f.size > MAX_LOGO_SIZE);
     if (oversized) {
       setErrorMsg("One of those files is larger than 8MB. Use a smaller logo.");
@@ -81,8 +93,9 @@ export const SponsorCardGenerator = () => {
 
     const accepted = selected.slice(0, room);
     if (selected.length > room) {
+      const tierLabel = tier[0].toUpperCase() + tier.slice(1);
       setErrorMsg(
-        `Only ${SPONSOR_MAX_LOGOS} logos fit on one card — added the first ${room}.`,
+        `${tierLabel} posts need exactly ${requiredCount} logo${requiredCount === 1 ? "" : "s"} — only added ${accepted.length} more.`,
       );
     }
 
@@ -104,7 +117,7 @@ export const SponsorCardGenerator = () => {
   };
 
   const handleGenerate = async () => {
-    if (!hasLogos) return;
+    if (!ready) return;
     setStatus("generating");
     setProgress(0);
     setErrorMsg(null);
@@ -142,7 +155,7 @@ export const SponsorCardGenerator = () => {
   };
 
   const handleDownloadImage = async () => {
-    if (!hasLogos) return;
+    if (!ready) return;
     try {
       const blob = await renderSponsorCardStill(
         { tier, logoUrls: logos.map((l) => l.url) },
@@ -205,16 +218,16 @@ export const SponsorCardGenerator = () => {
         <div className={stepClass(1, true)}>
           <StepHeader n={1} title="Sponsor tier" complete />
           <Text textType="small" className="text-muted">
-            Each tier gets its own colour and ring. Platinum and Gold are
-            usually announced individually, Silver in groups of 3, Bronze in
-            groups of 5 — but add however many logos this post needs.
+            Each tier gets its own colour, ring and logo count, per the
+            sponsorship deck: Platinum and Gold are announced individually,
+            Silver in groups of 3, Bronze in groups of 5.
           </Text>
           <div className="flex flex-wrap gap-2">
             {SPONSOR_TIERS.map((t) => (
               <button
                 key={t}
                 type="button"
-                onClick={() => setTier(t)}
+                onClick={() => handleTierChange(t)}
                 className={`flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm capitalize transition-colors ${
                   tier === t
                     ? "border-line-strong bg-white/10 text-white"
@@ -228,8 +241,8 @@ export const SponsorCardGenerator = () => {
                 />
                 {t}
                 <span className="text-faint">
-                  · {TIER_SUGGESTED_LOGO_COUNT[t]}
-                  {TIER_SUGGESTED_LOGO_COUNT[t] === 1 ? " logo" : " logos"}
+                  · {TIER_LOGO_COUNT[t]}
+                  {TIER_LOGO_COUNT[t] === 1 ? " logo" : " logos"}
                 </span>
               </button>
             ))}
@@ -237,18 +250,28 @@ export const SponsorCardGenerator = () => {
         </div>
 
         {/* Step 2 — logos */}
-        <div className={stepClass(2, hasLogos)}>
-          <StepHeader n={2} title="Upload sponsor logos" complete={hasLogos} />
-          <Text textType="small" className="text-muted">
-            PNG or SVG with a transparent background works best. Select several
-            at once, or add more one by one — up to {SPONSOR_MAX_LOGOS} per
-            card.
-          </Text>
+        <div className={stepClass(2, ready)}>
+          <StepHeader
+            n={2}
+            title={`Upload ${requiredCount} sponsor logo${requiredCount === 1 ? "" : "s"}`}
+            complete={ready}
+          />
+          <div className="flex items-center justify-between">
+            <Text textType="small" className="text-muted">
+              PNG or SVG with a transparent background works best.
+            </Text>
+            <Text
+              textType="small"
+              className={`shrink-0 font-bold ${ready ? "text-track-education" : "text-faint"}`}
+            >
+              {logos.length}/{requiredCount}
+            </Text>
+          </div>
           <input
             type="file"
             accept="image/png,image/jpeg,image/svg+xml,image/webp"
             multiple
-            disabled={logos.length >= SPONSOR_MAX_LOGOS}
+            disabled={logos.length >= requiredCount}
             onChange={handleFilesChange}
             className="w-full cursor-pointer rounded-md border border-dashed border-line bg-black px-4 py-3 text-sm text-secondary file:mr-3 file:rounded-sm file:border-0 file:bg-white/10 file:px-3 file:py-1.5 file:text-white disabled:cursor-not-allowed disabled:opacity-50"
           />
@@ -353,8 +376,9 @@ export const SponsorCardGenerator = () => {
               {TIER_LABEL[tier]}
             </Text>
             <Text textType="small" className="text-faint">
-              {logos.length} logo{logos.length === 1 ? "" : "s"} ready. Click
-              Generate.
+              {ready
+                ? "Ready. Click Generate."
+                : `${logos.length}/${requiredCount} logos — add ${requiredCount - logos.length} more.`}
             </Text>
           </div>
         ) : (

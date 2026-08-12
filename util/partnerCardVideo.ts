@@ -1570,21 +1570,23 @@ export const TIER_LABEL: Record<SponsorTier, string> = {
   bronze: "BRONZE SPONSOR",
 };
 
-/** How many logos a tier's posts usually group together, per the sponsorship
- * deck (Platinum and Gold are announced individually; Silver in 3s, Bronze
- * in 5s). Used only to pre-fill the generator's upload count as a suggestion. */
-export const TIER_SUGGESTED_LOGO_COUNT: Record<SponsorTier, number> = {
+/** Exactly how many logos each tier's posts group together, per the
+ * sponsorship deck (Platinum and Gold are announced individually; Silver in
+ * 3s, Bronze in 5s). The generator enforces this count per tier. */
+export const TIER_LOGO_COUNT: Record<SponsorTier, number> = {
   platinum: 1,
   gold: 1,
   silver: 3,
   bronze: 5,
 };
 
+/** Upper bound for the grid layout table below — no tier currently needs
+ * more than 5, but this leaves room without adding new row compositions. */
 export const SPONSOR_MAX_LOGOS = 6;
 
 export type SponsorCardContent = {
   tier: SponsorTier;
-  /** 1 to SPONSOR_MAX_LOGOS logo image URLs. */
+  /** Exactly TIER_LOGO_COUNT[tier] logo image URLs. */
   logoUrls: string[];
 };
 
