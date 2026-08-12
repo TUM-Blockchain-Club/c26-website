@@ -1629,7 +1629,14 @@ const GENERIC_SPONSOR_LABEL = "OFFICIAL SPONSOR";
 type SponsorAssets = {
   confLogo: HTMLImageElement;
   ring: HTMLImageElement | HTMLCanvasElement;
-  logos: { img: HTMLImageElement; useLightChip: boolean }[];
+  logos: {
+    img: HTMLImageElement;
+    useLightChip: boolean;
+    /** True for a real cut-out (transparent background) — most sponsor
+     * logos. Used only by the untiered external card, to float the logo
+     * directly instead of boxing it in a chip. */
+    hasAlpha: boolean;
+  }[];
   colors: GradientPalette;
 };
 
@@ -1692,7 +1699,7 @@ function drawSponsorLandscape(
   { w, h }: { w: number; h: number },
   a: SponsorAssets,
   p: number,
-  content: SponsorCardContent,
+  content: SponsorCardContent & { tier: SponsorTier },
 ) {
   const P = 150;
 
@@ -1720,10 +1727,7 @@ function drawSponsorLandscape(
   // The tier headline — big, filled with its own colour sweep.
   const headIn = easeOut(phase(p, 0.12, 0.26));
   const headGradient = localGradient(ctx, P, 170, 960, 130, a.colors);
-  const headline = content.tier
-    ? TIER_LABEL[content.tier]
-    : GENERIC_SPONSOR_LABEL;
-  drawFittedText(ctx, headline, P, 250, {
+  drawFittedText(ctx, TIER_LABEL[content.tier], P, 250, {
     size: 116,
     color: headGradient,
     alpha: headIn,
@@ -1757,11 +1761,103 @@ function drawSponsorLandscape(
   ctx.restore();
   drawSpacedText(
     ctx,
-    // The generic (untiered) headline already says "Official Sponsor" —
-    // repeating it here would read as a mistake, so drop the prefix.
-    content.tier
-      ? `OFFICIAL SPONSOR  ·  ${CONFERENCE_DATE}  ·  ${CONFERENCE_LOCATION}`
-      : `${CONFERENCE_DATE}  ·  ${CONFERENCE_LOCATION}`,
+    `OFFICIAL SPONSOR  ·  ${CONFERENCE_DATE}  ·  ${CONFERENCE_LOCATION}`,
+    w / 2,
+    h - 100,
+    {
+      size: 30,
+      spacing: 4,
+      color: "rgba(255,255,255,0.92)",
+      alpha: infoIn,
+      align: "center",
+      weight: 700,
+      font: brandFont(),
+      maxWidth: w - P * 2,
+    },
+  );
+}
+
+/**
+ * The untiered, self-serve external sponsor card: one logo, shown large and
+ * floating with no chip if it has a transparent background (most do), with
+ * a plain, understated "Official Sponsor" caption — no big colourful
+ * headline — so a sponsor's own logo colours stay the focus of the card.
+ */
+function drawExternalSponsorLandscape(
+  ctx: CanvasRenderingContext2D,
+  { w, h }: { w: number; h: number },
+  a: SponsorAssets,
+  p: number,
+) {
+  const P = 150;
+
+  const logoIn = easeOut(phase(p, 0.06, 0.18));
+  if (logoIn > 0) {
+    ctx.save();
+    ctx.globalAlpha = logoIn;
+    drawContain(ctx, a.confLogo, { x: w - P - 430, y: 92, w: 430, h: 116 });
+    ctx.restore();
+  }
+
+  const eyebrowIn = easeOut(phase(p, 0.08, 0.18));
+  drawSpacedText(ctx, "TUM BLOCKCHAIN CONFERENCE 26", P, 128, {
+    size: 28,
+    spacing: 6,
+    color: "rgba(255,255,255,0.6)",
+    alpha: eyebrowIn,
+    weight: 700,
+    font: brandFont(),
+    maxWidth: w * 0.6,
+  });
+
+  // The sponsor's own logo — large, and the hero of this card.
+  const logo = a.logos[0];
+  const area = { x: w / 2 - 440, y: 250, w: 880, h: 560 };
+  const logoIn2 = easeOut(phase(p, 0.16, 0.36));
+  if (logo) {
+    if (logo.hasAlpha) {
+      ctx.save();
+      ctx.globalAlpha = logoIn2;
+      ctx.shadowColor = "rgba(0,0,0,0.5)";
+      ctx.shadowBlur = 60;
+      drawContain(ctx, logo.img, area);
+      ctx.restore();
+    } else {
+      drawPartnerChip(ctx, logo.img, area, logoIn2, logo.useLightChip);
+    }
+  }
+
+  // Plain caption — no rainbow fill, just a small accent rule for colour.
+  const capY = area.y + area.h + 80;
+  drawAccentRule(
+    ctx,
+    w / 2,
+    capY - 34,
+    90,
+    localGradient(ctx, w / 2 - 45, capY - 36, 90, 6, a.colors),
+    easeOut(phase(p, 0.42, 0.54)),
+    true,
+  );
+  drawSpacedText(ctx, GENERIC_SPONSOR_LABEL, w / 2, capY, {
+    size: 34,
+    spacing: 8,
+    color: "#ffffff",
+    alpha: easeOut(phase(p, 0.46, 0.58)),
+    align: "center",
+    weight: 800,
+    font: brandFont(),
+    maxWidth: w - P * 2,
+  });
+
+  const infoIn = easeOut(phase(p, 0.6, 0.72));
+  ctx.save();
+  ctx.globalAlpha = infoIn * 0.16;
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(P, h - 150, (w - P * 2) * infoIn, 2);
+  ctx.restore();
+  drawSpacedText(
+    ctx,
+    `${CONFERENCE_DATE}  ·  ${CONFERENCE_LOCATION}`,
     w / 2,
     h - 100,
     {
@@ -1782,7 +1878,7 @@ function drawSponsorPortrait(
   { w, h }: { w: number; h: number },
   a: SponsorAssets,
   p: number,
-  content: SponsorCardContent,
+  content: SponsorCardContent & { tier: SponsorTier },
 ) {
   const P = 110;
 
@@ -1808,10 +1904,7 @@ function drawSponsorPortrait(
 
   const headIn = easeOut(phase(p, 0.12, 0.26));
   const headGradient = localGradient(ctx, P, 250, w - P * 2, 100, a.colors);
-  const headline = content.tier
-    ? TIER_LABEL[content.tier]
-    : GENERIC_SPONSOR_LABEL;
-  drawFittedText(ctx, headline, w / 2, 270, {
+  drawFittedText(ctx, TIER_LABEL[content.tier], w / 2, 270, {
     size: 66,
     color: headGradient,
     alpha: headIn,
@@ -1836,29 +1929,19 @@ function drawSponsorPortrait(
   });
 
   const infoIn = easeOut(phase(p, 0.6, 0.72));
-  // The generic (untiered) headline already says "Official Sponsor" —
-  // repeating it here would read as a mistake, so drop the line.
+  drawSpacedText(ctx, "OFFICIAL SPONSOR", w / 2, h - 140, {
+    size: 26,
+    spacing: 4,
+    color: "rgba(255,255,255,0.92)",
+    alpha: infoIn,
+    align: "center",
+    weight: 700,
+    font: brandFont(),
+    maxWidth: w - P * 2,
+  });
   drawSpacedText(
     ctx,
-    content.tier ? "OFFICIAL SPONSOR" : CONFERENCE_DATE,
-    w / 2,
-    h - 140,
-    {
-      size: 26,
-      spacing: 4,
-      color: "rgba(255,255,255,0.92)",
-      alpha: infoIn,
-      align: "center",
-      weight: 700,
-      font: brandFont(),
-      maxWidth: w - P * 2,
-    },
-  );
-  drawSpacedText(
-    ctx,
-    content.tier
-      ? `${CONFERENCE_DATE}  ·  ${CONFERENCE_LOCATION}`
-      : CONFERENCE_LOCATION,
+    `${CONFERENCE_DATE}  ·  ${CONFERENCE_LOCATION}`,
     w / 2,
     h - 96,
     {
@@ -1874,6 +1957,94 @@ function drawSponsorPortrait(
   );
 }
 
+function drawExternalSponsorPortrait(
+  ctx: CanvasRenderingContext2D,
+  { w, h }: { w: number; h: number },
+  a: SponsorAssets,
+  p: number,
+) {
+  const P = 110;
+
+  const logoIn = easeOut(phase(p, 0.06, 0.18));
+  if (logoIn > 0) {
+    ctx.save();
+    ctx.globalAlpha = logoIn;
+    drawContain(ctx, a.confLogo, { x: w - P - 300, y: 96, w: 300, h: 88 });
+    ctx.restore();
+  }
+
+  const eyebrowIn = easeOut(phase(p, 0.08, 0.18));
+  drawSpacedText(ctx, "TUM BLOCKCHAIN CONFERENCE 26", w / 2, 210, {
+    size: 22,
+    spacing: 4,
+    color: "rgba(255,255,255,0.6)",
+    alpha: eyebrowIn,
+    align: "center",
+    weight: 700,
+    font: brandFont(),
+    maxWidth: w - P * 2,
+  });
+
+  const logo = a.logos[0];
+  const area = { x: P, y: 280, w: w - P * 2, h: 700 };
+  const logoIn2 = easeOut(phase(p, 0.16, 0.36));
+  if (logo) {
+    if (logo.hasAlpha) {
+      ctx.save();
+      ctx.globalAlpha = logoIn2;
+      ctx.shadowColor = "rgba(0,0,0,0.5)";
+      ctx.shadowBlur = 50;
+      drawContain(ctx, logo.img, area);
+      ctx.restore();
+    } else {
+      drawPartnerChip(ctx, logo.img, area, logoIn2, logo.useLightChip);
+    }
+  }
+
+  const capY = area.y + area.h + 70;
+  drawAccentRule(
+    ctx,
+    w / 2,
+    capY - 30,
+    80,
+    localGradient(ctx, w / 2 - 40, capY - 32, 80, 6, a.colors),
+    easeOut(phase(p, 0.42, 0.54)),
+    true,
+  );
+  drawSpacedText(ctx, GENERIC_SPONSOR_LABEL, w / 2, capY, {
+    size: 26,
+    spacing: 6,
+    color: "#ffffff",
+    alpha: easeOut(phase(p, 0.46, 0.58)),
+    align: "center",
+    weight: 800,
+    font: brandFont(),
+    maxWidth: w - P * 2,
+  });
+
+  const infoIn = easeOut(phase(p, 0.6, 0.72));
+  drawSpacedText(ctx, CONFERENCE_DATE, w / 2, h - 90, {
+    size: 22,
+    spacing: 2,
+    color: "rgba(255,255,255,0.85)",
+    alpha: infoIn,
+    align: "center",
+    weight: 600,
+    font: brandFont(),
+    maxWidth: w - P * 2,
+  });
+  drawSpacedText(ctx, CONFERENCE_LOCATION, w / 2, h - 56, {
+    size: 20,
+    spacing: 2,
+    color: "rgba(255,255,255,0.6)",
+    alpha: infoIn,
+    align: "center",
+    weight: 600,
+    font: brandFont(),
+    maxWidth: w - P * 2,
+  });
+}
+
 function drawSponsorCard(
   ctx: CanvasRenderingContext2D,
   dims: { w: number; h: number },
@@ -1885,10 +2056,17 @@ function drawSponsorCard(
 ) {
   drawCardBackdrop(ctx, dims, a.ring, a.colors, p, elapsed, orientation);
 
-  if (orientation === "landscape") {
-    drawSponsorLandscape(ctx, dims, a, p, content);
+  if (content.tier) {
+    const tiered = content as SponsorCardContent & { tier: SponsorTier };
+    if (orientation === "landscape") {
+      drawSponsorLandscape(ctx, dims, a, p, tiered);
+    } else {
+      drawSponsorPortrait(ctx, dims, a, p, tiered);
+    }
+  } else if (orientation === "landscape") {
+    drawExternalSponsorLandscape(ctx, dims, a, p);
   } else {
-    drawSponsorPortrait(ctx, dims, a, p, content);
+    drawExternalSponsorPortrait(ctx, dims, a, p);
   }
 
   // Gentle fade in from black at the very start
@@ -1916,6 +2094,7 @@ async function loadSponsorAssets(
     logos: logoImgs.map((img) => ({
       img,
       useLightChip: partnerNeedsLightChip(img),
+      hasAlpha: detectHasAlpha(img),
     })),
     colors: palette,
   };
