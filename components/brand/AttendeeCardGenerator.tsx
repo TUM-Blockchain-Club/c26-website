@@ -6,6 +6,7 @@ import { Button } from "@/components/button";
 import { CopyButton } from "@/components/brand/CopyButton";
 import { CheckIcon } from "@radix-ui/react-icons";
 import { downloadBlob } from "@/util/exportLogo";
+import { prepareImage } from "@/util/imageCompression";
 import {
   renderAttendeeCardVideo,
   SPEAKER_LIMITS,
@@ -17,66 +18,10 @@ type Status = "idle" | "generating" | "ready" | "error";
 
 // Reject only truly huge files early; anything smaller is downscaled to fit.
 const MAX_UPLOAD = 40 * 1024 * 1024;
-// Longest side we keep — the photo panel on the card is small, so this is
-// plenty of detail while keeping the file well under a few hundred KB.
-const MAX_DIM = 1600;
-// Keep the original untouched only if it is already this small.
-const KEEP_ORIGINAL_UNDER = 5 * 1024 * 1024;
-
-function loadImageElement(url: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error("Not a decodable image"));
-    img.src = url;
-  });
-}
-
-/**
- * Loads a photo and, if it is large, downscales it and re-encodes as JPEG so
- * big phone photos fit comfortably without asking the user to resize anything.
- * SVGs are vector and tiny, so they pass through untouched.
- */
-async function preparePhoto(file: File): Promise<{ url: string; file: File }> {
-  if (file.type === "image/svg+xml") {
-    return { url: URL.createObjectURL(file), file };
-  }
-
-  const srcUrl = URL.createObjectURL(file);
-  let img: HTMLImageElement;
-  try {
-    img = await loadImageElement(srcUrl);
-  } catch (err) {
-    URL.revokeObjectURL(srcUrl);
-    throw err;
-  }
-
-  const w = img.naturalWidth || img.width;
-  const h = img.naturalHeight || img.height;
-  const scale = Math.min(1, MAX_DIM / Math.max(w, h || 1));
-
-  // Already small and modest in size — no need to touch it.
-  if (scale === 1 && file.size <= KEEP_ORIGINAL_UNDER) {
-    return { url: srcUrl, file };
-  }
-
-  const canvas = document.createElement("canvas");
-  canvas.width = Math.max(1, Math.round(w * scale));
-  canvas.height = Math.max(1, Math.round(h * scale));
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return { url: srcUrl, file };
-  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-  URL.revokeObjectURL(srcUrl);
-
-  const blob = await new Promise<Blob | null>((resolve) =>
-    canvas.toBlob((b) => resolve(b), "image/jpeg", 0.85),
-  );
-  if (!blob) throw new Error("Could not compress the image");
-
-  const base = file.name.replace(/\.[^.]+$/, "") || "photo";
-  const compressed = new File([blob], `${base}.jpg`, { type: "image/jpeg" });
-  return { url: URL.createObjectURL(blob), file: compressed };
-}
+// Longest side we keep — generous enough to still look sharp on a large
+// screen, while a transparent cut-out stays lossless PNG either way.
+const MAX_DIM = 1900;
+const JPEG_QUALITY = 0.92;
 
 export const AttendeeCardGenerator = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -140,7 +85,10 @@ export const AttendeeCardGenerator = () => {
 
     try {
       // Large photos are downscaled and re-encoded automatically to fit.
-      const prepared = await preparePhoto(selected);
+      const prepared = await prepareImage(selected, {
+        maxDim: MAX_DIM,
+        jpegQuality: JPEG_QUALITY,
+      });
       setPreviewUrl((prev) => {
         if (prev) URL.revokeObjectURL(prev);
         return prepared.url;
@@ -253,7 +201,8 @@ export const AttendeeCardGenerator = () => {
             <StepHeader n={1} title="Upload your photo" complete={hasPhoto} />
             <Text textType="small" className="text-muted">
               A headshot works best. PNG, JPEG, WebP or SVG; large photos are
-              resized automatically. Tip: upload a PNG with the background
+              compressed automatically, staying lossless if it&apos;s a cut-out
+              with a transparent background. Tip: upload one with the background
               already removed and just you will appear on the brand background.
             </Text>
             <input

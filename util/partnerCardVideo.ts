@@ -1179,7 +1179,10 @@ function drawPersonPortrait(
   }
 
   if (content.blurb) {
-    drawParagraph(ctx, content.blurb, w / 2, 1082, {
+    // Started a touch higher with a tighter line gap than the landscape
+    // layout: at max length (3 wrapped lines) this is the only way to keep
+    // clear air above the bottom info block instead of nearly touching it.
+    drawParagraph(ctx, content.blurb, w / 2, 1070, {
       size: 34,
       weight: 500,
       color: "rgba(255,255,255,0.82)",
@@ -1187,7 +1190,7 @@ function drawPersonPortrait(
       maxWidth: w - P * 2,
       maxLines: 3,
       align: "center",
-      lineGap: 46,
+      lineGap: 42,
     });
   }
 
