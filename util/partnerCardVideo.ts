@@ -10,6 +10,9 @@ const DIMENSIONS: Record<CardOrientation, { w: number; h: number }> = {
 const FPS = 30;
 const DURATION_MS = 9000;
 
+/** A three-stop diagonal accent palette, shared by every card theme. */
+export type GradientPalette = { yellow: string; red: string; purple: string };
+
 const CONFERENCE_DATE = "OCTOBER 29 TO 31, 2026";
 const CONFERENCE_LOCATION = "MUNICH · HOUSE OF COMMUNICATION";
 const CONFERENCE_URL = "conference26.tum-blockchain.com";
@@ -29,7 +32,7 @@ const CONFERENCE_SPAN =
 // Digital Assets Day accent, matching the .card-blue / .btn-blue tokens.
 // Kept within that same light-to-mid blue range on purpose — earlier drafts
 // darkened the third stop into a navy, which read as too dark on the card.
-const DAD_COLORS = {
+const DAD_COLORS: GradientPalette = {
   yellow: "rgb(130,180,255)",
   red: "rgb(66,133,244)",
   purple: "rgb(96,155,255)",
@@ -94,7 +97,7 @@ type Assets = {
   photoHasAlpha: boolean;
   kind: CardConfig["kind"];
   eyebrow: string;
-  colors: { yellow: string; red: string; purple: string };
+  colors: GradientPalette;
 };
 
 function loadImage(src: string): Promise<HTMLImageElement> {
@@ -208,7 +211,7 @@ function drawSpacedText(
   o: {
     size: number;
     spacing: number;
-    color: string;
+    color: string | CanvasGradient;
     alpha: number;
     align?: "left" | "center" | "right";
     weight?: number;
@@ -263,7 +266,7 @@ function drawFittedText(
   y: number,
   o: {
     size: number;
-    color: string;
+    color: string | CanvasGradient;
     alpha: number;
     align?: "left" | "center" | "right";
     weight?: number;
@@ -508,24 +511,27 @@ function drawAccentRule(
   ctx.restore();
 }
 
-function drawCard(
+/**
+ * Shared scene behind every card: base fill, aurora, dot grid, the rotating
+ * ring (tinted per palette), vignette and the gradient frame. Returns the
+ * diagonal gradient so callers can reuse it for accents (dividers, headlines).
+ */
+function drawCardBackdrop(
   ctx: CanvasRenderingContext2D,
-  dims: { w: number; h: number },
-  a: Assets,
+  { w, h }: { w: number; h: number },
+  ring: HTMLImageElement | HTMLCanvasElement,
+  colors: GradientPalette,
   p: number,
   elapsed: number,
   orientation: CardOrientation,
-  content: CardContent,
-) {
-  const { w, h } = dims;
-
+): CanvasGradient {
   // Base
   ctx.fillStyle = "#000000";
   ctx.fillRect(0, 0, w, h);
 
   const sceneIn = easeOut(phase(p, 0.0, 0.1));
 
-  drawAurora(ctx, w, h, a.colors, sceneIn);
+  drawAurora(ctx, w, h, colors, sceneIn);
   drawDotGrid(ctx, w, h, sceneIn * 0.09);
 
   // Rotating brand ring — big, slow, hypnotic
@@ -536,8 +542,8 @@ function drawCard(
     ctx.rotate((elapsed / 1000) * 0.055);
     const pulse = 1 + Math.sin(elapsed / 1500) * 0.012;
     const ringSize = (orientation === "portrait" ? h * 1.3 : h * 2.6) * pulse;
-    const ringW = ringSize * (a.ring.width / a.ring.height);
-    ctx.drawImage(a.ring, -ringW / 2, -ringSize / 2, ringW, ringSize);
+    const ringW = ringSize * (ring.width / ring.height);
+    ctx.drawImage(ring, -ringW / 2, -ringSize / 2, ringW, ringSize);
     ctx.restore();
   }
 
@@ -556,9 +562,9 @@ function drawCard(
   ctx.fillRect(0, 0, w, h);
 
   const gradient = ctx.createLinearGradient(0, 0, w, h);
-  gradient.addColorStop(0, a.colors.yellow);
-  gradient.addColorStop(0.49, a.colors.red);
-  gradient.addColorStop(1, a.colors.purple);
+  gradient.addColorStop(0, colors.yellow);
+  gradient.addColorStop(0.49, colors.red);
+  gradient.addColorStop(1, colors.purple);
 
   // Gradient frame
   const frameAlpha = easeOut(phase(p, 0.02, 0.12));
@@ -570,6 +576,29 @@ function drawCard(
   roundRectPath(ctx, fi, fi, w - fi * 2, h - fi * 2, w * 0.022);
   ctx.stroke();
   ctx.restore();
+
+  return gradient;
+}
+
+function drawCard(
+  ctx: CanvasRenderingContext2D,
+  dims: { w: number; h: number },
+  a: Assets,
+  p: number,
+  elapsed: number,
+  orientation: CardOrientation,
+  content: CardContent,
+) {
+  const { w, h } = dims;
+  const gradient = drawCardBackdrop(
+    ctx,
+    dims,
+    a.ring,
+    a.colors,
+    p,
+    elapsed,
+    orientation,
+  );
 
   if (a.kind === "speaker" || a.kind === "attendee") {
     if (orientation === "landscape") {
@@ -1229,10 +1258,12 @@ function detectHasAlpha(img: HTMLImageElement): boolean {
   }
 }
 
-/** Recolours the brand ring into the Digital Assets Day blue gradient, keeping
- * its shape and alpha, so the background graphic matches the day 2 theme. */
-function tintRingBlue(
+/** Recolours the brand ring into a given palette, keeping its shape and
+ * alpha, so the background graphic matches each card theme (day 2's blue,
+ * or a sponsor tier's own colour). */
+function tintRing(
   img: HTMLImageElement,
+  palette: GradientPalette,
 ): HTMLImageElement | HTMLCanvasElement {
   const w = img.naturalWidth || img.width;
   const h = img.naturalHeight || img.height;
@@ -1245,9 +1276,9 @@ function tintRingBlue(
   cx.drawImage(img, 0, 0, w, h);
   cx.globalCompositeOperation = "source-in";
   const g = cx.createLinearGradient(0, 0, w, h);
-  g.addColorStop(0, DAD_COLORS.yellow);
-  g.addColorStop(0.5, DAD_COLORS.red);
-  g.addColorStop(1, DAD_COLORS.purple);
+  g.addColorStop(0, palette.yellow);
+  g.addColorStop(0.5, palette.red);
+  g.addColorStop(1, palette.purple);
   cx.fillStyle = g;
   cx.fillRect(0, 0, w, h);
   return c;
@@ -1275,7 +1306,7 @@ async function loadAssets(
   return {
     confLogo,
     dadLogo,
-    ring: isDad ? tintRingBlue(ring) : ring,
+    ring: isDad ? tintRing(ring, DAD_COLORS) : ring,
     partnerLogo,
     // Photos always sit on the glass panel; only logos may get a white chip.
     useLightChip: config.photo ? false : partnerNeedsLightChip(partnerLogo),
@@ -1354,36 +1385,21 @@ function pickMimeType(): string | undefined {
 
 export type VideoResult = { blob: Blob; extension: "mp4" | "webm" };
 
-/** Renders the animated partner card and records it to a downloadable video. */
-export async function renderPartnerCardVideo(
-  partnerLogoUrl: string,
-  orientation: CardOrientation,
-  nameOrContent: string | CardContent,
+/**
+ * Drives a canvas through the shared 9s animation timeline and records it to
+ * a downloadable video, given a draw callback. Shared by every card kind.
+ */
+async function recordCanvasVideo(
+  canvas: HTMLCanvasElement,
+  drawFrame: (p: number, elapsedMs: number) => void,
   onProgress?: (p: number) => void,
-  config: CardConfig = PARTNER_CARD_CONFIG,
 ): Promise<VideoResult> {
   if (typeof MediaRecorder === "undefined") {
     throw new Error("Your browser does not support video recording.");
   }
-  const content = toContent(nameOrContent);
-
-  const dims = DIMENSIONS[orientation];
-  const canvas = document.createElement("canvas");
-  canvas.width = dims.w;
-  canvas.height = dims.h;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) throw new Error("Canvas 2D context unavailable");
-
-  try {
-    await document.fonts.ready;
-  } catch {
-    // System fonts are fine as a fallback.
-  }
-
-  const assets = await loadAssets(partnerLogoUrl, config, content.day);
 
   // Draw the first frame before capturing so the stream starts populated.
-  drawCard(ctx, dims, assets, 0, 0, orientation, content);
+  drawFrame(0, 0);
 
   const stream = canvas.captureStream(FPS);
   const mimeType = pickMimeType();
@@ -1407,7 +1423,7 @@ export async function renderPartnerCardVideo(
     const frame = (now: number) => {
       const elapsed = now - start;
       const p = Math.min(1, elapsed / DURATION_MS);
-      drawCard(ctx, dims, assets, p, elapsed, orientation, content);
+      drawFrame(p, elapsed);
       onProgress?.(p);
       if (elapsed < DURATION_MS) {
         requestAnimationFrame(frame);
@@ -1426,6 +1442,39 @@ export async function renderPartnerCardVideo(
     blob,
     extension: finalType.startsWith("video/mp4") ? "mp4" : "webm",
   };
+}
+
+/** Renders the animated partner card and records it to a downloadable video. */
+export async function renderPartnerCardVideo(
+  partnerLogoUrl: string,
+  orientation: CardOrientation,
+  nameOrContent: string | CardContent,
+  onProgress?: (p: number) => void,
+  config: CardConfig = PARTNER_CARD_CONFIG,
+): Promise<VideoResult> {
+  const content = toContent(nameOrContent);
+
+  const dims = DIMENSIONS[orientation];
+  const canvas = document.createElement("canvas");
+  canvas.width = dims.w;
+  canvas.height = dims.h;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Canvas 2D context unavailable");
+
+  try {
+    await document.fonts.ready;
+  } catch {
+    // System fonts are fine as a fallback.
+  }
+
+  const assets = await loadAssets(partnerLogoUrl, config, content.day);
+
+  return recordCanvasVideo(
+    canvas,
+    (p, elapsed) =>
+      drawCard(ctx, dims, assets, p, elapsed, orientation, content),
+    onProgress,
+  );
 }
 
 /** Speaker card: same brand animation, "I'M SPEAKING AT", photo + name/job/blurb. */
@@ -1471,3 +1520,401 @@ export const renderAttendeeCardStill = (
   content: CardContent,
 ): Promise<Blob> =>
   renderPartnerCardStill(photoUrl, orientation, content, ATTENDEE_CARD_CONFIG);
+
+// ---------------------------------------------------------------------------
+// Sponsor announcement card — Platinum / Gold / Silver / Bronze, each with its
+// own tinted palette and ring, and a logo grid sized to how many sponsors
+// that tier announces together (per the sponsorship deck).
+// ---------------------------------------------------------------------------
+
+export type SponsorTier = "platinum" | "gold" | "silver" | "bronze";
+
+export const SPONSOR_TIERS: SponsorTier[] = [
+  "platinum",
+  "gold",
+  "silver",
+  "bronze",
+];
+
+const TIER_COLORS: Record<SponsorTier, GradientPalette> = {
+  // Bright, icy white-to-blue — reads as the premium metal.
+  platinum: {
+    yellow: "rgb(255,255,255)",
+    red: "rgb(214,225,255)",
+    purple: "rgb(150,185,255)",
+  },
+  // Rich gold, matching the tier name literally.
+  gold: {
+    yellow: "rgb(255,224,150)",
+    red: "rgb(224,168,60)",
+    purple: "rgb(163,110,25)",
+  },
+  // Cool gray-blue metallic.
+  silver: {
+    yellow: "rgb(235,239,243)",
+    red: "rgb(178,188,200)",
+    purple: "rgb(120,134,150)",
+  },
+  // Warm copper.
+  bronze: {
+    yellow: "rgb(228,170,120)",
+    red: "rgb(184,116,64)",
+    purple: "rgb(122,72,40)",
+  },
+};
+
+export const TIER_LABEL: Record<SponsorTier, string> = {
+  platinum: "PLATINUM SPONSOR",
+  gold: "GOLD SPONSOR",
+  silver: "SILVER SPONSOR",
+  bronze: "BRONZE SPONSOR",
+};
+
+/** How many logos a tier's posts usually group together, per the sponsorship
+ * deck (Platinum and Gold are announced individually; Silver in 3s, Bronze
+ * in 5s). Used only to pre-fill the generator's upload count as a suggestion. */
+export const TIER_SUGGESTED_LOGO_COUNT: Record<SponsorTier, number> = {
+  platinum: 1,
+  gold: 1,
+  silver: 3,
+  bronze: 5,
+};
+
+export const SPONSOR_MAX_LOGOS = 6;
+
+export type SponsorCardContent = {
+  tier: SponsorTier;
+  /** 1 to SPONSOR_MAX_LOGOS logo image URLs. */
+  logoUrls: string[];
+};
+
+type SponsorAssets = {
+  confLogo: HTMLImageElement;
+  ring: HTMLImageElement | HTMLCanvasElement;
+  logos: { img: HTMLImageElement; useLightChip: boolean }[];
+  colors: GradientPalette;
+};
+
+/** Row compositions for each logo count, centred per row so odd totals (like
+ * 5 = 3 + 2) still read as a deliberate, balanced layout. */
+const SPONSOR_GRID_ROWS: Record<number, number[]> = {
+  1: [1],
+  2: [2],
+  3: [3],
+  4: [2, 2],
+  5: [3, 2],
+  6: [3, 3],
+};
+
+function computeSponsorGrid(
+  count: number,
+  area: { x: number; y: number; w: number; h: number },
+  gapRatio: number,
+): { x: number; y: number; w: number; h: number }[] {
+  const n = Math.min(SPONSOR_MAX_LOGOS, Math.max(1, count));
+  const rows = SPONSOR_GRID_ROWS[n] ?? [n];
+  const rowGap = area.h * gapRatio;
+  const rowH = (area.h - rowGap * (rows.length - 1)) / rows.length;
+  const boxes: { x: number; y: number; w: number; h: number }[] = [];
+  let y = area.y;
+  for (const cols of rows) {
+    const colGap = area.w * gapRatio;
+    const cellW = (area.w - colGap * (cols - 1)) / cols;
+    const rowW = cellW * cols + colGap * (cols - 1);
+    let x = area.x + (area.w - rowW) / 2;
+    for (let i = 0; i < cols; i++) {
+      boxes.push({ x, y, w: cellW, h: rowH });
+      x += cellW + colGap;
+    }
+    y += rowH + rowGap;
+  }
+  return boxes;
+}
+
+/** Builds a local diagonal gradient sized to a text region, so a headline
+ * shows a real colour sweep across its own width instead of a near-solid
+ * tone sampled from one point of the full-card gradient. */
+function localGradient(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  palette: GradientPalette,
+): CanvasGradient {
+  const g = ctx.createLinearGradient(x, y, x + w, y + h);
+  g.addColorStop(0, palette.yellow);
+  g.addColorStop(0.5, palette.red);
+  g.addColorStop(1, palette.purple);
+  return g;
+}
+
+function drawSponsorLandscape(
+  ctx: CanvasRenderingContext2D,
+  { w, h }: { w: number; h: number },
+  a: SponsorAssets,
+  p: number,
+  content: SponsorCardContent,
+) {
+  const P = 150;
+
+  // Conference logo, top-right corner only — same spot every card uses.
+  const logoIn = easeOut(phase(p, 0.06, 0.18));
+  if (logoIn > 0) {
+    ctx.save();
+    ctx.globalAlpha = logoIn;
+    drawContain(ctx, a.confLogo, { x: w - P - 430, y: 92, w: 430, h: 116 });
+    ctx.restore();
+  }
+
+  // Small eyebrow: unmistakably the conference, before the big tier name.
+  const eyebrowIn = easeOut(phase(p, 0.06, 0.16));
+  drawSpacedText(ctx, "TUM BLOCKCHAIN CONFERENCE 26", P, 128, {
+    size: 28,
+    spacing: 6,
+    color: "rgba(255,255,255,0.65)",
+    alpha: eyebrowIn,
+    weight: 700,
+    font: brandFont(),
+    maxWidth: w * 0.6,
+  });
+
+  // The tier headline — big, filled with its own colour sweep.
+  const headIn = easeOut(phase(p, 0.12, 0.26));
+  const headGradient = localGradient(ctx, P, 170, 960, 130, a.colors);
+  drawFittedText(ctx, TIER_LABEL[content.tier], P, 250, {
+    size: 116,
+    color: headGradient,
+    alpha: headIn,
+    weight: 800,
+    align: "left",
+    maxWidth: w - P * 2,
+  });
+
+  // Logo grid, sized to how many sponsors are in this post.
+  const gridTop = 330;
+  const gridBottom = h - 200;
+  const grid = computeSponsorGrid(
+    content.logoUrls.length,
+    { x: P, y: gridTop, w: w - P * 2, h: gridBottom - gridTop },
+    0.055,
+  );
+  grid.forEach((box, i) => {
+    const logo = a.logos[i];
+    if (!logo) return;
+    const stagger = i * 0.035;
+    const chipIn = easeOut(phase(p, 0.28 + stagger, 0.44 + stagger));
+    drawPartnerChip(ctx, logo.img, box, chipIn, logo.useLightChip);
+  });
+
+  // Bottom bar: separator + "official sponsor" line.
+  const infoIn = easeOut(phase(p, 0.6, 0.72));
+  ctx.save();
+  ctx.globalAlpha = infoIn * 0.16;
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(P, h - 150, (w - P * 2) * infoIn, 2);
+  ctx.restore();
+  drawSpacedText(
+    ctx,
+    `OFFICIAL SPONSOR  ·  ${CONFERENCE_DATE}  ·  ${CONFERENCE_LOCATION}`,
+    w / 2,
+    h - 100,
+    {
+      size: 30,
+      spacing: 4,
+      color: "rgba(255,255,255,0.92)",
+      alpha: infoIn,
+      align: "center",
+      weight: 700,
+      font: brandFont(),
+      maxWidth: w - P * 2,
+    },
+  );
+}
+
+function drawSponsorPortrait(
+  ctx: CanvasRenderingContext2D,
+  { w, h }: { w: number; h: number },
+  a: SponsorAssets,
+  p: number,
+  content: SponsorCardContent,
+) {
+  const P = 110;
+
+  const logoIn = easeOut(phase(p, 0.06, 0.18));
+  if (logoIn > 0) {
+    ctx.save();
+    ctx.globalAlpha = logoIn;
+    drawContain(ctx, a.confLogo, { x: w - P - 300, y: 96, w: 300, h: 88 });
+    ctx.restore();
+  }
+
+  const eyebrowIn = easeOut(phase(p, 0.06, 0.16));
+  drawSpacedText(ctx, "TUM BLOCKCHAIN CONFERENCE 26", w / 2, 210, {
+    size: 22,
+    spacing: 4,
+    color: "rgba(255,255,255,0.65)",
+    alpha: eyebrowIn,
+    align: "center",
+    weight: 700,
+    font: brandFont(),
+    maxWidth: w - P * 2,
+  });
+
+  const headIn = easeOut(phase(p, 0.12, 0.26));
+  const headGradient = localGradient(ctx, P, 250, w - P * 2, 100, a.colors);
+  drawFittedText(ctx, TIER_LABEL[content.tier], w / 2, 270, {
+    size: 66,
+    color: headGradient,
+    alpha: headIn,
+    weight: 800,
+    align: "center",
+    maxWidth: w - P * 2,
+  });
+
+  const gridTop = 380;
+  const gridBottom = h - 240;
+  const grid = computeSponsorGrid(
+    content.logoUrls.length,
+    { x: P, y: gridTop, w: w - P * 2, h: gridBottom - gridTop },
+    0.06,
+  );
+  grid.forEach((box, i) => {
+    const logo = a.logos[i];
+    if (!logo) return;
+    const stagger = i * 0.035;
+    const chipIn = easeOut(phase(p, 0.28 + stagger, 0.44 + stagger));
+    drawPartnerChip(ctx, logo.img, box, chipIn, logo.useLightChip);
+  });
+
+  const infoIn = easeOut(phase(p, 0.6, 0.72));
+  drawSpacedText(ctx, "OFFICIAL SPONSOR", w / 2, h - 140, {
+    size: 26,
+    spacing: 4,
+    color: "rgba(255,255,255,0.92)",
+    alpha: infoIn,
+    align: "center",
+    weight: 700,
+    font: brandFont(),
+    maxWidth: w - P * 2,
+  });
+  drawSpacedText(
+    ctx,
+    `${CONFERENCE_DATE}  ·  ${CONFERENCE_LOCATION}`,
+    w / 2,
+    h - 96,
+    {
+      size: 22,
+      spacing: 2,
+      color: "rgba(255,255,255,0.65)",
+      alpha: infoIn,
+      align: "center",
+      weight: 600,
+      font: brandFont(),
+      maxWidth: w - P * 2,
+    },
+  );
+}
+
+function drawSponsorCard(
+  ctx: CanvasRenderingContext2D,
+  dims: { w: number; h: number },
+  a: SponsorAssets,
+  p: number,
+  elapsed: number,
+  orientation: CardOrientation,
+  content: SponsorCardContent,
+) {
+  drawCardBackdrop(ctx, dims, a.ring, a.colors, p, elapsed, orientation);
+
+  if (orientation === "landscape") {
+    drawSponsorLandscape(ctx, dims, a, p, content);
+  } else {
+    drawSponsorPortrait(ctx, dims, a, p, content);
+  }
+
+  // Gentle fade in from black at the very start
+  const intro = phase(p, 0, 0.05);
+  if (intro < 1) {
+    ctx.fillStyle = `rgba(0,0,0,${1 - easeOut(intro)})`;
+    ctx.fillRect(0, 0, dims.w, dims.h);
+  }
+}
+
+async function loadSponsorAssets(
+  content: SponsorCardContent,
+): Promise<SponsorAssets> {
+  const [confLogo, ring, ...logoImgs] = await Promise.all([
+    loadImage("/logos/c26-wordmark.svg"),
+    loadImage("/hero/mask-group-1.png"),
+    ...content.logoUrls.map(loadImage),
+  ]);
+  const palette = TIER_COLORS[content.tier];
+  return {
+    confLogo,
+    ring: tintRing(ring, palette),
+    logos: logoImgs.map((img) => ({
+      img,
+      useLightChip: partnerNeedsLightChip(img),
+    })),
+    colors: palette,
+  };
+}
+
+/** Renders the animated sponsor announcement card and records it to video. */
+export async function renderSponsorCardVideo(
+  content: SponsorCardContent,
+  orientation: CardOrientation,
+  onProgress?: (p: number) => void,
+): Promise<VideoResult> {
+  const dims = DIMENSIONS[orientation];
+  const canvas = document.createElement("canvas");
+  canvas.width = dims.w;
+  canvas.height = dims.h;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Canvas 2D context unavailable");
+
+  try {
+    await document.fonts.ready;
+  } catch {
+    // System fonts are fine as a fallback.
+  }
+
+  const assets = await loadSponsorAssets(content);
+
+  return recordCanvasVideo(
+    canvas,
+    (p, elapsed) =>
+      drawSponsorCard(ctx, dims, assets, p, elapsed, orientation, content),
+    onProgress,
+  );
+}
+
+/** Renders a single still (the fully composed end state) as a PNG. */
+export async function renderSponsorCardStill(
+  content: SponsorCardContent,
+  orientation: CardOrientation,
+): Promise<Blob> {
+  const dims = DIMENSIONS[orientation];
+  const canvas = document.createElement("canvas");
+  canvas.width = dims.w;
+  canvas.height = dims.h;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Canvas 2D context unavailable");
+
+  try {
+    await document.fonts.ready;
+  } catch {
+    // System fonts are fine as a fallback.
+  }
+
+  const assets = await loadSponsorAssets(content);
+  drawSponsorCard(ctx, dims, assets, 1, 6500, orientation, content);
+
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (blob) resolve(blob);
+      else reject(new Error("PNG export failed"));
+    }, "image/png");
+  });
+}
