@@ -6,8 +6,10 @@ import { PartnerNewsletter } from "@/components/brand/PartnerNewsletter";
 import { PartnerCommunityPosts } from "@/components/brand/PartnerCommunityPosts";
 import { SideEventInquiryForm } from "@/components/brand/SideEventInquiryForm";
 import { LogoDownloads } from "@/components/brand/LogoShowcase";
+import { Button } from "@/components/button";
 import ScheduleOverview from "@/components/schedule/ScheduleOverview";
 import { partnerGuidelineIntro } from "@/constants/partnerTimeline";
+import { FLYER_PDF_SRC, FLYER_PREVIEW_SRC } from "@/constants/mediaPortal";
 
 export const metadata: Metadata = {
   title: "Partner Portal · TUM Blockchain Conference 26",
@@ -108,6 +110,43 @@ export default function PartnersPage() {
               />
               <ScheduleOverview highlightSideEvents />
               <SideEventInquiryForm />
+            </section>
+
+            <section className="flex flex-col gap-12">
+              <SectionHeader
+                eyebrow="Assets"
+                title="Flyer"
+                intro="A one-page overview of the conference: dates, programme and last year's numbers. Share it anywhere it's useful — post it, email it, print it out, hand it to someone in person. There is no wrong way to use it."
+              />
+              <div className="card-tbc flex flex-col gap-6 p-7 lg:flex-row lg:items-center lg:gap-10">
+                <div className="w-full flex-1 lg:max-w-xs">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={FLYER_PREVIEW_SRC}
+                    alt="TUM Blockchain Conference 26 flyer"
+                    className="w-full rounded-md border border-line"
+                  />
+                </div>
+                <div className="flex flex-1 flex-col gap-3">
+                  <Text as="p" textType="lgsmall" className="font-bold">
+                    Conference 26 flyer
+                  </Text>
+                  <Text as="p" textType="small" className="text-muted max-w-md">
+                    Two pages, print-ready PDF. Free to share everywhere,
+                    exactly as is.
+                  </Text>
+                  <div className="mt-3">
+                    <Button buttonType="primary" asChild className="w-fit px-5">
+                      <a
+                        href={FLYER_PDF_SRC}
+                        download="tbc-conference-26-flyer.pdf"
+                      >
+                        Download PDF
+                      </a>
+                    </Button>
+                  </div>
+                </div>
+              </div>
             </section>
 
             <section className="flex flex-col gap-12">

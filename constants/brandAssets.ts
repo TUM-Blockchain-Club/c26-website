@@ -47,17 +47,19 @@ export const pngLogoAssets: PngLogoAsset[] = [
     id: "digital-assets-day",
     name: "Digital Assets Day",
     description: "The Digital Assets Day mark (Day 2, curated by Bundesblock).",
-    previewSrc: "/logos/digital-assets-day-logo-white.png",
+    // The original (blue background) mark, not the white cutout — this is
+    // the one that should be offered everywhere, so it leads and previews.
+    previewSrc: "/logos/digital-assets-day-logo.png",
     downloads: [
+      {
+        label: "PNG (original)",
+        src: "/logos/digital-assets-day-logo.png",
+        fileName: "digital-assets-day.png",
+      },
       {
         label: "PNG (white)",
         src: "/logos/digital-assets-day-logo-white.png",
         fileName: "digital-assets-day-white.png",
-      },
-      {
-        label: "PNG (color)",
-        src: "/logos/digital-assets-day-logo.png",
-        fileName: "digital-assets-day.png",
       },
     ],
   },

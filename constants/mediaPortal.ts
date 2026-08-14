@@ -7,6 +7,11 @@ export const HEADER_GRAPHIC_SRC = "/media/tbc-conference-26-header.png";
 /** The 2026 conference video, shared with the partner portal. */
 export const CONFERENCE_VIDEO_SRC = "/partner/conference-teaser.mp4";
 
+/** The one-page flyer (PDF) and its page-1 preview image, shared with the
+ * partner portal — free for anyone to download and share. */
+export const FLYER_PDF_SRC = "/media/tbc-conference-26-flyer.pdf";
+export const FLYER_PREVIEW_SRC = "/media/tbc-conference-26-flyer-preview.jpg";
+
 /**
  * Press photos from conference 25. The web versions are lightweight for the
  * gallery grid; the full versions are the original high resolution files.

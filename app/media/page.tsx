@@ -18,6 +18,8 @@ import {
   AFTERMOVIE_WATCH_URL,
   HEADER_GRAPHIC_SRC,
   CONFERENCE_VIDEO_SRC,
+  FLYER_PDF_SRC,
+  FLYER_PREVIEW_SRC,
 } from "@/constants/mediaPortal";
 
 export const metadata: Metadata = {
@@ -212,6 +214,43 @@ export default function MediaPage() {
                 intro="If you run a newsletter, here is a draft you can drop straight in. It is written in a neutral voice on purpose, so you can shorten it, rewrite it or just take the facts, whatever fits your format."
               />
               <PartnerNewsletter newsletter={mediaNewsletter()} />
+            </section>
+
+            <section className="flex flex-col gap-12">
+              <SectionHeader
+                eyebrow="Assets"
+                title="Flyer"
+                intro="A one-page overview of the conference: dates, programme and last year's numbers. Ready to print, attach or share."
+              />
+              <div className="card-tbc flex flex-col gap-6 p-7 lg:flex-row lg:items-center lg:gap-10">
+                <div className="w-full flex-1 lg:max-w-xs">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={FLYER_PREVIEW_SRC}
+                    alt="TUM Blockchain Conference 26 flyer"
+                    className="w-full rounded-md border border-line"
+                  />
+                </div>
+                <div className="flex flex-1 flex-col gap-3">
+                  <Text as="p" textType="lgsmall" className="font-bold">
+                    Conference 26 flyer
+                  </Text>
+                  <Text as="p" textType="small" className="text-muted max-w-md">
+                    Two pages, print-ready PDF. Free to use in your coverage,
+                    attach to an article or share as is.
+                  </Text>
+                  <div className="mt-3">
+                    <Button buttonType="primary" asChild className="w-fit px-5">
+                      <a
+                        href={FLYER_PDF_SRC}
+                        download="tbc-conference-26-flyer.pdf"
+                      >
+                        Download PDF
+                      </a>
+                    </Button>
+                  </div>
+                </div>
+              </div>
             </section>
 
             <section className="flex flex-col gap-12">
