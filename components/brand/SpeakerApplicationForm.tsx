@@ -1,7 +1,7 @@
 import { Button } from "@/components/button";
 
 // Tally form: applicants fill this in on Tally, in a new tab.
-const TALLY_FORM_URL = "https://tally.so/r/Xx7WVP";
+const TALLY_FORM_URL = "https://tally.so/r/NpP5Ep";
 
 // Flip this to false to disable the button (keeps the link in place).
 const APPLICATIONS_OPEN = true;
