@@ -4,7 +4,6 @@ import { Text } from "@/components/text";
 import Image from "next/image";
 import confLogo from "@/public/logos/c26-wordmark.svg";
 import { LumaTicketButton } from "@/components/luma-ticket-button";
-import { EarlyBirdBanner } from "@/components/brand/EarlyBirdBanner";
 
 const Hero = () => {
   return (
@@ -51,7 +50,6 @@ const Hero = () => {
                 Born at TUM, one of Europe&apos;s leading universities. Built
                 for the entire blockchain ecosystem. Secure your spot.
               </Text>
-              <EarlyBirdBanner />
               <LumaTicketButton
                 id="luma-ticket-btn-hero"
                 className="px-8 py-4 text-base font-black uppercase tracking-[0.06em] shadow-[0_0_24px_rgb(var(--color-text-rgb)/0.18)] md:px-10 md:py-5 md:text-lg"

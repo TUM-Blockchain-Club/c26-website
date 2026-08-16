@@ -1,19 +1,24 @@
 import { Text } from "@/components/text";
 import { Speaker as SpeakerComponent } from "@/components/speaker";
-// import { useSpeaker } from "@/hooks/useSpeaker";
-// import { fetchSpeakers } from "@/components/service/contentStrapi";
-import { featuredPastSpeakers } from "@/constants/PastSpeakers";
+import { pastSpeakers } from "@/constants/PastSpeakers";
 
+/**
+ * Previous speakers as an endless marquee: one slow row drifting left,
+ * duplicated for a seamless loop, pausing on hover (CSS in globals.css,
+ * reduced-motion safe). Edge fade via mask keeps it feeling embedded.
+ */
 const Speaker = async () => {
-  // const speakers = await fetchSpeakers();
-  // const filteredSpeakers = speakers
-  //   .filter((speaker) => {
-  //     const priority = Number(speaker.priority);
-  //     return !isNaN(priority) && priority <= 3;
-  //   })
-  //   .sort((a, b) => Number(a.priority) - Number(b.priority));
+  const speakers = pastSpeakers;
 
-  const filteredSpeakers = featuredPastSpeakers;
+  const Row = ({ hidden = false }: { hidden?: boolean }) => (
+    <div className="flex gap-8 pr-8" aria-hidden={hidden || undefined}>
+      {speakers.map((speaker, index) => (
+        <div key={index} className="w-[170px] shrink-0">
+          <SpeakerComponent {...speaker} />
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <section
@@ -26,15 +31,11 @@ const Speaker = async () => {
       <Text textType={"sub_hero"} className="text-gradient text-center">
         Previous Speakers
       </Text>
-      <div
-        className={
-          "w-full max-w-4xl grid grid-cols-2 lg:grid-cols-4 gap-x-3 gap-y-6 lg:gap-8 mt-8 justify-items-center"
-        }
-      >
-        {filteredSpeakers &&
-          filteredSpeakers.map((speaker, index) => (
-            <SpeakerComponent key={index} {...speaker} />
-          ))}
+      <div className="marquee w-full mt-8">
+        <div className="marquee-track">
+          <Row />
+          <Row hidden />
+        </div>
       </div>
     </section>
   );

@@ -1,6 +1,7 @@
 export const dynamic = "force-static";
 
 import Sparkle from "@/components/Sparkle";
+import Reveal from "@/components/Reveal";
 import { Container } from "@/components/container";
 import Statistic from "@/sections/Statistic";
 import AcademicForum from "@/sections/AcademicForum";
@@ -8,10 +9,12 @@ import AfterEvents from "@/sections/AfterEvents";
 import FAQSection from "@/sections/FAQ";
 import Grants from "@/sections/Grants";
 import Hero from "@/sections/Hero";
+import LastYearGallery from "@/sections/LastYearGallery";
 import Manifesto from "@/sections/Manifesto";
 import Partners from "@/sections/Partners";
 import Speaker from "@/sections/Speaker";
 import Sponsors from "@/sections/Sponsors";
+import ThreeDays from "@/sections/ThreeDays";
 import Tickets from "@/sections/Tickets";
 import Tracks from "@/sections/Tracks";
 import Venue from "@/sections/Venue";
@@ -32,16 +35,34 @@ export default function Home() {
             <div className={"flex flex-col w-full max-w-7xl mx-auto z-10"}>
               <Hero />
               <div className={"flex flex-col pb-24 gap-32"}>
-                <Video />
-                <WhatsNew />
+                <Reveal>
+                  <Video />
+                </Reveal>
+                <Reveal>
+                  <WhatsNew />
+                </Reveal>
+                <Reveal>
+                  <ThreeDays />
+                </Reveal>
                 {/* <Manifesto /> */}
                 {/* <Tracks /> */}
                 {/* <Venue /> */}
-                <Statistic />
-                <Tickets />
+                <Reveal>
+                  <Statistic />
+                </Reveal>
+                <Reveal>
+                  <LastYearGallery />
+                </Reveal>
+                <Reveal>
+                  <Tickets />
+                </Reveal>
                 {/* <Grants /> */}
-                <Speaker />
-                <Sponsors />
+                <Reveal>
+                  <Speaker />
+                </Reveal>
+                <Reveal>
+                  <Sponsors />
+                </Reveal>
                 {/* <Partners /> */}
               </div>
             </div>
