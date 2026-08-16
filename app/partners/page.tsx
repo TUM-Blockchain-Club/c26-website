@@ -116,7 +116,7 @@ export default function PartnersPage() {
               <SectionHeader
                 eyebrow="Assets"
                 title="Flyer"
-                intro="A one-page overview of the conference: dates, programme and last year's numbers. Share it anywhere it's useful — post it, email it, print it out, hand it to someone in person. There is no wrong way to use it."
+                intro="A one-page overview of the conference: dates, programme and last year's numbers. Share it anywhere it's useful — post it, email it, drop it in a group chat, send it to a colleague. There is no wrong way to use it."
               />
               <div className="card-tbc flex flex-col gap-6 p-7 lg:flex-row lg:items-center lg:gap-10">
                 <div className="w-full flex-1 lg:max-w-xs">
@@ -132,8 +132,7 @@ export default function PartnersPage() {
                     Conference 26 flyer
                   </Text>
                   <Text as="p" textType="small" className="text-muted max-w-md">
-                    Two pages, print-ready PDF. Free to share everywhere,
-                    exactly as is.
+                    Two pages, ready to share everywhere, exactly as is.
                   </Text>
                   <div className="mt-3">
                     <Button buttonType="primary" asChild className="w-fit px-5">

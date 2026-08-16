@@ -15,10 +15,10 @@ const Tickets = () => {
           Tickets are available now
         </Text>
         <Text as="p" textType="paragraph" className="max-w-md text-secondary">
-          Three days of talks, panels, workshops and networking with the
-          brightest minds in blockchain. An initiative at TUM, the Technical
-          University of Munich, one of the leading universities in Europe. House
-          of Communication, Munich, October 29 to 31, 2026.
+          Three days of talks, panels and networking with the brightest minds in
+          blockchain. An initiative at TUM, the Technical University of Munich,
+          one of the leading universities in Europe. House of Communication,
+          Munich, October 29 to 31, 2026.
         </Text>
         <LumaTicketButton
           id="luma-ticket-btn-tickets"

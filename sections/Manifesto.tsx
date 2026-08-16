@@ -31,11 +31,10 @@ const Manifesto = () => {
             <br />
             We’re gathering developers, policymakers, academics, industry
             leaders, and legal experts to advance the Web3 ecosystem across
-            industries and borders. Through insightful panels, talks, hands-on
-            workshops, and use-case showcases across{" "}
-            <a href="#tracks">five tracks</a>, this year’s conference
-            underscores why Web3 is not just a technology—it’s a{" "}
-            <b>societal imperative</b>.
+            industries and borders. Through insightful panels, talks, and
+            use-case showcases across <a href="#tracks">five tracks</a>, this
+            year’s conference underscores why Web3 is not just a technology—it’s
+            a <b>societal imperative</b>.
           </Text>
         </div>
       </div>

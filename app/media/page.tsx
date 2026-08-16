@@ -220,7 +220,7 @@ export default function MediaPage() {
               <SectionHeader
                 eyebrow="Assets"
                 title="Flyer"
-                intro="A one-page overview of the conference: dates, programme and last year's numbers. Ready to print, attach or share."
+                intro="A one-page overview of the conference: dates, programme and last year's numbers. Ready to share, attach or post."
               />
               <div className="card-tbc flex flex-col gap-6 p-7 lg:flex-row lg:items-center lg:gap-10">
                 <div className="w-full flex-1 lg:max-w-xs">
@@ -236,8 +236,8 @@ export default function MediaPage() {
                     Conference 26 flyer
                   </Text>
                   <Text as="p" textType="small" className="text-muted max-w-md">
-                    Two pages, print-ready PDF. Free to use in your coverage,
-                    attach to an article or share as is.
+                    Two pages, ready to share. Free to use in your coverage,
+                    attach to an article or post as is.
                   </Text>
                   <div className="mt-3">
                     <Button buttonType="primary" asChild className="w-fit px-5">

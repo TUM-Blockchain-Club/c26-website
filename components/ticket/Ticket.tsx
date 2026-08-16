@@ -21,7 +21,8 @@ type TicketVariantProps = VariantProps<typeof ticketVariants>;
 
 type TicketElement = React.ElementRef<"div">;
 export interface TicketProps
-  extends React.ComponentPropsWithoutRef<"div">, TicketVariantProps {
+  extends React.ComponentPropsWithoutRef<"div">,
+    TicketVariantProps {
   price: number;
   title: string;
 }
@@ -80,21 +81,6 @@ export const Ticket = React.forwardRef<TicketElement, TicketProps>(
             </div>
             <Text textType={"paragraph"} className="ml-2">
               2-day Conference
-              <br />
-            </Text>
-          </div>
-          <div className="flex items-center">
-            <div className="w-[14px] h-[14x]">
-              <Image
-                className={"object-cover"}
-                src={"/assets/check_white.png"}
-                alt={"check"}
-                width={100}
-                height={100}
-              />
-            </div>
-            <Text textType={"paragraph"} className="ml-2">
-              Workshops
               <br />
             </Text>
           </div>
