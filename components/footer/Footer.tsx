@@ -5,7 +5,6 @@ import confLogo from "@/public/logos/c26-wordmark.svg";
 import dcLogo from "@/public/logos/discord-logo.png";
 import liLogo from "@/public/logos/linkedin-logo.png";
 import tbcLogo from "@/public/logos/tbc-wordmark.svg";
-import telLogo from "@/public/logos/telegram-logo.png";
 import xLogo from "@/public/logos/x-logo.png";
 import lineBg from "@/public/logos/lines.svg";
 import classNames from "classnames";
@@ -14,6 +13,31 @@ import React from "react";
 
 type FooterElement = React.ElementRef<"footer">;
 export type FooterProps = React.ComponentPropsWithoutRef<"footer">;
+
+const socials = [
+  {
+    href: "https://discord.gg/7V7KG8SESF",
+    alt: "Discord",
+    logo: dcLogo,
+  },
+  {
+    href: "https://www.linkedin.com/company/tum-blockchain-club/",
+    alt: "LinkedIn",
+    logo: liLogo,
+  },
+  {
+    href: "https://x.com/tbc_munich",
+    alt: "X",
+    logo: xLogo,
+  },
+];
+
+const links = [
+  { href: "mailto:relations@tum-blockchain.com", label: "Contact" },
+  { href: "/privacy-policy.pdf", label: "Privacy Policy" },
+  { href: "https://www.tum-blockchain.com/imprint", label: "Imprint" },
+  { href: "/partners", label: "Partners" },
+];
 
 export const Footer = React.forwardRef<FooterElement, FooterProps>(
   (props, ref) => {
@@ -24,127 +48,83 @@ export const Footer = React.forwardRef<FooterElement, FooterProps>(
         id={"footer"}
         className={classNames(
           className,
-          "relative flex z-10 justify-center items-center justify-items-center bg-gradient-to-b from-black from-10% to-[rgb(var(--color-background-rgb)/0.66)] to-80%",
+          "relative z-10 flex justify-center bg-gradient-to-b from-black from-10% to-[rgb(var(--color-background-rgb)/0.66)] to-80%",
         )}
         ref={ref}
       >
-        {/* Background Image */}
-        <div className="absolute inset-0 w-full h-full bg-gradient-to-b from-black from-10% to-[rgb(var(--color-background-rgb)/0.66)] to-80%">
+        {/* Background pattern */}
+        <div className="absolute inset-0 h-full w-full">
           <Image
             src={lineBg}
-            alt="Background Pattern"
+            alt=""
+            aria-hidden
             fill
             style={{ objectFit: "cover", opacity: 0.2 }}
           />
         </div>
 
-        <div
-          className={
-            "flex flex-col self-center relative min-h-[500px] w-full max-w-7xl"
-          }
-        >
-          <div
-            className={"flex justify-center py-6 px-6 md:px-12 lg:px-24 z-20"}
-          >
-            <div
-              className={
-                "flex flex-col gap-y-8 lg:flex-row justify-between w-full"
-              }
-            >
-              <div className={"flex flex-col gap-4 items-start"}>
+        <div className="relative z-20 flex w-full max-w-7xl flex-col px-6 pb-8 pt-16 md:px-12 lg:px-24">
+          {/* Top: brand block left, newsletter + links right */}
+          <div className="flex flex-col gap-12 lg:flex-row lg:justify-between lg:gap-16">
+            <div className="flex flex-col items-start gap-5">
+              <Image
+                src={confLogo}
+                alt={"TUM Blockchain Conference Logo"}
+                height={88}
+              />
+              <div className="flex flex-col gap-2">
+                <Text textType={"small"} className="text-muted">
+                  Organized by
+                </Text>
                 <Image
-                  src={confLogo}
-                  alt={"TUM Blockchain Conference Logo"}
-                  height={88}
+                  src={tbcLogo}
+                  alt={"TUM Blockchain Club Logo"}
+                  width={145}
                 />
-                <div className={"flex flex-col gap-2"}>
-                  <Text textType={"small"}>Organized by</Text>
-                  <Image
-                    src={tbcLogo}
-                    alt={"TUM Blockchain Club Logo"}
-                    width={145}
-                  />
-                </div>
-                <div className="flex space-x-4 mt-2">
-                  <Link
-                    href="https://discord.gg/7V7KG8SESF"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Image
-                      src={dcLogo}
-                      alt={"TUM Blockchain Club Logo"}
-                      width={25}
-                    />
-                  </Link>
-                  <Link
-                    href="https://www.linkedin.com/company/tum-blockchain-club/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Image
-                      src={liLogo}
-                      alt={"TUM Blockchain Club Logo"}
-                      width={25}
-                    />
-                  </Link>
-                  {/* <Link
-                    href="https://t.me/+6SMYu7pub0E1MGUy"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Image
-                      src={telLogo}
-                      alt={"TUM Blockchain Club Logo"}
-                      width={25}
-                    />
-                  </Link> */}
-                  <Link
-                    href="https://x.com/tbc_munich"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Image
-                      src={xLogo}
-                      alt={"TUM Blockchain Club Logo"}
-                      width={25}
-                    />
-                  </Link>
-                </div>
               </div>
-              <div
-                className={
-                  "flex flex-col lg:flex-row h-full justify-center lg:justify-center gap-8 lg:gap-16"
-                }
-              >
-                <NewsletterSignup />
-                <div className="flex flex-col space-y-2 items-left">
-                  <Text asChild>
-                    <Link href={"mailto:relations@tum-blockchain.com"}>
-                      Contact
-                    </Link>
-                  </Text>
-                </div>
-                <div className="flex flex-col space-y-2 items-left">
-                  <Text asChild>
-                    <Link href={"/privacy-policy.pdf"}>Privacy Policy</Link>
-                  </Text>
-                </div>
-                <div className="flex flex-col space-y-2 items-left">
-                  <Text asChild>
-                    <Link href={"https://www.tum-blockchain.com/imprint"}>
-                      Imprint
-                    </Link>
-                  </Text>
-                  <div className="flex space-x-4"></div>
-                </div>
-                <div className="flex flex-col space-y-2 items-left">
-                  <Text asChild>
-                    <Link href={"/partners"}>Partners</Link>
-                  </Text>
-                </div>
+              <div className="mt-1 flex gap-4">
+                {socials.map((s) => (
+                  <Link
+                    key={s.alt}
+                    href={s.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="opacity-70 transition-opacity hover:opacity-100"
+                  >
+                    <Image src={s.logo} alt={s.alt} width={25} />
+                  </Link>
+                ))}
               </div>
             </div>
+
+            <div className="flex flex-col gap-10 md:flex-row md:gap-20">
+              <NewsletterSignup />
+              <nav aria-label="Footer" className="flex flex-col gap-3">
+                <span className="font-sans text-sm font-semibold uppercase text-white">
+                  Links
+                </span>
+                {links.map((l) => (
+                  <Text key={l.label} asChild textType="lgsmall">
+                    <Link
+                      href={l.href}
+                      className="whitespace-nowrap text-secondary transition-colors hover:text-white"
+                    >
+                      {l.label}
+                    </Link>
+                  </Text>
+                ))}
+              </nav>
+            </div>
+          </div>
+
+          {/* Bottom bar */}
+          <div className="mt-14 flex flex-col gap-2 border-t border-white/10 pt-6 md:flex-row md:items-center md:justify-between">
+            <Text textType="small" className="text-faint">
+              © 2026 TUM Blockchain Club
+            </Text>
+            <Text textType="small" className="text-faint">
+              TUM Blockchain Conference 26 · October 29–31 · Munich
+            </Text>
           </div>
         </div>
       </footer>

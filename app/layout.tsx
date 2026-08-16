@@ -1,5 +1,7 @@
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
+import { SmoothScroll } from "@/components/SmoothScroll";
+import { CardGlow } from "@/components/CardGlow";
 import { MarketingConsent } from "@/components/analytics/MarketingConsent";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
@@ -85,7 +87,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" data-scroll-behavior="smooth">
       <head>
         <Script src="https://tally.so/widgets/embed.js"></Script>
       </head>
@@ -94,6 +96,8 @@ export default function RootLayout({
       >
         {" "}
         {/* FIX: Items center and justify-center are enforcing center alignment for everything*/}
+        <SmoothScroll />
+        <CardGlow />
         <Header />
         {children}
         <SpeedInsights />

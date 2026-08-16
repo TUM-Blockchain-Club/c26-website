@@ -231,8 +231,9 @@ export const Header = React.forwardRef<HeaderElement, HeaderProps>(
             className,
             "fixed z-[9999] w-full py-3 md:py-4 flex justify-center items-center px-4 md:px-8 lg:px-12 xl:px-20 transition-all duration-300",
             {
-              "dark:bg-black/50 backdrop-blur-md": isScrolled,
-              "bg-transparent": !isScrolled,
+              "dark:bg-black/50 backdrop-blur-md border-b border-white/5":
+                isScrolled,
+              "bg-transparent border-b border-transparent": !isScrolled,
             },
           )}
           ref={ref}
