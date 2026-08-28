@@ -1,6 +1,8 @@
 import axios from "axios";
 import fs from "fs";
+import fsPromises from "fs/promises";
 import path from "path";
+import { detectLogoBackground, LogoBackground } from "@/util/logoTone";
 
 //  {
 //     title: "AI, Privacy & DePin in Web3",
@@ -373,4 +375,133 @@ const downloadWorkshopImage = async (workshop: Workshop) => {
       error,
     );
   }
+};
+
+// Community Partners of the 2026 edition. The Strapi collection type is
+// expected to expose: name (text), logo (single media), website (text,
+// optional) and priority (integer, optional — higher shows up first).
+export interface CommunityPartner {
+  id: number;
+  documentId: string;
+  name: string;
+  website?: string | null;
+  priority?: number | null;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string;
+  logo?: ProfilePicture | null;
+  /** Derived from the logo pixels, not from Strapi. */
+  logoBackground?: LogoBackground;
+}
+
+// Plural API ID of the collection type, as shown in the Content-Type Builder.
+const COMMUNITY_PARTNER_ENDPOINT =
+  process.env.STRAPI_COMMUNITY_PARTNER_ENDPOINT || "community-partner-26s";
+
+export const fetchCommunityPartners = async (): Promise<CommunityPartner[]> => {
+  const token = process.env.STRAPI_API_TOKEN;
+  if (!token) {
+    console.warn(
+      "STRAPI_API_TOKEN missing; returning empty community partners list",
+    );
+    return [];
+  }
+
+  try {
+    const partners: CommunityPartner[] = [];
+    let hasMore = true;
+    let page = 1;
+
+    do {
+      const res = await axios.get(
+        `https://strapi.rbg.tum-blockchain.com/api/${COMMUNITY_PARTNER_ENDPOINT}?sort=name:asc&pagination[page]=${page}&pagination[pageSize]=50&populate=logo`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      const pageData: CommunityPartner[] = res.data.data;
+
+      for (const partner of pageData) {
+        await prepareCommunityPartnerLogo(partner);
+        delay(300);
+      }
+
+      partners.push(...pageData);
+
+      hasMore =
+        res.data.meta.pagination.page < res.data.meta.pagination.pageCount;
+      page = page + 1;
+      console.log(`Fetched ${partners.length} community partners so far...`);
+    } while (hasMore);
+
+    // Higher priority first, alphabetical within the same priority (the API
+    // already sorted by name, and Array.sort is stable).
+    return partners.sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
+  } catch (err) {
+    console.error("Error fetching community partners from Strapi:", err);
+    return [];
+  }
+};
+
+const STRAPI_BASE = "https://strapi.rbg.tum-blockchain.com";
+
+/**
+ * Makes a partner logo renderable and decides which card it belongs on.
+ *
+ * During a build the file is cached under /public so the live site does not
+ * depend on Strapi being reachable. When the filesystem is read-only — which
+ * is the case when a page is regenerated on Vercel, i.e. for partners added
+ * after the last deploy — the logo is served straight from Strapi instead.
+ * Either way the tone is measured from the same bytes.
+ */
+const prepareCommunityPartnerLogo = async (partner: CommunityPartner) => {
+  if (!partner.logo || !partner.logo.url) {
+    console.warn(`No logo for community partner: ${partner.name}`);
+    return;
+  }
+
+  const remoteUrl = STRAPI_BASE + partner.logo.url;
+  const ext = partner.logo.ext || ".png";
+  const fileName = `${partner.documentId}${ext}`;
+  const filePath = path.join(
+    process.cwd(),
+    "public",
+    "community-partners26",
+    fileName,
+  );
+
+  let buffer: Buffer | null = null;
+
+  if (fs.existsSync(filePath)) {
+    buffer = await fsPromises.readFile(filePath);
+    partner.logo.url = `/community-partners26/${fileName}`;
+  } else {
+    try {
+      const res = await axios.get<ArrayBuffer>(remoteUrl, {
+        responseType: "arraybuffer",
+        timeout: 15000,
+      });
+      buffer = Buffer.from(res.data);
+    } catch (error) {
+      console.error(`Could not load logo for ${partner.name}:`, error);
+      partner.logo.url = remoteUrl;
+      return;
+    }
+
+    try {
+      await fsPromises.mkdir(path.dirname(filePath), { recursive: true });
+      await fsPromises.writeFile(filePath, buffer);
+      partner.logo.url = `/community-partners26/${fileName}`;
+      console.log(`Cached logo for ${partner.name} at ${filePath}`);
+    } catch {
+      // Read-only filesystem (Vercel runtime): serve it from Strapi.
+      partner.logo.url = remoteUrl;
+      console.log(`Serving logo for ${partner.name} from Strapi`);
+    }
+  }
+
+  partner.logoBackground = await detectLogoBackground(buffer);
 };
