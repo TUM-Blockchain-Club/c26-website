@@ -1,4 +1,7 @@
 export const dynamic = "force-static";
+// Re-render every 10 minutes so newly published Strapi content (community
+// partners) appears without a redeploy.
+export const revalidate = 600;
 
 import Sparkle from "@/components/Sparkle";
 import Reveal from "@/components/Reveal";
@@ -13,6 +16,7 @@ import LastYearGallery from "@/sections/LastYearGallery";
 import Manifesto from "@/sections/Manifesto";
 import Partners from "@/sections/Partners";
 import Speaker from "@/sections/Speaker";
+import CommunityPartners from "@/sections/CommunityPartners";
 import Sponsors from "@/sections/Sponsors";
 import ThreeDays from "@/sections/ThreeDays";
 import Tickets from "@/sections/Tickets";
@@ -62,6 +66,9 @@ export default function Home() {
                 </Reveal>
                 <Reveal>
                   <Sponsors />
+                </Reveal>
+                <Reveal>
+                  <CommunityPartners />
                 </Reveal>
                 {/* <Partners /> */}
               </div>
