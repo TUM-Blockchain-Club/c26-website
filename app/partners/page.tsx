@@ -97,7 +97,7 @@ export default function PartnersPage() {
               <SectionHeader
                 eyebrow="Optional, very welcome"
                 title="Share in Your Communities"
-                intro="If you have active Telegram or WhatsApp groups, a quick share there helps a lot. These are optional on top of the two posts, and every one of them is genuinely appreciated."
+                intro="If you have active WhatsApp, Telegram or student group chats, a quick share there goes a long way. These texts deliberately do not mention your partnership — in a group chat a plain recommendation lands better than an announcement, so they read as a genuine tip rather than an ad. Copy one as it is, shorten it, or rewrite it in your own voice. All optional on top of the two posts, and every single one is genuinely appreciated."
               />
               <PartnerCommunityPosts />
             </section>

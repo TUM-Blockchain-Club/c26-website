@@ -145,18 +145,23 @@ export type CommunityPost = {
 
 export const communityPosts: CommunityPost[] = [
   {
-    channel: "Telegram",
-    hint: "For crypto and web3 group chats.",
-    text: `gm 👋 The TUM Blockchain Conference 26 is coming to Munich, Oct 29 to 31.\n\nBorn at TUM, built for the entire blockchain ecosystem: talks, a Digital Assets Day by Bundesblock and a 30h Hackathon. 1,200+ attendees last year.\n\nWe're a proud Community Partner. Grab your ticket 👉 ${LINK}`,
-  },
-  {
     channel: "WhatsApp",
     hint: "For friendlier, general group chats.",
-    text: `Hi everyone! We are proud to be a Community Partner of the TUM Blockchain Conference 26, taking place October 29 to 31 in Munich.\n\nThree days of talks, panels and a 30 hour Hackathon, hosted by TUM Blockchain Club. If you are into blockchain, it is well worth it.\n\nTickets and full programme here: ${LINK}`,
+    text: `Hi everyone 👋 Sharing something that might be interesting for a few of you: the TUM Blockchain Conference 26 takes place October 29 to 31 at the House of Communication in Munich.\n\nIt is organised by students of the TUM Blockchain Club and has grown into one of the bigger blockchain events in Europe. Last edition brought together more than 1,200 people, with 125+ speakers across 57 talks and 12 panels.\n\nThe three days are quite different from each other:\n\n• Oct 29 — Conference Day: talks and panels, from zero-knowledge cryptography to systems actually running in production\n• Oct 30 — Digital Assets Day, curated by Bundesblock: policymakers, regulators, banks and corporates in the same room as builders\n• Oct 30 to 31 — Blockchain & AI Hackathon: two days of building alongside the conference, open to all levels\n\nYou really do not need a technical background for it. A lot of the programme is about where this technology is actually heading, and there are side events all around the conference to meet people. Students get their own ticket tier with a valid student ID.\n\nTickets and the full programme: ${LINK}`,
+  },
+  {
+    channel: "Telegram",
+    hint: "For crypto and web3 group chats.",
+    text: `gm 👋 For anyone in Munich or willing to travel: the TUM Blockchain Conference 26 runs October 29 to 31 at the House of Communication.\n\nBorn at TUM, one of Europe's leading universities, and built for the entire ecosystem — 1,200+ attendees and 125+ speakers last edition.\n\n🎤 Oct 29 — Conference Day: talks and panels, zero-knowledge cryptography through to production systems\n🏛 Oct 30 — Digital Assets Day by Bundesblock: regulators, banks and corporates meeting builders\n⚡️ Oct 30 to 31 — Blockchain & AI Hackathon: two days of building, all levels welcome, with partner tracks and prizes\n\nSide events run across all four days, so there is plenty happening outside the main programme. Student tickets available with a valid student ID.\n\nTickets and full programme 👉 ${LINK}`,
+  },
+  {
+    channel: "Student & uni groups",
+    hint: "For course, club and campus chats.",
+    text: `Hey! If any of you are curious about blockchain or AI, this is worth a look: the TUM Blockchain Conference 26 takes place October 29 to 31 at the House of Communication in Munich.\n\nIt is run by students from the TUM Blockchain Club and it is genuinely beginner friendly. Last year 1,200+ people came for 57 talks and 12 panels, and plenty of them were there to figure out what all of this actually does.\n\n• Oct 29 — Conference Day: talks and panels across research, application and regulation\n• Oct 30 — Digital Assets Day by Bundesblock: how regulators, banks and corporates are handling digital assets\n• Oct 30 to 31 — Blockchain & AI Hackathon: two days of building, open to all levels, no hackathon experience needed\n\nThere is a dedicated student ticket tier with a valid student ID, plus side events around the conference where it is easy to meet people.\n\nTickets and programme: ${LINK}`,
   },
   {
     channel: "Quick one liner",
     hint: "For bios, story text or a fast share.",
-    text: `Proud Community Partner of the TUM Blockchain Conference 26 · Munich · Oct 29 to 31 · ${LINK}`,
+    text: `TUM Blockchain Conference 26 · Munich · Oct 29 to 31 · talks, Digital Assets Day by Bundesblock and a Blockchain & AI Hackathon · ${LINK}`,
   },
 ];
