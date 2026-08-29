@@ -2,20 +2,21 @@ import Image from "next/image";
 import { Text } from "@/components/text";
 import { Button } from "@/components/button";
 import { Link } from "@/components/link";
-import {
-  fetchCommunityPartners,
-  CommunityPartner,
-} from "@/components/service/contentStrapi";
+import { fetchCommunityPartners } from "@/components/service/contentStrapi";
+import { staticCommunityPartners } from "@/constants/communityPartners";
+import { LogoBackground } from "@/util/logoTone";
 
-const PartnerLogo = ({ partner }: { partner: CommunityPartner }) => {
-  const src = partner.logo?.url;
-  if (!src) return null;
+type PartnerLogoProps = {
+  name: string;
+  src: string;
+  website?: string;
+  background: LogoBackground;
+};
 
+const PartnerLogo = ({ name, src, website, background }: PartnerLogoProps) => {
   // Light logos would vanish on the white card, so they get a dark one.
   // See util/logoTone.ts — the tone is measured from the logo's pixels.
-  const cardBackground =
-    partner.logoBackground === "dark" ? "bg-white/[0.06]" : "bg-white";
-
+  const cardBackground = background === "dark" ? "bg-white/[0.06]" : "bg-white";
   // Logos added after the last build are served from Strapi; the optimizer
   // would need the host allow-listed and would reject their SVGs.
   const isRemote = src.startsWith("http");
@@ -27,7 +28,7 @@ const PartnerLogo = ({ partner }: { partner: CommunityPartner }) => {
       <div className="relative h-[70%] w-[85%]">
         <Image
           src={src}
-          alt={partner.name}
+          alt={name}
           fill
           sizes="(max-width: 768px) 160px, 208px"
           unoptimized={isRemote}
@@ -37,9 +38,9 @@ const PartnerLogo = ({ partner }: { partner: CommunityPartner }) => {
     </div>
   );
 
-  return partner.website ? (
+  return website ? (
     <Link
-      href={partner.website}
+      href={website}
       target="_blank"
       rel="noopener noreferrer"
       className="rounded-md focus:outline-none focus:ring-2 focus:ring-white/40"
@@ -52,14 +53,26 @@ const PartnerLogo = ({ partner }: { partner: CommunityPartner }) => {
 };
 
 /**
- * This year's Community Partners, maintained in Strapi. Renders nothing until
- * the first partner is published there, so the homepage stays clean.
+ * This year's Community Partners. Strapi is the source of truth; while its
+ * production token has no read access to the collection, the committed
+ * snapshot in constants/communityPartners.ts stands in. Renders nothing if
+ * both are empty.
  */
 const CommunityPartners = async () => {
-  const partners = await fetchCommunityPartners();
-  const withLogo = partners.filter((partner) => partner.logo?.url);
+  const fromStrapi = await fetchCommunityPartners();
 
-  if (withLogo.length === 0) return null;
+  const partners: PartnerLogoProps[] = fromStrapi.length
+    ? fromStrapi
+        .filter((partner) => partner.logo?.url)
+        .map((partner) => ({
+          name: partner.name,
+          src: partner.logo!.url,
+          website: partner.website ?? undefined,
+          background: partner.logoBackground ?? "light",
+        }))
+    : staticCommunityPartners;
+
+  if (partners.length === 0) return null;
 
   return (
     <section
@@ -82,8 +95,8 @@ const CommunityPartners = async () => {
       </Text>
 
       <div className="mt-8 flex flex-wrap items-center justify-center gap-4 md:gap-6">
-        {withLogo.map((partner) => (
-          <PartnerLogo key={partner.documentId} partner={partner} />
+        {partners.map((partner) => (
+          <PartnerLogo key={partner.src} {...partner} />
         ))}
       </div>
 
