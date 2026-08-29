@@ -44,6 +44,16 @@ Logos take one of two paths, decided by whether the filesystem is writable:
   would need the host allow-listed and rejects SVG). The next build caches it
   locally again.
 
+## Static snapshot
+
+`constants/communityPartners.ts` holds a committed snapshot of the partners
+(logo path, website, card background), and the logos it points at are checked
+into `public/community-partners26/` even though the directory is gitignored for
+build-generated files. The section falls back to it whenever Strapi returns
+nothing — which is the case while the production API token has no read access to
+the collection. As soon as Strapi answers, its data wins and the snapshot is
+ignored; it can then be deleted.
+
 ## Card background
 
 `util/logoTone.ts` measures each logo with `sharp` and picks the card:
