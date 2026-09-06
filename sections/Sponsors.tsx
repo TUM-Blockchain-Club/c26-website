@@ -37,18 +37,20 @@ const SponsorCarousel = ({ sponsors, size, reverse }: SponsorCarouselProps) => {
   // and the strip always exceeds the container width at any window size.
   const repeatedSponsors = [...sponsors, ...sponsors, ...sponsors, ...sponsors];
   const animationName = reverse ? "sponsor-marquee-reverse" : "sponsor-marquee";
-  const speed = size === "large" ? "72s" : "88s";
+  const speed = size === "large" ? "60s" : "74s";
+  // Past sponsors are history, so they stay smaller than the current
+  // community partners below them.
   const itemClassName =
     size === "large"
-      ? "h-24 w-44 xs:h-28 xs:w-56 md:h-32 md:w-72"
-      : "h-16 w-32 xs:h-20 xs:w-40 md:h-24 md:w-52";
+      ? "h-16 w-32 xs:h-20 xs:w-40 md:h-24 md:w-52"
+      : "h-14 w-28 xs:h-16 xs:w-32 md:h-20 md:w-44";
 
   return (
     <div className="relative w-full overflow-hidden py-2">
       <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-black to-transparent md:w-28" />
       <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-black to-transparent md:w-28" />
       <div
-        className="flex w-max gap-4 md:gap-6"
+        className="flex w-max gap-3 md:gap-4"
         style={{
           animation: `${animationName} ${speed} linear infinite`,
         }}
@@ -104,11 +106,11 @@ const Sponsors = ({ displayMode = "carousel" }: SponsorsProps) => {
         <Text as="p" textType="small" className="eyebrow-tbc text-center">
           They made it possible
         </Text>
-        <Text textType={"sub_hero"} className="text-gradient text-center">
+        <Text textType={"title"} className="text-gradient text-center">
           Past Sponsors
         </Text>
-        <div className="w-full flex flex-col items-center gap-8 lg:gap-12 mt-8">
-          <div className="flex w-full flex-col gap-5 md:gap-7">
+        <div className="w-full flex flex-col items-center gap-6 lg:gap-10 mt-4">
+          <div className="flex w-full flex-col gap-3 md:gap-4">
             <SponsorCarousel sponsors={topCarouselSponsors} size="large" />
             <SponsorCarousel
               sponsors={bottomCarouselSponsors}

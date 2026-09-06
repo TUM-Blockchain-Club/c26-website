@@ -17,6 +17,7 @@ import Manifesto from "@/sections/Manifesto";
 import Partners from "@/sections/Partners";
 import Speaker from "@/sections/Speaker";
 import CommunityPartners from "@/sections/CommunityPartners";
+import CurrentSponsors from "@/sections/CurrentSponsors";
 import Sponsors from "@/sections/Sponsors";
 import ThreeDays from "@/sections/ThreeDays";
 import Tickets from "@/sections/Tickets";
@@ -63,6 +64,9 @@ export default function Home() {
                 {/* <Grants /> */}
                 <Reveal>
                   <Speaker />
+                </Reveal>
+                <Reveal>
+                  <CurrentSponsors />
                 </Reveal>
                 <Reveal>
                   <Sponsors />
