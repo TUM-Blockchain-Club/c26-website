@@ -57,3 +57,17 @@ under the conference wordmark, above `ORGANISED BY TUM BLOCKCHAIN CLUB` — it
 belongs to that half of the `partner × conference` lockup rather than sitting
 in a corner of its own. The 16:9 wordmark is 290 tall (was 320) to make room.
 Same trimmed blue mark as the attendee card.
+
+## Sponsor cards
+
+All four sponsor layouts (tiered and external, 16:9 and 4:5) carry the pair
+too: `drawConferencePair()` puts the Digital Assets Day next to the conference
+wordmark behind a hairline, right-aligned on the 16:9 cards and centred on the
+4:5 ones, whose whole composition is centred. Geometry lives in
+`SPONSOR_PAIR`.
+
+`OFFICIAL SPONSOR` is the point of those posts, so it no longer shares a line
+with the date and venue: on the tiered 16:9 card it sits above the separator at
+46px with the date underneath, and the other three layouts raise it to 38–50px.
+The logo areas gave back a little height for it, and the accent rule above the
+external card's caption moved up to clear the bigger type.
