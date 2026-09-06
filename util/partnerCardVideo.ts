@@ -1951,6 +1951,10 @@ const GENERIC_SPONSOR_LABEL = "OFFICIAL SPONSOR";
 
 type SponsorAssets = {
   confLogo: HTMLImageElement;
+  /** Ink-tight copies for the header pair, so the two marks look evenly
+   * sized however much padding their files carry. */
+  confMark: Mark;
+  dayMark: Mark;
   ring: HTMLImageElement | HTMLCanvasElement;
   logos: {
     img: HTMLImageElement;
@@ -2017,6 +2021,61 @@ function localGradient(
   return g;
 }
 
+/**
+ * The conference wordmark with the Digital Assets Day beside it, as one
+ * right-aligned pair with a hairline between — the sponsor cards' version of
+ * the two marks the attendee card carries. Sized by ink, and the day mark is
+ * nudged down so its blue plate, not the block including its
+ * "by Bundesblock" line, lands on the row's centre line.
+ */
+function drawConferencePair(
+  ctx: CanvasRenderingContext2D,
+  marks: { confMark: Mark; dayMark: Mark },
+  o: {
+    rightX: number;
+    rowY: number;
+    confW: number;
+    confH: number;
+    dayW: number;
+    dayH: number;
+  },
+) {
+  const confX = o.rightX - o.confW;
+  drawContain(
+    ctx,
+    marks.confMark,
+    { x: confX, y: o.rowY - o.confH / 2, w: o.confW, h: o.confH },
+    "right",
+  );
+
+  const divX = confX - 44;
+  ctx.fillStyle = "rgba(255,255,255,0.2)";
+  ctx.fillRect(divX, o.rowY - o.confH * 0.32, 2, o.confH * 0.64);
+
+  drawContain(
+    ctx,
+    marks.dayMark,
+    {
+      x: divX - 44 - o.dayW,
+      y: o.rowY - o.dayH / 2 + o.dayH * 0.09,
+      w: o.dayW,
+      h: o.dayH,
+    },
+    "right",
+  );
+}
+
+/** Header pair geometry, shared by all four sponsor layouts. */
+const SPONSOR_PAIR = {
+  landscape: { rowY: 136, confW: 240, confH: 120, dayW: 350, dayH: 74 },
+  portrait: { rowY: 134, confW: 200, confH: 100, dayW: 300, dayH: 64 },
+} as const;
+
+/** Total width of a header pair, for centring it on the 4:5 cards, whose
+ * whole composition is centred. */
+const sponsorPairWidth = (o: { confW: number; dayW: number }) =>
+  o.dayW + 90 + o.confW;
+
 function drawSponsorLandscape(
   ctx: CanvasRenderingContext2D,
   { w, h }: { w: number; h: number },
@@ -2026,12 +2085,12 @@ function drawSponsorLandscape(
 ) {
   const P = 150;
 
-  // Conference logo, top-right corner only — same spot every card uses.
+  // Conference wordmark and Digital Assets Day, top-right.
   const logoIn = easeOut(phase(p, 0.06, 0.18));
   if (logoIn > 0) {
     ctx.save();
     ctx.globalAlpha = logoIn;
-    drawContain(ctx, a.confLogo, { x: w - P - 430, y: 92, w: 430, h: 116 });
+    drawConferencePair(ctx, a, { rightX: w - P, ...SPONSOR_PAIR.landscape });
     ctx.restore();
   }
 
@@ -2049,8 +2108,8 @@ function drawSponsorLandscape(
 
   // The tier headline — big, filled with its own colour sweep.
   const headIn = easeOut(phase(p, 0.12, 0.26));
-  const headGradient = localGradient(ctx, P, 170, 960, 130, a.colors);
-  drawFittedText(ctx, TIER_LABEL[content.tier], P, 250, {
+  const headGradient = localGradient(ctx, P, 188, 960, 130, a.colors);
+  drawFittedText(ctx, TIER_LABEL[content.tier], P, 268, {
     size: 116,
     color: headGradient,
     alpha: headIn,
@@ -2060,8 +2119,8 @@ function drawSponsorLandscape(
   });
 
   // Logo grid, sized to how many sponsors are in this post.
-  const gridTop = 330;
-  const gridBottom = h - 200;
+  const gridTop = 350;
+  const gridBottom = h - 260;
   const grid = computeSponsorGrid(
     content.logoUrls.length,
     { x: P, y: gridTop, w: w - P * 2, h: gridBottom - gridTop },
@@ -2075,8 +2134,20 @@ function drawSponsorLandscape(
     drawPartnerChip(ctx, logo.img, box, chipIn, logo.useLightChip);
   });
 
-  // Bottom bar: separator + "official sponsor" line.
+  // Bottom bar: the sponsor line on its own, then the separator and the
+  // date. "OFFICIAL SPONSOR" is what the post is about, so it gets its own
+  // size rather than sharing a line with the date and venue.
   const infoIn = easeOut(phase(p, 0.6, 0.72));
+  drawSpacedText(ctx, GENERIC_SPONSOR_LABEL, w / 2, h - 190, {
+    size: 46,
+    spacing: 10,
+    color: "#ffffff",
+    alpha: infoIn,
+    align: "center",
+    weight: 800,
+    font: brandFont(),
+    maxWidth: w - P * 2,
+  });
   ctx.save();
   ctx.globalAlpha = infoIn * 0.16;
   ctx.fillStyle = "#ffffff";
@@ -2084,7 +2155,7 @@ function drawSponsorLandscape(
   ctx.restore();
   drawSpacedText(
     ctx,
-    `OFFICIAL SPONSOR  ·  ${CONFERENCE_DATE}  ·  ${CONFERENCE_LOCATION}`,
+    `${CONFERENCE_DATE}  ·  ${CONFERENCE_LOCATION}`,
     w / 2,
     h - 100,
     {
@@ -2118,7 +2189,7 @@ function drawExternalSponsorLandscape(
   if (logoIn > 0) {
     ctx.save();
     ctx.globalAlpha = logoIn;
-    drawContain(ctx, a.confLogo, { x: w - P - 430, y: 92, w: 430, h: 116 });
+    drawConferencePair(ctx, a, { rightX: w - P, ...SPONSOR_PAIR.landscape });
     ctx.restore();
   }
 
@@ -2135,7 +2206,7 @@ function drawExternalSponsorLandscape(
 
   // The sponsor's own logo — large, and the hero of this card.
   const logo = a.logos[0];
-  const area = { x: w / 2 - 440, y: 250, w: 880, h: 560 };
+  const area = { x: w / 2 - 440, y: 260, w: 880, h: 510 };
   const logoIn2 = easeOut(phase(p, 0.16, 0.36));
   if (logo) {
     if (logo.hasAlpha) {
@@ -2151,19 +2222,19 @@ function drawExternalSponsorLandscape(
   }
 
   // Plain caption — no rainbow fill, just a small accent rule for colour.
-  const capY = area.y + area.h + 80;
+  const capY = area.y + area.h + 90;
   drawAccentRule(
     ctx,
     w / 2,
-    capY - 34,
+    capY - 56,
     90,
-    localGradient(ctx, w / 2 - 45, capY - 36, 90, 6, a.colors),
+    localGradient(ctx, w / 2 - 45, capY - 58, 90, 6, a.colors),
     easeOut(phase(p, 0.42, 0.54)),
     true,
   );
   drawSpacedText(ctx, GENERIC_SPONSOR_LABEL, w / 2, capY, {
-    size: 34,
-    spacing: 8,
+    size: 50,
+    spacing: 12,
     color: "#ffffff",
     alpha: easeOut(phase(p, 0.46, 0.58)),
     align: "center",
@@ -2209,7 +2280,10 @@ function drawSponsorPortrait(
   if (logoIn > 0) {
     ctx.save();
     ctx.globalAlpha = logoIn;
-    drawContain(ctx, a.confLogo, { x: w - P - 300, y: 96, w: 300, h: 88 });
+    drawConferencePair(ctx, a, {
+      rightX: w / 2 + sponsorPairWidth(SPONSOR_PAIR.portrait) / 2,
+      ...SPONSOR_PAIR.portrait,
+    });
     ctx.restore();
   }
 
@@ -2252,10 +2326,10 @@ function drawSponsorPortrait(
   });
 
   const infoIn = easeOut(phase(p, 0.6, 0.72));
-  drawSpacedText(ctx, "OFFICIAL SPONSOR", w / 2, h - 140, {
-    size: 26,
-    spacing: 4,
-    color: "rgba(255,255,255,0.92)",
+  drawSpacedText(ctx, GENERIC_SPONSOR_LABEL, w / 2, h - 146, {
+    size: 38,
+    spacing: 8,
+    color: "#ffffff",
     alpha: infoIn,
     align: "center",
     weight: 700,
@@ -2292,7 +2366,10 @@ function drawExternalSponsorPortrait(
   if (logoIn > 0) {
     ctx.save();
     ctx.globalAlpha = logoIn;
-    drawContain(ctx, a.confLogo, { x: w - P - 300, y: 96, w: 300, h: 88 });
+    drawConferencePair(ctx, a, {
+      rightX: w / 2 + sponsorPairWidth(SPONSOR_PAIR.portrait) / 2,
+      ...SPONSOR_PAIR.portrait,
+    });
     ctx.restore();
   }
 
@@ -2309,7 +2386,7 @@ function drawExternalSponsorPortrait(
   });
 
   const logo = a.logos[0];
-  const area = { x: P, y: 280, w: w - P * 2, h: 700 };
+  const area = { x: P, y: 290, w: w - P * 2, h: 660 };
   const logoIn2 = easeOut(phase(p, 0.16, 0.36));
   if (logo) {
     if (logo.hasAlpha) {
@@ -2324,19 +2401,19 @@ function drawExternalSponsorPortrait(
     }
   }
 
-  const capY = area.y + area.h + 70;
+  const capY = area.y + area.h + 80;
   drawAccentRule(
     ctx,
     w / 2,
-    capY - 30,
+    capY - 46,
     80,
-    localGradient(ctx, w / 2 - 40, capY - 32, 80, 6, a.colors),
+    localGradient(ctx, w / 2 - 40, capY - 48, 80, 6, a.colors),
     easeOut(phase(p, 0.42, 0.54)),
     true,
   );
   drawSpacedText(ctx, GENERIC_SPONSOR_LABEL, w / 2, capY, {
-    size: 26,
-    spacing: 6,
+    size: 38,
+    spacing: 9,
     color: "#ffffff",
     alpha: easeOut(phase(p, 0.46, 0.58)),
     align: "center",
@@ -2403,8 +2480,9 @@ function drawSponsorCard(
 async function loadSponsorAssets(
   content: SponsorCardContent,
 ): Promise<SponsorAssets> {
-  const [confLogo, ring, ...logoImgs] = await Promise.all([
+  const [confLogo, dadLogo, ring, ...logoImgs] = await Promise.all([
     loadImage("/logos/c26-wordmark.svg"),
+    loadImage("/logos/digital-assets-day-logo.png"),
     loadImage("/hero/mask-group-1.png"),
     ...content.logoUrls.map(loadImage),
   ]);
@@ -2413,6 +2491,8 @@ async function loadSponsorAssets(
     : brandColorsPalette();
   return {
     confLogo,
+    confMark: trimTransparent(confLogo),
+    dayMark: trimTransparent(dadLogo),
     ring: tintRing(ring, paletteStops(palette)),
     logos: logoImgs.map((img) => ({
       img,
