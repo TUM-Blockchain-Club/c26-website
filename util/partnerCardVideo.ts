@@ -28,6 +28,11 @@ const DAY_PRIMARY: Record<SpeakerDay, string> = {
 };
 const CONFERENCE_SPAN =
   "TUM BLOCKCHAIN CONFERENCE 26 · OCTOBER 29 TO 31, 2026 · MUNICH";
+/** Attendee cards spell the day out under the conference line: both the
+ * Digital Assets Day and the Hackathon are conference days, not separate
+ * events, and someone who only ever saw that branding should recognise it. */
+const DAD_SUBLINE = "INCLUDING THE DIGITAL ASSETS DAY · OCT 30";
+const HACKATHON_SUBLINE = "BLOCKCHAIN & AI HACKATHON · OCT 30 TO 31";
 
 // Digital Assets Day accent, matching the .card-blue / .btn-blue tokens.
 // Kept within that same light-to-mid blue range on purpose — earlier drafts
@@ -82,6 +87,9 @@ export type CardConfig = {
   eyebrow: string;
   /** Force the glass panel instead of a white chip — used for photos. */
   photo?: boolean;
+  /** Attendee card for someone joining the Hackathon: same two marks, but the
+   * eyebrow and the line under the conference date name the Hackathon. */
+  hackathon?: boolean;
 };
 
 export const PARTNER_CARD_CONFIG: CardConfig = {
@@ -100,6 +108,14 @@ export const ATTENDEE_CARD_CONFIG: CardConfig = {
   kind: "attendee",
   eyebrow: "I'M ATTENDING",
   photo: true,
+};
+
+/** Attendee card for the Hackathon crowd. */
+export const ATTENDEE_HACKATHON_CARD_CONFIG: CardConfig = {
+  kind: "attendee",
+  eyebrow: "I'M ATTENDING THE HACKATHON",
+  photo: true,
+  hackathon: true,
 };
 
 /**
@@ -124,6 +140,10 @@ export const SPEAKER_LIMITS = {
 type Assets = {
   confLogo: HTMLImageElement;
   dadLogo: HTMLImageElement;
+  /** Ink-tight copies of the two marks in the attendee header, where they sit
+   * side by side and have to look evenly sized. */
+  confMark: Mark;
+  dayMark: Mark;
   ring: HTMLImageElement | HTMLCanvasElement;
   partnerLogo: HTMLImageElement;
   useLightChip: boolean;
@@ -131,6 +151,7 @@ type Assets = {
   photoHasAlpha: boolean;
   kind: CardConfig["kind"];
   eyebrow: string;
+  hackathon: boolean;
   colors: GradientPalette;
 };
 
@@ -221,22 +242,79 @@ const easeOut = (x: number) => 1 - Math.pow(1 - x, 3);
 const phase = (p: number, a: number, b: number) =>
   Math.min(1, Math.max(0, (p - a) / (b - a)));
 
+/** A logo, either straight from file or cropped to its ink. */
+type Mark = HTMLImageElement | HTMLCanvasElement;
+
+/**
+ * Crops the fully transparent margin off a logo, so marks can be placed and
+ * sized by their ink instead of by whatever padding each file happens to
+ * carry. Without this the Digital Assets Day mark (a quarter of its file is
+ * empty space) renders smaller and floats higher than the marks beside it.
+ * Returns the image untouched if the pixels can't be read.
+ */
+function trimTransparent(img: HTMLImageElement): Mark {
+  const w = img.naturalWidth || img.width;
+  const h = img.naturalHeight || img.height;
+  if (!w || !h) return img;
+  const c = document.createElement("canvas");
+  c.width = w;
+  c.height = h;
+  const cx = c.getContext("2d");
+  if (!cx) return img;
+  cx.drawImage(img, 0, 0, w, h);
+  let data: Uint8ClampedArray;
+  try {
+    data = cx.getImageData(0, 0, w, h).data;
+  } catch {
+    return img;
+  }
+  let top = h;
+  let left = w;
+  let right = -1;
+  let bottom = -1;
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      if (data[(y * w + x) * 4 + 3] < 8) continue;
+      if (x < left) left = x;
+      if (x > right) right = x;
+      if (y < top) top = y;
+      if (y > bottom) bottom = y;
+    }
+  }
+  const tw = right - left + 1;
+  const th = bottom - top + 1;
+  if (tw <= 0 || th <= 0 || (tw === w && th === h)) return img;
+  const out = document.createElement("canvas");
+  out.width = tw;
+  out.height = th;
+  out.getContext("2d")?.drawImage(c, left, top, tw, th, 0, 0, tw, th);
+  return out;
+}
+
 function drawContain(
   ctx: CanvasRenderingContext2D,
-  img: HTMLImageElement,
+  img: Mark,
   box: { x: number; y: number; w: number; h: number },
+  align: "center" | "left" | "right" = "center",
 ) {
   // SVGs without an intrinsic size report 0 — fall back to the box so they
   // still render instead of vanishing.
-  const iw = img.naturalWidth || img.width || box.w;
-  const ih = img.naturalHeight || img.height || box.h;
+  const iw = ("naturalWidth" in img ? img.naturalWidth : img.width) || box.w;
+  const ih = ("naturalHeight" in img ? img.naturalHeight : img.height) || box.h;
   const scale = Math.min(box.w / iw, box.h / ih);
   const w = iw * scale;
   const h = ih * scale;
-  ctx.drawImage(img, box.x + (box.w - w) / 2, box.y + (box.h - h) / 2, w, h);
+  const x =
+    align === "left"
+      ? box.x
+      : align === "right"
+        ? box.x + box.w - w
+        : box.x + (box.w - w) / 2;
+  ctx.drawImage(img, x, box.y + (box.h - h) / 2, w, h);
 }
 
-/** Uppercase mono label with manual letter spacing. */
+/** Uppercase mono label with manual letter spacing. Returns the width the
+ * label takes up, so a caller can place something right beside it. */
 function drawSpacedText(
   ctx: CanvasRenderingContext2D,
   text: string,
@@ -252,8 +330,7 @@ function drawSpacedText(
     maxWidth?: number;
     font?: string;
   },
-) {
-  if (o.alpha <= 0) return;
+): number {
   ctx.save();
   ctx.globalAlpha = o.alpha;
   ctx.fillStyle = o.color;
@@ -279,17 +356,22 @@ function drawSpacedText(
     m = measure();
   }
 
-  let cx =
-    o.align === "center"
-      ? x - m.total / 2
-      : o.align === "right"
-        ? x - m.total
-        : x;
-  for (let i = 0; i < m.chars.length; i++) {
-    ctx.fillText(m.chars[i], cx, y);
-    cx += m.widths[i] + spacing;
+  // Measured even while still invisible, so anything laid out next to the
+  // label keeps the same spot across the whole fade-in.
+  if (o.alpha > 0) {
+    let cx =
+      o.align === "center"
+        ? x - m.total / 2
+        : o.align === "right"
+          ? x - m.total
+          : x;
+    for (let i = 0; i < m.chars.length; i++) {
+      ctx.fillText(m.chars[i], cx, y);
+      cx += m.widths[i] + spacing;
+    }
   }
   ctx.restore();
+  return m.total;
 }
 
 /** Normal (non-mono) bold text that scales down to fit maxWidth. */
@@ -1008,6 +1090,100 @@ function drawParagraph(
   }
 }
 
+/**
+ * How the name / role / blurb block is laid out. The block is measured first
+ * and then centred in the space it has, so a card with only a name doesn't
+ * sit top-heavy with a hole underneath it.
+ */
+function personTextBlock(
+  ctx: CanvasRenderingContext2D,
+  content: CardContent,
+  o: {
+    nameSize: number;
+    jobSize: number;
+    blurbSize: number;
+    jobDrop: number;
+    blurbDrop: number;
+    blurbGap: number;
+    maxLines: number;
+    maxWidth: number;
+    /** Vertical centre of the space the block should sit in. */
+    centerY: number;
+  },
+) {
+  const blurbLines = content.blurb
+    ? wrapLines(ctx, content.blurb, {
+        size: o.blurbSize,
+        weight: 500,
+        maxWidth: o.maxWidth,
+        maxLines: o.maxLines,
+      }).length
+    : 0;
+
+  // Offsets are relative to the name's own centre line.
+  const jobY = content.job ? o.jobDrop : null;
+  const blurbY = blurbLines ? (content.job ? o.blurbDrop : o.jobDrop) : null;
+  const top = -o.nameSize / 2;
+  const bottom =
+    blurbY !== null
+      ? blurbY + (blurbLines - 1) * o.blurbGap + o.blurbSize / 2
+      : jobY !== null
+        ? jobY + o.jobSize / 2
+        : o.nameSize / 2;
+
+  const nameY = o.centerY - (top + bottom) / 2;
+  return {
+    nameY,
+    jobY: jobY === null ? null : nameY + jobY,
+    blurbY: blurbY === null ? null : nameY + blurbY,
+  };
+}
+
+/**
+ * The two marks at the top of every attendee card: the conference beside the
+ * eyebrow, behind a hairline, and the Digital Assets Day in the opposite
+ * corner. Both are there whichever day the attendee is coming for — the point
+ * of the card is that the two belong to one event.
+ */
+function drawAttendeeMarks(
+  ctx: CanvasRenderingContext2D,
+  a: Assets,
+  o: {
+    /** Centre line the whole row sits on. */
+    rowY: number;
+    dayMark: { x: number; w: number; h: number; drop: number };
+    /** Null when a long eyebrow leaves no comfortable room for it. */
+    confMark: { x: number; w: number; h: number; divider?: boolean } | null;
+  },
+) {
+  // Nudged down by `drop` so the mark's plate — not the block including a
+  // strapline under it — lands on the row's centre line.
+  drawContain(
+    ctx,
+    a.dayMark,
+    {
+      x: o.dayMark.x,
+      y: o.rowY - o.dayMark.h / 2 + o.dayMark.drop,
+      w: o.dayMark.w,
+      h: o.dayMark.h,
+    },
+    "right",
+  );
+
+  const conf = o.confMark;
+  if (!conf) return;
+  if (conf.divider) {
+    ctx.fillStyle = "rgba(255,255,255,0.2)";
+    ctx.fillRect(conf.x - 44, o.rowY - 34, 2, 68);
+  }
+  drawContain(
+    ctx,
+    a.confMark,
+    { x: conf.x, y: o.rowY - conf.h / 2, w: conf.w, h: conf.h },
+    "left",
+  );
+}
+
 function drawPersonLandscape(
   ctx: CanvasRenderingContext2D,
   { w, h }: { w: number; h: number },
@@ -1020,51 +1196,92 @@ function drawPersonLandscape(
   const day: SpeakerDay = content.day ?? "day1";
   const isAttendee = a.kind === "attendee";
   const topLogo = !isAttendee && day === "day2" ? a.dadLogo : a.confLogo;
+  const rowY = 156;
 
-  // Small logo, top-right corner only (Digital Assets Day mark on day 2).
-  const logoIn = easeOut(phase(p, 0.06, 0.18));
-  if (logoIn > 0) {
-    ctx.save();
-    ctx.globalAlpha = logoIn;
-    drawContain(ctx, topLogo, { x: w - P - 430, y: 92, w: 430, h: 116 });
-    ctx.restore();
-  }
+  // The header row is one line: eyebrow, hairline, conference mark, then the
+  // Digital Assets Day in the far corner. The marks get fixed room and the
+  // eyebrow takes the rest, so the long Hackathon wording scales down to fit
+  // instead of running into them.
+  const dayW = 420;
+  const dayX = w - P - dayW;
+  const confW = 210;
+  const eyebrowMax = isAttendee ? dayX - confW - 180 - P : w * 0.62;
 
-  // Eyebrow, top-left.
+  // Eyebrow, top-left. Its measured width is where the mark row continues.
   const eyebrowIn = easeOut(phase(p, 0.1, 0.2));
   drawAccentRule(
     ctx,
     P,
-    156 - 40,
+    rowY - 40,
     116,
     gradient,
     easeOut(phase(p, 0.08, 0.18)),
   );
-  drawSpacedText(ctx, a.eyebrow, P, 156 + (1 - eyebrowIn) * 14, {
-    size: 46,
-    spacing: 14,
-    color: "#ffffff",
-    alpha: eyebrowIn,
-    weight: 800,
-    font: brandFont(),
-    maxWidth: w * 0.5,
-  });
+  const eyebrowW = drawSpacedText(
+    ctx,
+    a.eyebrow,
+    P,
+    rowY + (1 - eyebrowIn) * 14,
+    {
+      size: 46,
+      spacing: 14,
+      color: "#ffffff",
+      alpha: eyebrowIn,
+      weight: 800,
+      font: brandFont(),
+      maxWidth: eyebrowMax,
+    },
+  );
 
-  // Photo, left.
+  const logoIn = easeOut(phase(p, 0.06, 0.18));
+  if (logoIn > 0) {
+    ctx.save();
+    ctx.globalAlpha = logoIn;
+    if (isAttendee) {
+      drawAttendeeMarks(ctx, a, {
+        rowY,
+        dayMark: { x: dayX, w: dayW, h: 88, drop: 8 },
+        confMark: {
+          x: P + eyebrowW + 90,
+          w: confW,
+          h: 108,
+          divider: true,
+        },
+      });
+    } else {
+      // Speakers keep the single top-right mark (blue one on day 2).
+      drawContain(ctx, topLogo, { x: w - P - 430, y: 92, w: 430, h: 116 });
+    }
+    ctx.restore();
+  }
+
+  // Photo, left. Kept clear of the bottom rule at h - 196.
+  const photo = { x: P, y: 250, w: 530, h: 600 };
   const photoIn = easeOut(phase(p, 0.16, 0.32));
   drawSpeakerPhoto(
     ctx,
     a,
-    { x: P - (1 - photoIn) * 30, y: 250, w: 560, h: 660 },
+    { ...photo, x: photo.x - (1 - photoIn) * 30 },
     photoIn,
     40,
   );
 
-  // Text column, right of the photo.
-  const colX = P + 560 + 80;
+  // Text column, right of the photo, centred against it.
+  const colX = photo.x + photo.w + 80;
   const colW = w - colX - P;
+  const block = personTextBlock(ctx, content, {
+    nameSize: 100,
+    jobSize: 46,
+    blurbSize: 40,
+    jobDrop: 94,
+    blurbDrop: 190,
+    blurbGap: 56,
+    maxLines: 4,
+    maxWidth: colW,
+    centerY: photo.y + photo.h / 2,
+  });
 
-  drawFittedText(ctx, content.name, colX, 430, {
+  drawFittedText(ctx, content.name, colX, block.nameY, {
     size: 100,
     color: "#ffffff",
     alpha: easeOut(phase(p, 0.28, 0.4)),
@@ -1073,8 +1290,8 @@ function drawPersonLandscape(
     maxWidth: colW,
   });
 
-  if (content.job) {
-    drawFittedText(ctx, content.job, colX, 524, {
+  if (content.job && block.jobY !== null) {
+    drawFittedText(ctx, content.job, colX, block.jobY, {
       size: 46,
       color: a.colors.yellow,
       alpha: easeOut(phase(p, 0.36, 0.46)),
@@ -1084,8 +1301,8 @@ function drawPersonLandscape(
     });
   }
 
-  if (content.blurb) {
-    drawParagraph(ctx, content.blurb, colX, 620, {
+  if (content.blurb && block.blurbY !== null) {
+    drawParagraph(ctx, content.blurb, colX, block.blurbY, {
       size: 40,
       weight: 500,
       color: "rgba(255,255,255,0.82)",
@@ -1105,8 +1322,9 @@ function drawPersonLandscape(
   ctx.fillRect(P, h - 196, (w - P * 2) * infoIn, 2);
   ctx.restore();
   if (isAttendee) {
-    // No day split for attendees — just the whole conference, one line.
-    drawSpacedText(ctx, CONFERENCE_SPAN, w / 2, h - 112, {
+    // No day split for attendees — the whole conference, with the day they
+    // are coming for named underneath.
+    drawSpacedText(ctx, CONFERENCE_SPAN, w / 2, h - 138, {
       size: 32,
       spacing: 5,
       color: "rgba(255,255,255,0.95)",
@@ -1116,6 +1334,22 @@ function drawPersonLandscape(
       font: brandFont(),
       maxWidth: w - P * 2,
     });
+    drawSpacedText(
+      ctx,
+      a.hackathon ? HACKATHON_SUBLINE : DAD_SUBLINE,
+      w / 2,
+      h - 90,
+      {
+        size: 26,
+        spacing: 4,
+        color: "rgba(255,255,255,0.62)",
+        alpha: infoIn,
+        align: "center",
+        weight: 600,
+        font: brandFont(),
+        maxWidth: w - P * 2,
+      },
+    );
   } else {
     drawSpacedText(ctx, DAY_PRIMARY[day], w / 2, h - 138, {
       size: 36,
@@ -1157,7 +1391,18 @@ function drawPersonPortrait(
   if (logoIn > 0) {
     ctx.save();
     ctx.globalAlpha = logoIn;
-    drawContain(ctx, topLogo, { x: w - P - 300, y: 96, w: 300, h: 88 });
+    if (isAttendee) {
+      // Both marks along the top edge, on one shared centre line, so the card
+      // shows the two belong to the same event.
+      drawAttendeeMarks(ctx, a, {
+        rowY: 120,
+        dayMark: { x: w - P - 370, w: 370, h: 78, drop: 7 },
+        confMark: { x: P, w: 200, h: 100 },
+      });
+    } else {
+      // Speakers keep the single top-right mark (blue one on day 2).
+      drawContain(ctx, topLogo, { x: w - P - 300, y: 96, w: 300, h: 88 });
+    }
     ctx.restore();
   }
 
@@ -1183,16 +1428,30 @@ function drawPersonPortrait(
   });
 
   const photoIn = easeOut(phase(p, 0.16, 0.32));
-  const pw = 560;
+  const photo = { x: (w - 560) / 2, y: 300, w: 560, h: 560 };
   drawSpeakerPhoto(
     ctx,
     a,
-    { x: (w - pw) / 2, y: 300 - (1 - photoIn) * 20, w: pw, h: 560 },
+    { ...photo, y: photo.y - (1 - photoIn) * 20 },
     photoIn,
     44,
   );
 
-  drawFittedText(ctx, content.name, w / 2, 950, {
+  // Name, role and blurb centred in the space between the photo and the
+  // bottom info block.
+  const block = personTextBlock(ctx, content, {
+    nameSize: 74,
+    jobSize: 38,
+    blurbSize: 34,
+    jobDrop: 68,
+    blurbDrop: 120,
+    blurbGap: 42,
+    maxLines: 3,
+    maxWidth: w - P * 2,
+    centerY: (photo.y + photo.h + (h - 170)) / 2,
+  });
+
+  drawFittedText(ctx, content.name, w / 2, block.nameY, {
     size: 74,
     color: "#ffffff",
     alpha: easeOut(phase(p, 0.3, 0.42)),
@@ -1201,8 +1460,8 @@ function drawPersonPortrait(
     maxWidth: w - P * 2,
   });
 
-  if (content.job) {
-    drawFittedText(ctx, content.job, w / 2, 1018, {
+  if (content.job && block.jobY !== null) {
+    drawFittedText(ctx, content.job, w / 2, block.jobY, {
       size: 38,
       color: a.colors.yellow,
       alpha: easeOut(phase(p, 0.38, 0.48)),
@@ -1212,11 +1471,8 @@ function drawPersonPortrait(
     });
   }
 
-  if (content.blurb) {
-    // Started a touch higher with a tighter line gap than the landscape
-    // layout: at max length (3 wrapped lines) this is the only way to keep
-    // clear air above the bottom info block instead of nearly touching it.
-    drawParagraph(ctx, content.blurb, w / 2, 1070, {
+  if (content.blurb && block.blurbY !== null) {
+    drawParagraph(ctx, content.blurb, w / 2, block.blurbY, {
       size: 34,
       weight: 500,
       color: "rgba(255,255,255,0.82)",
@@ -1229,8 +1485,14 @@ function drawPersonPortrait(
   }
 
   const infoIn = easeOut(phase(p, 0.54, 0.66));
+  ctx.save();
+  ctx.globalAlpha = infoIn * 0.14;
+  ctx.fillStyle = "#ffffff";
+  const sepW = (w - P * 2) * infoIn;
+  ctx.fillRect(w / 2 - sepW / 2, h - 170, sepW, 2);
+  ctx.restore();
   if (isAttendee) {
-    drawSpacedText(ctx, CONFERENCE_SPAN, w / 2, h - 96, {
+    drawSpacedText(ctx, CONFERENCE_SPAN, w / 2, h - 122, {
       size: 26,
       spacing: 3,
       color: "rgba(255,255,255,0.95)",
@@ -1240,6 +1502,22 @@ function drawPersonPortrait(
       font: brandFont(),
       maxWidth: w - P * 2,
     });
+    drawSpacedText(
+      ctx,
+      a.hackathon ? HACKATHON_SUBLINE : DAD_SUBLINE,
+      w / 2,
+      h - 78,
+      {
+        size: 22,
+        spacing: 2,
+        color: "rgba(255,255,255,0.62)",
+        alpha: infoIn,
+        align: "center",
+        weight: 600,
+        font: brandFont(),
+        maxWidth: w - P * 2,
+      },
+    );
   } else {
     drawSpacedText(ctx, DAY_PRIMARY[day], w / 2, h - 122, {
       size: 30,
@@ -1335,9 +1613,14 @@ async function loadAssets(
   // Only the speaker card has a per-day theme; attendees always see the
   // conference brand, regardless of what `day` defaults to.
   const isDad = config.kind === "speaker" && day === "day2";
+  const isAttendee = config.kind === "attendee";
   return {
     confLogo,
     dadLogo,
+    // Only the attendee lockup needs the trimmed copies; skip the pixel scan
+    // for every other card.
+    confMark: isAttendee ? trimTransparent(confLogo) : confLogo,
+    dayMark: isAttendee ? trimTransparent(dadLogo) : dadLogo,
     ring: isDad ? tintRing(ring, DAD_RING_STOPS) : ring,
     partnerLogo,
     // Photos always sit on the glass panel; only logos may get a white chip.
@@ -1345,6 +1628,7 @@ async function loadAssets(
     photoHasAlpha: config.photo ? detectHasAlpha(partnerLogo) : false,
     kind: config.kind,
     eyebrow: config.eyebrow,
+    hackathon: !!config.hackathon,
     colors: isDad ? DAD_COLORS : brandColors,
   };
 }
@@ -1537,21 +1821,28 @@ export const renderAttendeeCardVideo = (
   orientation: CardOrientation,
   content: CardContent,
   onProgress?: (p: number) => void,
+  hackathon = false,
 ): Promise<VideoResult> =>
   renderPartnerCardVideo(
     photoUrl,
     orientation,
     content,
     onProgress,
-    ATTENDEE_CARD_CONFIG,
+    hackathon ? ATTENDEE_HACKATHON_CARD_CONFIG : ATTENDEE_CARD_CONFIG,
   );
 
 export const renderAttendeeCardStill = (
   photoUrl: string,
   orientation: CardOrientation,
   content: CardContent,
+  hackathon = false,
 ): Promise<Blob> =>
-  renderPartnerCardStill(photoUrl, orientation, content, ATTENDEE_CARD_CONFIG);
+  renderPartnerCardStill(
+    photoUrl,
+    orientation,
+    content,
+    hackathon ? ATTENDEE_HACKATHON_CARD_CONFIG : ATTENDEE_CARD_CONFIG,
+  );
 
 // ---------------------------------------------------------------------------
 // Sponsor announcement card — Platinum / Gold / Silver / Bronze, each with its

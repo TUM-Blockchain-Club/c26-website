@@ -28,9 +28,14 @@ export default function AttendeeCardPage() {
               textType="paragraph"
               className="text-secondary max-w-2xl leading-relaxed"
             >
-              Coming to the TUM Blockchain Conference 26? Generate an animated
-              &ldquo;I&apos;ll be there&rdquo; card in our brand, featuring your
-              photo and name. Download it as a video in 16:9 or 4:5, and copy a
+              Coming to the TUM Blockchain Conference 26, October 29 to 31 in
+              Munich &mdash; including the Digital Assets Day by Bundesblock on
+              October 30? Generate an animated &ldquo;I&apos;ll be there&rdquo;
+              card in our brand, featuring your photo and name. It carries both
+              marks, the conference and the Digital Assets Day, so everyone sees
+              the two are one event. Building at the Blockchain &amp; AI
+              Hackathon instead? Tick the Hackathon box and the card and posts
+              switch to it. Download it as a video in 16:9 or 4:5, and copy a
               ready-made post for X, Instagram or LinkedIn. Everything runs in
               your browser, and nothing is uploaded.
             </Text>

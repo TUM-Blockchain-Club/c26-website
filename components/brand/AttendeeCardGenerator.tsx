@@ -29,6 +29,7 @@ export const AttendeeCardGenerator = () => {
   const [name, setName] = useState("");
   const [job, setJob] = useState("");
   const [blurb, setBlurb] = useState("");
+  const [hackathon, setHackathon] = useState(false);
   const [orientation, setOrientation] = useState<CardOrientation>("landscape");
   const [status, setStatus] = useState<Status>("idle");
   const [progress, setProgress] = useState(0);
@@ -45,8 +46,8 @@ export const AttendeeCardGenerator = () => {
 
   // Ready-to-post captions, personalised to what the attendee entered so far.
   const captions = useMemo(
-    () => buildAttendeeCaptions({ job, blurb }),
-    [job, blurb],
+    () => buildAttendeeCaptions({ job, blurb, hackathon }),
+    [job, blurb, hackathon],
   );
 
   const clearOutput = () => {
@@ -69,7 +70,7 @@ export const AttendeeCardGenerator = () => {
     setStatus("idle");
     setProgress(0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [name, job, blurb, previewUrl, orientation]);
+  }, [name, job, blurb, hackathon, previewUrl, orientation]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0];
@@ -123,6 +124,7 @@ export const AttendeeCardGenerator = () => {
         orientation,
         content,
         setProgress,
+        hackathon,
       );
       setVideoBlob(blob);
       setVideoExt(extension);
@@ -144,7 +146,9 @@ export const AttendeeCardGenerator = () => {
     if (!videoBlob) return;
     downloadBlob(
       videoBlob,
-      `tbc-conference-26-attendee-card-${orientation}.${videoExt}`,
+      `tbc-conference-26-${
+        hackathon ? "hackathon" : "attendee"
+      }-card-${orientation}.${videoExt}`,
     );
   };
 
@@ -276,12 +280,39 @@ export const AttendeeCardGenerator = () => {
                 id="at-blurb"
                 value={blurb}
                 onChange={(e) => setBlurb(e.target.value)}
-                placeholder="e.g. The Digital Assets Day panels, or the Hackathon…"
+                placeholder={
+                  hackathon
+                    ? "e.g. Two days of building with a new team…"
+                    : "e.g. The Digital Assets Day panels, or the Hackathon…"
+                }
                 maxLength={SPEAKER_LIMITS.blurb}
                 rows={3}
                 className={`${inputClass} resize-y`}
               />
             </div>
+
+            <label
+              htmlFor="at-hackathon"
+              className="flex cursor-pointer items-start gap-3 rounded-md border border-line bg-black px-4 py-3"
+            >
+              <input
+                id="at-hackathon"
+                type="checkbox"
+                checked={hackathon}
+                onChange={(e) => setHackathon(e.target.checked)}
+                className="mt-0.5 h-4 w-4 shrink-0 accent-white"
+              />
+              <span className="flex flex-col gap-1">
+                <Text as="span" textType="small" className="font-bold">
+                  I&apos;m taking part in the Hackathon
+                </Text>
+                <Text as="span" textType="small" className="text-muted">
+                  The card reads &ldquo;I&apos;m attending the Hackathon&rdquo;
+                  and names the Blockchain &amp; AI Hackathon under the date.
+                  The suggested posts follow.
+                </Text>
+              </span>
+            </label>
           </div>
 
           {/* Step 3 — format + generate */}
@@ -377,8 +408,9 @@ export const AttendeeCardGenerator = () => {
               Suggested posts
             </Text>
             <Text textType="small" className="text-muted max-w-lg">
-              Personalised to what you entered above, with the club tagged. Pair
-              any of these with your downloaded video.
+              Personalised to what you entered above, with the club tagged and
+              the Digital Assets Day named, so it reads as one event. Pair any
+              of these with your downloaded video.
             </Text>
           </div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
