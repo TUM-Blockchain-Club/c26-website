@@ -795,14 +795,29 @@ function drawLandscape(
     ctx.globalAlpha = confIn;
     drawContain(ctx, a.confLogo, {
       x: w * 0.58 + (1 - confIn) * 36,
-      y: cy - 160,
+      y: cy - 170,
       w: w * 0.34,
-      h: 320,
+      h: 290,
     });
     ctx.restore();
   }
 
-  drawSpacedText(ctx, ORGANISED_BY, w * 0.58, cy + 230, {
+  // Digital Assets Day mark, right under the conference wordmark: it belongs
+  // to that side of the lockup, not off in a corner of its own.
+  const dayIn = easeOut(phase(p, 0.44, 0.56));
+  if (dayIn > 0) {
+    ctx.save();
+    ctx.globalAlpha = dayIn;
+    drawContain(ctx, a.dayMark, {
+      x: w * 0.58 + w * 0.17 - 170,
+      y: cy + 150,
+      w: 340,
+      h: 70,
+    });
+    ctx.restore();
+  }
+
+  drawSpacedText(ctx, ORGANISED_BY, w * 0.58, cy + 258, {
     size: 27,
     spacing: 6,
     color: "rgba(255,255,255,0.6)",
@@ -906,12 +921,27 @@ function drawPortrait(
       x: P,
       y: dividerY + 66 + (1 - confIn) * 24,
       w: w - P * 2,
-      h: 210,
+      h: 190,
     });
     ctx.restore();
   }
 
-  drawSpacedText(ctx, ORGANISED_BY, w / 2, dividerY + 330, {
+  // Digital Assets Day mark, under the conference wordmark: the centred
+  // stack leaves no room for it in a corner the way the 16:9 card has.
+  const dayIn = easeOut(phase(p, 0.44, 0.56));
+  if (dayIn > 0) {
+    ctx.save();
+    ctx.globalAlpha = dayIn;
+    drawContain(ctx, a.dayMark, {
+      x: w / 2 - 180,
+      y: dividerY + 296,
+      w: 360,
+      h: 74,
+    });
+    ctx.restore();
+  }
+
+  drawSpacedText(ctx, ORGANISED_BY, w / 2, dividerY + 404, {
     size: 25,
     spacing: 5,
     color: "rgba(255,255,255,0.6)",
@@ -1614,13 +1644,15 @@ async function loadAssets(
   // conference brand, regardless of what `day` defaults to.
   const isDad = config.kind === "speaker" && day === "day2";
   const isAttendee = config.kind === "attendee";
+  // Attendee and community partner cards place the marks by their ink.
+  const inkMarks = isAttendee || config.kind === "partner";
   return {
     confLogo,
     dadLogo,
     // Only the attendee lockup needs the trimmed copies; skip the pixel scan
     // for every other card.
-    confMark: isAttendee ? trimTransparent(confLogo) : confLogo,
-    dayMark: isAttendee ? trimTransparent(dadLogo) : dadLogo,
+    confMark: inkMarks ? trimTransparent(confLogo) : confLogo,
+    dayMark: inkMarks ? trimTransparent(dadLogo) : dadLogo,
     ring: isDad ? tintRing(ring, DAD_RING_STOPS) : ring,
     partnerLogo,
     // Photos always sit on the glass panel; only logos may get a white chip.

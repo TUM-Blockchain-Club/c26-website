@@ -49,3 +49,11 @@ Speaker and partner cards keep their own headers — the mark row is gated on
 The suggested posts (`util/attendeeCaptions.ts`) name the Digital Assets Day on
 every platform, tagging `@bundesblock` on X and `@Bundesblock` on LinkedIn, and
 the page intro says the Digital Assets Day is one of the three conference days.
+
+## Community partner card
+
+The community partner card carries the mark too, logo only and in both formats
+under the conference wordmark, above `ORGANISED BY TUM BLOCKCHAIN CLUB` — it
+belongs to that half of the `partner × conference` lockup rather than sitting
+in a corner of its own. The 16:9 wordmark is 290 tall (was 320) to make room.
+Same trimmed blue mark as the attendee card.
