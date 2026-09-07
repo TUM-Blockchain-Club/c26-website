@@ -1,9 +1,19 @@
 import { LogoBackground } from "@/util/logoTone";
 
-/** Only the tiers that actually have a sponsor so far. The sponsorship deck
- * also has Platinum, Silver, Standard and Travel; they are left out until one
- * is signed rather than shown empty. */
-export type Sponsor26Tier = "premium" | "gold" | "bronze";
+/**
+ * The tiers from the sponsorship deck. They belong to two separate tracks —
+ * Platinum to Bronze sponsor the conference, Premium to Travel the Hackathon —
+ * so a Premium sponsor does not outrank a Gold one; they are simply not in
+ * the same list. The tier a sponsor is in decides which track it shows under.
+ */
+export type Sponsor26Tier =
+  | "platinum"
+  | "gold"
+  | "silver"
+  | "bronze"
+  | "premium"
+  | "standard"
+  | "travel";
 
 export type Sponsor26 = {
   name: string;
@@ -15,21 +25,36 @@ export type Sponsor26 = {
   background: LogoBackground;
 };
 
-/** Highest tier first; the section renders one row per tier in this order. */
-export const SPONSOR26_TIERS: { key: Sponsor26Tier; label: string }[] = [
-  { key: "premium", label: "Premium" },
-  { key: "gold", label: "Gold" },
-  { key: "bronze", label: "Bronze" },
+export type Sponsor26Track = {
+  key: "conference" | "hackathon";
+  label: string;
+  /** Highest tier first; one row per tier. */
+  tiers: { key: Sponsor26Tier; label: string }[];
+};
+
+export const SPONSOR26_TRACKS: Sponsor26Track[] = [
+  {
+    key: "conference",
+    label: "Conference",
+    tiers: [
+      { key: "platinum", label: "Platinum" },
+      { key: "gold", label: "Gold" },
+      { key: "silver", label: "Silver" },
+      { key: "bronze", label: "Bronze" },
+    ],
+  },
+  {
+    key: "hackathon",
+    label: "Hackathon",
+    tiers: [
+      { key: "premium", label: "Premium" },
+      { key: "standard", label: "Standard" },
+      { key: "travel", label: "Travel" },
+    ],
+  },
 ];
 
 export const sponsors26: Sponsor26[] = [
-  {
-    name: "BSV Association",
-    tier: "premium",
-    src: "/sponsors26/bsv-association.png",
-    website: "https://bsvassociation.org",
-    background: "light",
-  },
   {
     name: "Crypto Finance",
     tier: "gold",
@@ -49,6 +74,27 @@ export const sponsors26: Sponsor26[] = [
     tier: "bronze",
     src: "/sponsors26/cake-wallet.svg",
     website: "https://cakewallet.com",
+    background: "light",
+  },
+  {
+    name: "Tangany",
+    tier: "bronze",
+    src: "/sponsors26/tangany.png",
+    website: "https://tangany.com",
+    background: "light",
+  },
+  {
+    name: "Fnality",
+    tier: "bronze",
+    src: "/sponsors26/fnality.svg",
+    website: "https://fnality.com",
+    background: "light",
+  },
+  {
+    name: "BSV Association",
+    tier: "premium",
+    src: "/sponsors26/bsv-association.png",
+    website: "https://bsvassociation.org",
     background: "light",
   },
 ];
