@@ -42,9 +42,13 @@ export const SpeakerCardGenerator = () => {
 
   const hasPhoto = !!file && !!previewUrl;
   const hasName = name.trim().length > 0;
-  const ready = hasPhoto && hasName;
+  // Job title and talk carry the card as much as the name does, so all three
+  // are required rather than optional.
+  const hasDetails =
+    hasName && job.trim().length > 0 && blurb.trim().length > 0;
+  const ready = hasPhoto && hasDetails;
   // Step 1 (the day) always has a default, so guidance starts at the photo.
-  const activeStep = !hasPhoto ? 2 : !hasName ? 3 : 4;
+  const activeStep = !hasPhoto ? 2 : !hasDetails ? 3 : 4;
 
   // Ready-to-post captions, personalised to what the speaker entered so far.
   const captions = useMemo(
@@ -109,15 +113,15 @@ export const SpeakerCardGenerator = () => {
   };
 
   const handleGenerate = async () => {
-    if (!file || !previewUrl || !hasName) return;
+    if (!file || !previewUrl || !hasDetails) return;
     setStatus("generating");
     setProgress(0);
     setErrorMsg(null);
 
     const content = {
       name: name.trim(),
-      job: job.trim() || undefined,
-      blurb: blurb.trim() || undefined,
+      job: job.trim(),
+      blurb: blurb.trim(),
       day,
     };
 
@@ -249,12 +253,11 @@ export const SpeakerCardGenerator = () => {
           </div>
 
           {/* Step 3 — about you */}
-          <div className={stepClass(3, hasName)}>
-            <StepHeader n={3} title="About you" complete={hasName} />
+          <div className={stepClass(3, hasDetails)}>
+            <StepHeader n={3} title="About you" complete={hasDetails} />
             <Text textType="small" className="text-muted">
-              Your name is required; job title and talk description are
-              optional. The counters show how much fits so the card always looks
-              good.
+              Name, job title and a line about your talk all go on the card. The
+              counters show how much fits so the card always looks good.
             </Text>
 
             <div className="flex flex-col gap-1">
@@ -280,7 +283,7 @@ export const SpeakerCardGenerator = () => {
             <div className="flex flex-col gap-1">
               <div className="flex items-center justify-between">
                 <label htmlFor="sp-job" className="text-xs text-muted">
-                  Job title <span className="text-faint">(optional)</span>
+                  Job title
                 </label>
                 <span className="text-xs text-faint">
                   {job.length}/{SPEAKER_LIMITS.job}
@@ -300,8 +303,7 @@ export const SpeakerCardGenerator = () => {
             <div className="flex flex-col gap-1">
               <div className="flex items-center justify-between">
                 <label htmlFor="sp-blurb" className="text-xs text-muted">
-                  What you&apos;ll talk about{" "}
-                  <span className="text-faint">(optional)</span>
+                  What you&apos;ll talk about
                 </label>
                 <span className="text-xs text-faint">
                   {blurb.length}/{SPEAKER_LIMITS.blurb}
@@ -394,7 +396,9 @@ export const SpeakerCardGenerator = () => {
                 className="max-h-40 max-w-[240px] object-contain"
               />
               <Text textType="small" className="text-faint">
-                {hasName ? "Ready. Click Generate." : "Now add your name."}
+                {hasDetails
+                  ? "Ready. Click Generate."
+                  : "Now add your name, job title and talk."}
               </Text>
             </div>
           ) : (
@@ -405,7 +409,7 @@ export const SpeakerCardGenerator = () => {
         </div>
       </div>
 
-      {hasName && (
+      {hasDetails && (
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
             <Text textType="lgsmall" className="font-bold">

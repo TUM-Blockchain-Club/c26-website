@@ -99,7 +99,7 @@ export const PARTNER_CARD_CONFIG: CardConfig = {
 
 export const SPEAKER_CARD_CONFIG: CardConfig = {
   kind: "speaker",
-  eyebrow: "I'M SPEAKING AT",
+  eyebrow: "SPEAKING AT",
   photo: true,
 };
 
@@ -1825,7 +1825,7 @@ export async function renderPartnerCardVideo(
   );
 }
 
-/** Speaker card: same brand animation, "I'M SPEAKING AT", photo + name/job/blurb. */
+/** Speaker card: same brand animation, "SPEAKING AT", photo + name/job/blurb. */
 export const renderSpeakerCardVideo = (
   photoUrl: string,
   orientation: CardOrientation,
