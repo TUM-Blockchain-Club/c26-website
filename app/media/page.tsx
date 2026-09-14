@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { Container } from "@/components/container";
 import { Text } from "@/components/text";
 import { Button } from "@/components/button";
@@ -7,8 +8,10 @@ import { TimelineRail } from "@/components/brand/TimelineRail";
 import { MediaGallery } from "@/components/brand/MediaGallery";
 import { LogoDownloads } from "@/components/brand/LogoShowcase";
 import WhatsNew from "@/sections/WhatsNew";
+import { readImageDimensions } from "@/util/imageDimensions";
 import {
   mediaIntro,
+  visualAssets,
   lastYearParagraphs,
   lastYearStats,
   thisYearParagraphs,
@@ -16,7 +19,6 @@ import {
   MEDIA_LINK,
   AFTERMOVIE_EMBED_URL,
   AFTERMOVIE_WATCH_URL,
-  HEADER_GRAPHIC_SRC,
   CONFERENCE_VIDEO_SRC,
   FLYER_PDF_SRC,
   FLYER_PREVIEW_SRC,
@@ -61,7 +63,18 @@ const SectionHeader = ({
   </div>
 );
 
-export default function MediaPage() {
+export default async function MediaPage() {
+  // Sizes come from the files themselves; an asset that is not in public/ yet
+  // drops out of the list instead of rendering as a broken image.
+  const visuals = (
+    await Promise.all(
+      visualAssets.map(async (visual) => ({
+        ...visual,
+        dimensions: await readImageDimensions(visual.src),
+      })),
+    )
+  ).filter((visual) => visual.dimensions !== null);
+
   return (
     <div className="flex justify-center">
       <main className="w-full max-w-7xl pt-page-pt lg:pt-0 z-20 pb-40">
@@ -256,26 +269,60 @@ export default function MediaPage() {
             <section className="flex flex-col gap-12">
               <SectionHeader
                 eyebrow="Assets"
-                title="Header Graphic"
-                intro="If you need a visual for your article, post or newsletter, here is our official header graphic, ready to download."
+                title="Visuals"
+                intro="Our key visuals for your article, post or newsletter, in the formats you are most likely to need. Every file is free to use as it is; the size is listed so you can pick the right one."
               />
-              <div className="card-tbc flex flex-col gap-6 p-7">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={HEADER_GRAPHIC_SRC}
-                  alt="TUM Blockchain Conference 26 header graphic"
-                  className="w-full rounded-md"
-                />
-                <div>
-                  <Button buttonType="primary" asChild className="w-fit px-5">
-                    <a
-                      href={HEADER_GRAPHIC_SRC}
-                      download="tbc-conference-26-header.png"
-                    >
-                      Download PNG
-                    </a>
-                  </Button>
-                </div>
+              {/* items-start so a tall portrait visual does not stretch the
+                  card beside it into a block of empty space. */}
+              <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
+                {visuals.map((visual) => (
+                  <div
+                    key={visual.src}
+                    className="card-tbc flex flex-col gap-5 p-7"
+                  >
+                    {/* Preview goes through the optimizer — the originals
+                        are up to 4MB, and the download link below still
+                        points at the untouched file. */}
+                    <Image
+                      src={visual.src}
+                      alt={`TUM Blockchain Conference 26 — ${visual.title}`}
+                      width={visual.dimensions!.width}
+                      height={visual.dimensions!.height}
+                      sizes="(max-width: 1024px) 100vw, 50vw"
+                      className="h-auto w-full rounded-md"
+                    />
+                    <div className="flex flex-col gap-1.5">
+                      <Text textType="lgsmall" className="font-bold">
+                        {visual.title}
+                      </Text>
+                      <Text as="p" textType="small" className="text-muted">
+                        {visual.dimensions!.width} × {visual.dimensions!.height}{" "}
+                        px
+                        {visual.dimensions!.ratio
+                          ? ` · ${visual.dimensions!.ratio}`
+                          : ""}{" "}
+                        · PNG
+                      </Text>
+                      <Text as="p" textType="small" className="text-faint">
+                        {visual.note}
+                      </Text>
+                    </div>
+                    <div className="mt-auto">
+                      <Button
+                        buttonType="primary"
+                        asChild
+                        className="w-fit px-5"
+                      >
+                        <a
+                          href={visual.src}
+                          download={visual.src.split("/").pop()}
+                        >
+                          Download PNG
+                        </a>
+                      </Button>
+                    </div>
+                  </div>
+                ))}
               </div>
             </section>
 
