@@ -18,7 +18,9 @@ import Partners from "@/sections/Partners";
 import Speaker from "@/sections/Speaker";
 import CommunityPartners from "@/sections/CommunityPartners";
 import CurrentSponsors from "@/sections/CurrentSponsors";
+import SponsorStrip from "@/sections/SponsorStrip";
 import Sponsors from "@/sections/Sponsors";
+import GetInvolved from "@/sections/GetInvolved";
 import ThreeDays from "@/sections/ThreeDays";
 import Tickets from "@/sections/Tickets";
 import Tracks from "@/sections/Tracks";
@@ -39,19 +41,30 @@ export default function Home() {
           <Container className={"w-full"}>
             <div className={"flex flex-col w-full max-w-7xl mx-auto z-10"}>
               <Hero />
+              {/* Order follows the question a visitor asks next: who backs
+                  this, what are the three days and what is new, how do I get
+                  in, what was last year like, who else is
+                  behind it — and finally, how do I take part myself. */}
               <div className={"flex flex-col pb-24 gap-32"}>
+                <SponsorStrip />
                 <Reveal>
-                  <Video />
+                  <ThreeDays />
                 </Reveal>
                 <Reveal>
                   <WhatsNew />
                 </Reveal>
-                <Reveal>
-                  <ThreeDays />
-                </Reveal>
                 {/* <Manifesto /> */}
                 {/* <Tracks /> */}
                 {/* <Venue /> */}
+                <Reveal>
+                  <Tickets />
+                </Reveal>
+                {/* <Grants /> */}
+                {/* Last year, as proof: the aftermovie, the numbers, the
+                    photos and the speakers who were on stage. */}
+                <Reveal>
+                  <Video />
+                </Reveal>
                 <Reveal>
                   <Statistic />
                 </Reveal>
@@ -59,20 +72,20 @@ export default function Home() {
                   <LastYearGallery />
                 </Reveal>
                 <Reveal>
-                  <Tickets />
-                </Reveal>
-                {/* <Grants /> */}
-                <Reveal>
                   <Speaker />
                 </Reveal>
+                {/* This year's ecosystem first, the history after it. */}
                 <Reveal>
                   <CurrentSponsors />
+                </Reveal>
+                <Reveal>
+                  <CommunityPartners />
                 </Reveal>
                 <Reveal>
                   <Sponsors />
                 </Reveal>
                 <Reveal>
-                  <CommunityPartners />
+                  <GetInvolved />
                 </Reveal>
                 {/* <Partners /> */}
               </div>

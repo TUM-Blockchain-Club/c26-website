@@ -1,7 +1,6 @@
 import { Text } from "@/components/text";
-import { Button } from "@/components/button";
 import { Sponsor } from "@/components/sponsor/Sponsor";
-import { Link } from "@/components/link";
+import { LogoMarquee } from "@/components/sponsor/LogoMarquee";
 import {
   bronzeSponsors,
   goldSponsors,
@@ -10,8 +9,6 @@ import {
   silverSponsors,
 } from "@/constants/PastSponsors";
 import Image from "next/image";
-
-const PARTNERSHIP_DECK_URL = "https://tally.so/r/vGzv6g";
 
 // Helper function to chunk an array into groups of specified size
 const chunkArray = <T,>(array: T[], size: number): T[][] => {
@@ -26,56 +23,12 @@ type SponsorsProps = {
   displayMode?: "carousel" | "grid";
 };
 
-type SponsorCarouselProps = {
-  sponsors: SponsorData[];
-  size: "large" | "small";
-  reverse?: boolean;
-};
-
-const SponsorCarousel = ({ sponsors, size, reverse }: SponsorCarouselProps) => {
-  // 4 copies, animated by -50% (= 2 full sets), so the loop stays seamless
-  // and the strip always exceeds the container width at any window size.
-  const repeatedSponsors = [...sponsors, ...sponsors, ...sponsors, ...sponsors];
-  const animationName = reverse ? "sponsor-marquee-reverse" : "sponsor-marquee";
-  const speed = size === "large" ? "60s" : "74s";
-  // Past sponsors are history, so they stay smaller than the current
-  // community partners below them.
-  const itemClassName =
-    size === "large"
-      ? "h-16 w-32 xs:h-20 xs:w-40 md:h-24 md:w-52"
-      : "h-14 w-28 xs:h-16 xs:w-32 md:h-20 md:w-44";
-
-  return (
-    <div className="relative w-full overflow-hidden py-2">
-      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-black to-transparent md:w-28" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-black to-transparent md:w-28" />
-      <div
-        className="flex w-max gap-3 md:gap-4"
-        style={{
-          animation: `${animationName} ${speed} linear infinite`,
-        }}
-      >
-        {repeatedSponsors.map((sponsor, index) => (
-          <Link
-            key={`${sponsor.alt}-${index}`}
-            href={sponsor.link}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={`sponsor-carousel-card flex shrink-0 items-center justify-center rounded-md border border-line bg-white px-5 transition hover:border-line-strong ${itemClassName}`}
-          >
-            <Image
-              src={sponsor.imageSrc}
-              alt={sponsor.alt}
-              width={260}
-              height={130}
-              className="max-h-[70%] w-auto max-w-[85%] object-contain"
-            />
-          </Link>
-        ))}
-      </div>
-    </div>
-  );
-};
+/** Past sponsors are stored with alt/imageSrc; the marquee wants name/src. */
+const toMarqueeLogo = (sponsor: SponsorData) => ({
+  name: sponsor.alt,
+  src: sponsor.imageSrc,
+  website: sponsor.link,
+});
 
 const Sponsors = ({ displayMode = "carousel" }: SponsorsProps) => {
   const topCarouselSponsors = [...platinumSponsors, ...goldSponsors];
@@ -89,20 +42,9 @@ const Sponsors = ({ displayMode = "carousel" }: SponsorsProps) => {
   if (displayMode === "carousel") {
     return (
       <section
-        className="w-full flex flex-col items-center gap-4"
-        id="sponsors"
+        className="w-full flex flex-col items-center gap-4 scroll-mt-24"
+        id="past-sponsors"
       >
-        <style>{`
-          @keyframes sponsor-marquee {
-            from { transform: translateX(0); }
-            to { transform: translateX(-50%); }
-          }
-
-          @keyframes sponsor-marquee-reverse {
-            from { transform: translateX(-50%); }
-            to { transform: translateX(0); }
-          }
-        `}</style>
         <Text as="p" textType="small" className="eyebrow-tbc text-center">
           They made it possible
         </Text>
@@ -111,47 +53,17 @@ const Sponsors = ({ displayMode = "carousel" }: SponsorsProps) => {
         </Text>
         <div className="w-full flex flex-col items-center gap-6 lg:gap-10 mt-4">
           <div className="flex w-full flex-col gap-3 md:gap-4">
-            <SponsorCarousel sponsors={topCarouselSponsors} size="large" />
-            <SponsorCarousel
-              sponsors={bottomCarouselSponsors}
+            <LogoMarquee
+              logos={topCarouselSponsors.map(toMarqueeLogo)}
+              size="large"
+              speed="60s"
+            />
+            <LogoMarquee
+              logos={bottomCarouselSponsors.map(toMarqueeLogo)}
               size="small"
+              speed="74s"
               reverse
             />
-          </div>
-
-          <div
-            id="become-a-partner"
-            className="flex max-w-3xl flex-col items-center gap-5 text-center scroll-mt-24"
-          >
-            <Text as="p" textType="small" className="text-secondary">
-              Explore a partnership with the TUM Blockchain Conference &
-              Hackathon 2026. Request the sponsorship deck, or join us as a
-              Community or Media Partner and help spread the word.
-            </Text>
-            <div className="flex flex-wrap items-center justify-center gap-3">
-              <Button buttonType="cta" asChild>
-                <Link
-                  href={PARTNERSHIP_DECK_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Request Partnership Deck
-                </Link>
-              </Button>
-              <Button buttonType="primary" asChild>
-                <Link href="/become-partner?type=community">
-                  Become a Community Partner
-                </Link>
-              </Button>
-              <Button buttonType="primary" asChild>
-                <Link href="/become-partner?type=media">
-                  Become a Media Partner
-                </Link>
-              </Button>
-            </div>
-            <Button buttonType="primary" asChild>
-              <Link href="/speakers#apply">Become a Speaker</Link>
-            </Button>
           </div>
         </div>
 

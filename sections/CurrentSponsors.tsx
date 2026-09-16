@@ -16,14 +16,31 @@ const TIER_CARD: Record<Sponsor26Tier, string> = {
   gold: "h-24 w-44 md:h-32 md:w-72",
   silver: "h-24 w-44 md:h-28 md:w-64",
   bronze: "h-20 w-40 md:h-28 md:w-60",
+  partner: "h-20 w-40 md:h-28 md:w-60",
   premium: "h-28 w-52 md:h-36 md:w-80",
   standard: "h-24 w-44 md:h-32 md:w-72",
   travel: "h-20 w-40 md:h-28 md:w-60",
 };
 
-const SponsorLogo = ({ name, tier, src, website, background }: Sponsor26) => {
-  // Light logos would vanish on the white card, so they get a dark one.
-  const cardBackground = background === "dark" ? "bg-white/[0.06]" : "bg-white";
+const SponsorLogo = ({
+  name,
+  tier,
+  src,
+  website,
+  background,
+  muted,
+}: Sponsor26 & { muted?: boolean }) => {
+  // Light logos would vanish on the white card, so they get a dark one. A
+  // muted tier dims the card itself rather than the logo — the artwork keeps
+  // its own colours either way.
+  const cardBackground =
+    background === "dark"
+      ? muted
+        ? "bg-white/[0.03]"
+        : "bg-white/[0.06]"
+      : muted
+        ? "bg-white/80"
+        : "bg-white";
 
   return (
     <Link
@@ -31,9 +48,11 @@ const SponsorLogo = ({ name, tier, src, website, background }: Sponsor26) => {
       target="_blank"
       rel="noopener noreferrer"
       aria-label={name}
-      className={`flex shrink-0 items-center justify-center rounded-md border border-line px-6 transition hover:border-line-strong ${TIER_CARD[tier]} ${cardBackground}`}
+      className={`flex shrink-0 items-center justify-center rounded-md border px-6 transition hover:border-line-strong ${
+        muted ? "border-line-subtle" : "border-line"
+      } ${TIER_CARD[tier]} ${cardBackground}`}
     >
-      <div className="relative h-[70%] w-[85%]">
+      <div className="relative h-[74%] w-[88%]">
         <Image
           src={src}
           alt={name}
@@ -64,8 +83,8 @@ const CurrentSponsors = () => {
 
   return (
     <section
-      className="w-full flex flex-col items-center gap-4"
-      id="sponsors-26"
+      className="w-full flex flex-col items-center gap-4 scroll-mt-24"
+      id="sponsors"
     >
       <Text as="p" textType="small" className="eyebrow-tbc text-center">
         Making it happen
@@ -107,7 +126,11 @@ const CurrentSponsors = () => {
                 </Text>
                 <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6">
                   {row.sponsors.map((sponsor) => (
-                    <SponsorLogo key={sponsor.src} {...sponsor} />
+                    <SponsorLogo
+                      key={sponsor.src}
+                      {...sponsor}
+                      muted={row.muted}
+                    />
                   ))}
                 </div>
               </div>
