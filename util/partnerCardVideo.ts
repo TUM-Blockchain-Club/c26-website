@@ -2542,6 +2542,56 @@ export async function renderSponsorCardVideo(
   );
 }
 
+/**
+ * Renders the animation frame by frame at a fixed clock instead of recording
+ * it live: one callback per frame, in order. For batch exports outside a
+ * normal browser session — a headless browser cannot keep MediaRecorder at
+ * full frame rate, but it can paint frames one after another, and ffmpeg can
+ * assemble them into the same 9-second, 30fps video the live recorder makes.
+ */
+export async function renderSponsorCardFrames(
+  content: SponsorCardContent,
+  orientation: CardOrientation,
+  onFrame: (frame: Blob, index: number, total: number) => Promise<void>,
+  quality = 0.92,
+): Promise<void> {
+  const dims = DIMENSIONS[orientation];
+  const canvas = document.createElement("canvas");
+  canvas.width = dims.w;
+  canvas.height = dims.h;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Canvas 2D context unavailable");
+
+  try {
+    await document.fonts.ready;
+  } catch {
+    // System fonts are fine as a fallback.
+  }
+
+  const assets = await loadSponsorAssets(content);
+  const total = Math.round((DURATION_MS / 1000) * FPS);
+  for (let i = 0; i < total; i++) {
+    const elapsed = (i / FPS) * 1000;
+    drawSponsorCard(
+      ctx,
+      dims,
+      assets,
+      elapsed / DURATION_MS,
+      elapsed,
+      orientation,
+      content,
+    );
+    const frame = await new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob(
+        (blob) => (blob ? resolve(blob) : reject(new Error("Frame failed"))),
+        "image/jpeg",
+        quality,
+      );
+    });
+    await onFrame(frame, i, total);
+  }
+}
+
 /** Renders a single still (the fully composed end state) as a PNG. */
 export async function renderSponsorCardStill(
   content: SponsorCardContent,
