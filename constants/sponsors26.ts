@@ -11,6 +11,7 @@ export type Sponsor26Tier =
   | "gold"
   | "silver"
   | "bronze"
+  | "partner"
   | "premium"
   | "standard"
   | "travel";
@@ -29,7 +30,12 @@ export type Sponsor26Track = {
   key: "conference" | "hackathon";
   label: string;
   /** Highest tier first; one row per tier. */
-  tiers: { key: Sponsor26Tier; label: string }[];
+  tiers: {
+    key: Sponsor26Tier;
+    label: string;
+    /** Quieter card, for the tiers that are not paid sponsorships. */
+    muted?: boolean;
+  }[];
 };
 
 export const SPONSOR26_TRACKS: Sponsor26Track[] = [
@@ -41,6 +47,9 @@ export const SPONSOR26_TRACKS: Sponsor26Track[] = [
       { key: "gold", label: "Gold" },
       { key: "silver", label: "Silver" },
       { key: "bronze", label: "Bronze" },
+      // Not a paid tier: infrastructure and tools we work with. Same card
+      // size as Bronze, just quieter, so it does not read as a sponsorship.
+      { key: "partner", label: "Partners", muted: true },
     ],
   },
   {

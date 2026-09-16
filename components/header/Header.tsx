@@ -24,24 +24,17 @@ type HeaderLink = {
 
 const links: HeaderLink[] = [
   { label: "Home", link: "/", showsAtHome: true },
-  // { label: "Manifesto", link: "/#manifesto", showsAtHome: true },
   { label: "Speakers", link: "/speakers", showsAtHome: true },
-  {
-    label: "Hackathon",
-    link: HACKATHON_URL,
-    showsAtHome: true,
-  },
-  // { label: "Sponsors", link: "/sponsors", showsAtHome: true },
-  // { label: "Academic Forum", link: "/academic-forum", showsAtHome: true },
-  // {
-  //   label: "Apply as Speaker",
-  //   link: "https://tally.so/r/w8EB0o",
-  //   showsAtHome: true,
-  // },
+  { label: "Sponsors", link: "/#sponsors", showsAtHome: true },
   { label: "Agenda", link: "/agenda", showsAtHome: true },
   {
     label: "Digital Assets Day",
     link: "/digital-assets-day",
+    showsAtHome: true,
+  },
+  {
+    label: "Hackathon",
+    link: HACKATHON_URL,
     showsAtHome: true,
   },
   { label: "Side Events", link: "/side-events", showsAtHome: true },
@@ -50,6 +43,8 @@ const links: HeaderLink[] = [
     link: "/#become-a-partner",
     showsAtHome: true,
   },
+  // { label: "Manifesto", link: "/#manifesto", showsAtHome: true },
+  // { label: "Academic Forum", link: "/academic-forum", showsAtHome: true },
   // { label: "Workshops", link: "/workshops", showsAtHome: true },
   // { label: "Student Grants", link: "#grants", showsAtHome: true },
   // { label: "FAQ", link: "#faq", showsAtHome: true },
@@ -104,16 +99,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
 const PRIORITY: string[] = [
   "Home",
-  // "Manifesto",
   "Speakers",
-  "Hackathon",
-  // "Sponsors",
-  // "Academic Forum",
+  "Sponsors",
   "Agenda",
   "Digital Assets Day",
+  "Hackathon",
   "Side Events",
-  // "Workshops",
-  // "Apply as Speaker",
   "Become a Partner",
 ];
 

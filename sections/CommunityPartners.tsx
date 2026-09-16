@@ -1,6 +1,5 @@
 import Image from "next/image";
 import { Text } from "@/components/text";
-import { Button } from "@/components/button";
 import { Link } from "@/components/link";
 import { fetchCommunityPartners } from "@/components/service/contentStrapi";
 import { staticCommunityPartners } from "@/constants/communityPartners";
@@ -98,14 +97,6 @@ const CommunityPartners = async () => {
         {partners.map((partner) => (
           <PartnerLogo key={partner.src} {...partner} />
         ))}
-      </div>
-
-      <div className="mt-8">
-        <Button buttonType="primary" asChild>
-          <Link href="/become-partner?type=community">
-            Become a Community Partner
-          </Link>
-        </Button>
       </div>
     </section>
   );

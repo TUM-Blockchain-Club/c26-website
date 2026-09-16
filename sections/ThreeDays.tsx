@@ -38,13 +38,16 @@ const ROWS: Row[] = [
  */
 const ThreeDays = () => {
   return (
-    <section className="flex w-full justify-center">
+    <section className="flex w-full justify-center scroll-mt-24" id="programme">
       <div className="flex w-full max-w-4xl flex-col">
         <Text as="p" textType="small" className="eyebrow-tbc">
-          Three days, three formats
+          One ticket, three formats
+        </Text>
+        <Text textType={"sub_hero"} className="text-gradient mt-4">
+          Three Days
         </Text>
 
-        <div className="mt-8 border-t border-white/10">
+        <div className="mt-10 border-t border-white/10">
           {ROWS.map((row) => (
             <div
               key={row.title}
