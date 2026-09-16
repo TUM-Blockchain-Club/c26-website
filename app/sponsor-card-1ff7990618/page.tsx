@@ -29,12 +29,12 @@ export default function SponsorCardPage() {
               textType="paragraph"
               className="text-secondary max-w-2xl leading-relaxed"
             >
-              Prepare a sponsor announcement post. Pick the tier — Platinum,
-              Gold, Silver or Bronze, each with its own colour and ring — and
-              upload that post&apos;s sponsor logos. Download it as a video in
-              16:9 or 4:5, or as a still image. It always reads as an official
-              TUM Blockchain Conference 26 sponsor announcement, however many
-              logos are on it.
+              Prepare a sponsor announcement post: one sponsor, one card. Pick
+              the tier — the conference&apos;s Platinum to Bronze, or the
+              Hackathon&apos;s Premium, Standard and Travel, each with its own
+              colour and ring — and upload the sponsor&apos;s logo. Download it
+              as a video in 16:9 or 4:5, or as a still image. It always reads as
+              an official TUM Blockchain Conference 26 sponsor announcement.
             </Text>
           </div>
 
