@@ -28,13 +28,13 @@ export default function SpeakerCardPage() {
               textType="paragraph"
               className="text-secondary max-w-2xl leading-relaxed"
             >
-              Speaking at the TUM Blockchain Conference 26? Generate an animated
-              &ldquo;I&apos;m speaking at&rdquo; card in our brand, featuring
-              your photo, name, role and a line about your talk. Download it as
-              a video in 16:9 or 4:5, and copy a ready-made post for X,
-              Instagram or LinkedIn, personalised to what you entered and
-              tagging the right accounts. Everything runs in your browser, and
-              nothing is uploaded.
+              Speaking at the TUM Blockchain Conference 26? Generate a
+              &ldquo;speaking at&rdquo; card in our brand, featuring your photo,
+              name, job title with company, and a line about your talk. Take it
+              as an animated video or as a still image, in 16:9 or 4:5, and copy
+              a ready-made post for X, Instagram or LinkedIn, personalised to
+              what you entered and tagging the right accounts. Everything runs
+              in your browser, and nothing is uploaded.
             </Text>
           </div>
 
