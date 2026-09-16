@@ -9,8 +9,7 @@ import { prepareImage } from "@/util/imageCompression";
 import {
   renderSponsorCardVideo,
   renderSponsorCardStill,
-  SPONSOR_TIERS,
-  TIER_LOGO_COUNT,
+  SPONSOR_TIER_TRACKS,
   TIER_LABEL,
   type SponsorTier,
   type CardOrientation,
@@ -31,11 +30,15 @@ const TIER_SWATCH: Record<SponsorTier, string> = {
   gold: "linear-gradient(135deg, #ffe096, #a36e19)",
   silver: "linear-gradient(135deg, #ebeff3, #788696)",
   bronze: "linear-gradient(135deg, #e4aa78, #7a4828)",
+  premium: "linear-gradient(135deg, #ffcd78, #7846e6)",
+  standard: "linear-gradient(135deg, #bed7ff, #3250aa)",
+  travel: "linear-gradient(135deg, #b4f0e1, #1e6e78)",
 };
 
 export const SponsorCardGenerator = () => {
   const [tier, setTier] = useState<SponsorTier>("platinum");
-  const [logos, setLogos] = useState<LogoEntry[]>([]);
+  const [logo, setLogo] = useState<LogoEntry | null>(null);
+  const [savingImage, setSavingImage] = useState(false);
   const [orientation, setOrientation] = useState<CardOrientation>("landscape");
   const [status, setStatus] = useState<Status>("idle");
   const [progress, setProgress] = useState(0);
@@ -44,9 +47,8 @@ export const SponsorCardGenerator = () => {
   const [videoExt, setVideoExt] = useState<"mp4" | "webm">("webm");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const requiredCount = TIER_LOGO_COUNT[tier];
-  const hasLogos = logos.length > 0;
-  const ready = logos.length === requiredCount;
+  // One sponsor per card, whatever the tier.
+  const ready = logo !== null;
   const activeStep = !ready ? 2 : 3;
 
   const clearOutput = () => {
@@ -68,68 +70,41 @@ export const SponsorCardGenerator = () => {
     setStatus("idle");
     setProgress(0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tier, logos, orientation]);
+  }, [tier, logo, orientation]);
 
-  // Each tier has its own exact logo count — switching tiers starts the
-  // upload over so the count can never end up mismatched.
-  const handleTierChange = (next: SponsorTier) => {
-    if (next === tier) return;
-    setTier(next);
-    setLogos((prev) => {
-      prev.forEach((l) => URL.revokeObjectURL(l.url));
-      return [];
-    });
-    setErrorMsg(null);
-  };
-
-  const handleFilesChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selected = Array.from(e.target.files ?? []);
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = e.target.files?.[0];
     e.target.value = "";
-    if (!selected.length) return;
+    if (!selected) return;
 
     clearOutput();
     setErrorMsg(null);
 
-    const tooHuge = selected.some((f) => f.size > MAX_UPLOAD);
-    if (tooHuge) {
-      setErrorMsg("One of those files is very large. Use a file under 25MB.");
+    if (selected.size > MAX_UPLOAD) {
+      setErrorMsg("That file is very large. Use a file under 25MB.");
       return;
     }
 
-    const room = requiredCount - logos.length;
-    const accepted = selected.slice(0, room);
-    const roomMsg =
-      selected.length > room
-        ? `${tier[0].toUpperCase() + tier.slice(1)} posts need exactly ${requiredCount} logo${requiredCount === 1 ? "" : "s"} — only added ${accepted.length} more.`
-        : null;
-
-    // Large logos are downscaled and re-encoded as PNG automatically, which
-    // is lossless, so this never trades away sharpness or transparency.
-    const results = await Promise.allSettled(
-      accepted.map((f) => prepareImage(f, { maxDim: MAX_LOGO_DIM })),
-    );
-    const entries: LogoEntry[] = [];
-    let failed = 0;
-    for (const r of results) {
-      if (r.status === "fulfilled") entries.push(r.value);
-      else failed++;
+    try {
+      // Large logos are downscaled and re-encoded as PNG automatically, which
+      // is lossless, so this never trades away sharpness or transparency.
+      const prepared = await prepareImage(selected, { maxDim: MAX_LOGO_DIM });
+      setLogo((prev) => {
+        if (prev) URL.revokeObjectURL(prev.url);
+        return prepared;
+      });
+    } catch {
+      setErrorMsg(
+        "That file could not be loaded as an image. Try a PNG or SVG.",
+      );
     }
-
-    setLogos((prev) => [...prev, ...entries]);
-    setErrorMsg(
-      failed > 0
-        ? `${failed} file${failed === 1 ? "" : "s"} could not be loaded as an image.`
-        : roomMsg,
-    );
   };
 
-  const removeLogo = (index: number) => {
+  const removeLogo = () => {
     clearOutput();
-    setLogos((prev) => {
-      const next = [...prev];
-      const [removed] = next.splice(index, 1);
-      if (removed) URL.revokeObjectURL(removed.url);
-      return next;
+    setLogo((prev) => {
+      if (prev) URL.revokeObjectURL(prev.url);
+      return null;
     });
   };
 
@@ -139,7 +114,7 @@ export const SponsorCardGenerator = () => {
     setProgress(0);
     setErrorMsg(null);
 
-    const content = { tier, logoUrls: logos.map((l) => l.url) };
+    const content = { tier, logoUrls: [logo!.url] };
 
     try {
       const { blob, extension } = await renderSponsorCardVideo(
@@ -171,11 +146,15 @@ export const SponsorCardGenerator = () => {
     );
   };
 
+  // The still is the card's end state, so it works wherever a video is
+  // awkward to post — and it does not wait on a video being generated first.
   const handleDownloadImage = async () => {
-    if (!ready) return;
+    if (!ready || savingImage) return;
+    setSavingImage(true);
+    setErrorMsg(null);
     try {
       const blob = await renderSponsorCardStill(
-        { tier, logoUrls: logos.map((l) => l.url) },
+        { tier, logoUrls: [logo!.url] },
         orientation,
       );
       downloadBlob(
@@ -183,7 +162,10 @@ export const SponsorCardGenerator = () => {
         `tbc-conference-26-${tier}-sponsor-card-${orientation}.png`,
       );
     } catch (err) {
-      console.error(err);
+      console.error("Still image generation failed:", err);
+      setErrorMsg("The image could not be created. Please try again.");
+    } finally {
+      setSavingImage(false);
     }
   };
 
@@ -235,94 +217,84 @@ export const SponsorCardGenerator = () => {
         <div className={stepClass(1, true)}>
           <StepHeader n={1} title="Sponsor tier" complete />
           <Text textType="small" className="text-muted">
-            Each tier gets its own colour, ring and logo count, per the
-            sponsorship deck: Platinum and Gold are announced individually,
-            Silver in groups of 3, Bronze in groups of 5.
+            Every card announces one sponsor. The conference and the Hackathon
+            have their own tier ladders; each tier brings its own colour and
+            ring, and the card names which of the two it belongs to.
           </Text>
-          <div className="flex flex-wrap gap-2">
-            {SPONSOR_TIERS.map((t) => (
-              <button
-                key={t}
-                type="button"
-                onClick={() => handleTierChange(t)}
-                className={`flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm capitalize transition-colors ${
-                  tier === t
-                    ? "border-line-strong bg-white/10 text-white"
-                    : "border-line text-muted hover:text-white"
-                }`}
-              >
-                <span
-                  className="h-3 w-3 rounded-full"
-                  style={{ background: TIER_SWATCH[t] }}
-                  aria-hidden
-                />
-                {t}
-                <span className="text-faint">
-                  · {TIER_LOGO_COUNT[t]}
-                  {TIER_LOGO_COUNT[t] === 1 ? " logo" : " logos"}
+          <div className="flex flex-col gap-3">
+            {SPONSOR_TIER_TRACKS.map((track) => (
+              <div key={track.key} className="flex flex-col gap-1.5">
+                <span className="text-xs uppercase tracking-[0.2em] text-faint">
+                  {track.label}
                 </span>
-              </button>
+                <div className="flex flex-wrap gap-2">
+                  {track.tiers.map((t) => (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => setTier(t)}
+                      className={`flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm capitalize transition-colors ${
+                        tier === t
+                          ? "border-line-strong bg-white/10 text-white"
+                          : "border-line text-muted hover:text-white"
+                      }`}
+                    >
+                      <span
+                        className="h-3 w-3 rounded-full"
+                        style={{ background: TIER_SWATCH[t] }}
+                        aria-hidden
+                      />
+                      {t}
+                    </button>
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
         </div>
 
-        {/* Step 2 — logos */}
+        {/* Step 2 — logo */}
         <div className={stepClass(2, ready)}>
           <StepHeader
             n={2}
-            title={`Upload ${requiredCount} sponsor logo${requiredCount === 1 ? "" : "s"}`}
+            title="Upload the sponsor's logo"
             complete={ready}
           />
-          <div className="flex items-center justify-between">
-            <Text textType="small" className="text-muted">
-              PNG or SVG with a transparent background works best. Large files
-              are downscaled automatically, losslessly.
-            </Text>
-            <Text
-              textType="small"
-              className={`shrink-0 font-bold ${ready ? "text-track-education" : "text-faint"}`}
-            >
-              {logos.length}/{requiredCount}
-            </Text>
-          </div>
+          <Text textType="small" className="text-muted">
+            PNG or SVG with a transparent background works best. The card puts
+            dark logos on a white plate and light ones on a dark glass plate, so
+            either kind reads. Large files are downscaled automatically,
+            losslessly.
+          </Text>
           <input
             type="file"
             accept="image/png,image/jpeg,image/svg+xml,image/webp"
-            multiple
-            disabled={logos.length >= requiredCount}
-            onChange={handleFilesChange}
-            className="w-full cursor-pointer rounded-md border border-dashed border-line bg-black px-4 py-3 text-sm text-secondary file:mr-3 file:rounded-sm file:border-0 file:bg-white/10 file:px-3 file:py-1.5 file:text-white disabled:cursor-not-allowed disabled:opacity-50"
+            onChange={handleFileChange}
+            className="w-full cursor-pointer rounded-md border border-dashed border-line bg-black px-4 py-3 text-sm text-secondary file:mr-3 file:rounded-sm file:border-0 file:bg-white/10 file:px-3 file:py-1.5 file:text-white"
           />
-          {hasLogos && (
-            <div className="flex flex-wrap gap-2.5">
-              {logos.map((logo, i) => (
-                <div
-                  key={logo.url}
-                  className="group relative flex h-16 w-16 items-center justify-center rounded-md border border-line bg-white/5 p-2"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={logo.url}
-                    alt={`Sponsor logo ${i + 1}`}
-                    className="max-h-full max-w-full object-contain"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeLogo(i)}
-                    aria-label={`Remove logo ${i + 1}`}
-                    className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-black text-white opacity-0 ring-1 ring-line-strong transition-opacity group-hover:opacity-100"
-                  >
-                    <Cross1Icon className="h-3 w-3" />
-                  </button>
-                </div>
-              ))}
+          {logo && (
+            <div className="group relative flex h-24 w-40 items-center justify-center rounded-md border border-line bg-white/5 p-3">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={logo.url}
+                alt="Sponsor logo"
+                className="max-h-full max-w-full object-contain"
+              />
+              <button
+                type="button"
+                onClick={removeLogo}
+                aria-label="Remove logo"
+                className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-black text-white opacity-0 ring-1 ring-line-strong transition-opacity group-hover:opacity-100"
+              >
+                <Cross1Icon className="h-3 w-3" />
+              </button>
             </div>
           )}
         </div>
 
         {/* Step 3 — format + generate */}
         <div className={stepClass(3, false)}>
-          <StepHeader n={3} title="Format and generate" complete={false} />
+          <StepHeader n={3} title="Format and download" complete={false} />
           <div className="flex flex-wrap gap-2">
             {(["landscape", "portrait"] as const).map((opt) => (
               <button
@@ -339,7 +311,7 @@ export const SponsorCardGenerator = () => {
               </button>
             ))}
           </div>
-          <div>
+          <div className="flex flex-wrap gap-3">
             <Button
               buttonType="cta"
               disabled={!ready || status === "generating"}
@@ -347,7 +319,14 @@ export const SponsorCardGenerator = () => {
             >
               {status === "generating"
                 ? `Rendering… ${Math.round(progress * 100)}%`
-                : "Generate card"}
+                : "Generate video"}
+            </Button>
+            <Button
+              buttonType="primary"
+              disabled={!ready || savingImage}
+              onClick={handleDownloadImage}
+            >
+              {savingImage ? "Rendering…" : "Download image (PNG)"}
             </Button>
           </div>
           {errorMsg && (
@@ -366,13 +345,6 @@ export const SponsorCardGenerator = () => {
             >
               Download video ({videoExt.toUpperCase()})
             </Button>
-            <Button
-              buttonType="secondary"
-              onClick={handleDownloadImage}
-              className="w-fit"
-            >
-              Download still (PNG)
-            </Button>
           </div>
         )}
       </div>
@@ -388,15 +360,13 @@ export const SponsorCardGenerator = () => {
             muted
             playsInline
           />
-        ) : hasLogos ? (
+        ) : ready ? (
           <div className="flex flex-col items-center gap-3">
             <Text textType="small" className="font-bold">
               {TIER_LABEL[tier]}
             </Text>
             <Text textType="small" className="text-faint">
-              {ready
-                ? "Ready. Click Generate."
-                : `${logos.length}/${requiredCount} logos — add ${requiredCount - logos.length} more.`}
+              Ready. Generate the video or download the image.
             </Text>
           </div>
         ) : (

@@ -1884,14 +1884,41 @@ export const renderAttendeeCardStill = (
 // that tier announces together (per the sponsorship deck).
 // ---------------------------------------------------------------------------
 
-export type SponsorTier = "platinum" | "gold" | "silver" | "bronze";
+export type SponsorTier =
+  | "platinum"
+  | "gold"
+  | "silver"
+  | "bronze"
+  | "premium"
+  | "standard"
+  | "travel";
 
-export const SPONSOR_TIERS: SponsorTier[] = [
-  "platinum",
-  "gold",
-  "silver",
-  "bronze",
+/** The two tracks' tier ladders, highest first — the same split the website
+ * uses. Platinum to Bronze sponsor the conference, Premium to Travel the
+ * Hackathon; the card names the track so a Premium card is not mistaken for
+ * something above Platinum. */
+export const SPONSOR_TIER_TRACKS: {
+  key: "conference" | "hackathon";
+  label: string;
+  tiers: SponsorTier[];
+}[] = [
+  {
+    key: "conference",
+    label: "Conference",
+    tiers: ["platinum", "gold", "silver", "bronze"],
+  },
+  {
+    key: "hackathon",
+    label: "Hackathon",
+    tiers: ["premium", "standard", "travel"],
+  },
 ];
+
+export const SPONSOR_TIERS: SponsorTier[] = SPONSOR_TIER_TRACKS.flatMap(
+  (track) => track.tiers,
+);
+
+const HACKATHON_TIERS = new Set<SponsorTier>(["premium", "standard", "travel"]);
 
 const TIER_COLORS: Record<SponsorTier, GradientPalette> = {
   // Bright, icy white-to-blue — reads as the premium metal.
@@ -1918,6 +1945,23 @@ const TIER_COLORS: Record<SponsorTier, GradientPalette> = {
     red: "rgb(184,116,64)",
     purple: "rgb(122,72,40)",
   },
+  // Hackathon tiers: the top one in the brand's own warm-to-violet sweep,
+  // the others in cooler tones, so none of them is mistaken for a metal.
+  premium: {
+    yellow: "rgb(255,205,120)",
+    red: "rgb(240,90,80)",
+    purple: "rgb(120,70,230)",
+  },
+  standard: {
+    yellow: "rgb(190,215,255)",
+    red: "rgb(90,140,230)",
+    purple: "rgb(50,80,170)",
+  },
+  travel: {
+    yellow: "rgb(180,240,225)",
+    red: "rgb(60,190,170)",
+    purple: "rgb(30,110,120)",
+  },
 };
 
 export const TIER_LABEL: Record<SponsorTier, string> = {
@@ -1925,27 +1969,22 @@ export const TIER_LABEL: Record<SponsorTier, string> = {
   gold: "GOLD SPONSOR",
   silver: "SILVER SPONSOR",
   bronze: "BRONZE SPONSOR",
+  premium: "PREMIUM SPONSOR",
+  standard: "STANDARD SPONSOR",
+  travel: "TRAVEL SPONSOR",
 };
 
-/** Exactly how many logos each tier's posts group together, per the
- * sponsorship deck (Platinum and Gold are announced individually; Silver in
- * 3s, Bronze in 5s). The generator enforces this count per tier. */
-export const TIER_LOGO_COUNT: Record<SponsorTier, number> = {
-  platinum: 1,
-  gold: 1,
-  silver: 3,
-  bronze: 5,
-};
-
-/** Upper bound for the grid layout table below — no tier currently needs
- * more than 5, but this leaves room without adding new row compositions. */
-export const SPONSOR_MAX_LOGOS = 6;
+/** What the card is a sponsorship of — the eyebrow above the tier. */
+const tierEyebrow = (tier: SponsorTier) =>
+  HACKATHON_TIERS.has(tier)
+    ? "BLOCKCHAIN & AI HACKATHON · OCT 30 TO 31"
+    : "TUM BLOCKCHAIN CONFERENCE 26";
 
 export type SponsorCardContent = {
   /** Omit for the generic, self-serve external sponsor card: no tier theme,
    * brand colours, headline just reads "OFFICIAL SPONSOR". */
   tier?: SponsorTier;
-  /** Exactly TIER_LOGO_COUNT[tier] logo image URLs (or exactly 1, untiered). */
+  /** The sponsor's logo. One per card; a tiered card announces one sponsor. */
   logoUrls: string[];
 };
 
@@ -1969,45 +2008,7 @@ type SponsorAssets = {
   colors: GradientPalette;
 };
 
-/** Row compositions for each logo count, centred per row so odd totals (like
- * 5 = 3 + 2) still read as a deliberate, balanced layout. */
-const SPONSOR_GRID_ROWS: Record<number, number[]> = {
-  1: [1],
-  2: [2],
-  3: [3],
-  4: [2, 2],
-  5: [3, 2],
-  6: [3, 3],
-};
-
-function computeSponsorGrid(
-  count: number,
-  area: { x: number; y: number; w: number; h: number },
-  gapRatio: number,
-): { x: number; y: number; w: number; h: number }[] {
-  const n = Math.min(SPONSOR_MAX_LOGOS, Math.max(1, count));
-  const rows = SPONSOR_GRID_ROWS[n] ?? [n];
-  const rowGap = area.h * gapRatio;
-  const rowH = (area.h - rowGap * (rows.length - 1)) / rows.length;
-  const boxes: { x: number; y: number; w: number; h: number }[] = [];
-  let y = area.y;
-  for (const cols of rows) {
-    const colGap = area.w * gapRatio;
-    const cellW = (area.w - colGap * (cols - 1)) / cols;
-    const rowW = cellW * cols + colGap * (cols - 1);
-    let x = area.x + (area.w - rowW) / 2;
-    for (let i = 0; i < cols; i++) {
-      boxes.push({ x, y, w: cellW, h: rowH });
-      x += cellW + colGap;
-    }
-    y += rowH + rowGap;
-  }
-  return boxes;
-}
-
-/** Builds a local diagonal gradient sized to a text region, so a headline
- * shows a real colour sweep across its own width instead of a near-solid
- * tone sampled from one point of the full-card gradient. */
+/** A diagonal three-stop gradient for a given box, in a card's palette. */
 function localGradient(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -2078,6 +2079,13 @@ const SPONSOR_PAIR = {
 const sponsorPairWidth = (o: { confW: number; dayW: number }) =>
   o.dayW + 90 + o.confW;
 
+/**
+ * The tiered announcement card: one sponsor, one tier. Kept deliberately
+ * quiet — a spaced tier line in the tier's own metal, one large plate for
+ * the logo, the date underneath — so the sponsor's mark is the loudest thing
+ * on the card and the whole reads as an official notice rather than a
+ * banner. The tier's palette also tints the ring behind everything.
+ */
 function drawSponsorLandscape(
   ctx: CanvasRenderingContext2D,
   { w, h }: { w: number; h: number },
@@ -2087,7 +2095,7 @@ function drawSponsorLandscape(
 ) {
   const P = 150;
 
-  // Conference wordmark and Digital Assets Day, top-right.
+  // Header: what this sponsors on the left, the conference pair on the right.
   const logoIn = easeOut(phase(p, 0.06, 0.18));
   if (logoIn > 0) {
     ctx.save();
@@ -2095,61 +2103,55 @@ function drawSponsorLandscape(
     drawConferencePair(ctx, a, { rightX: w - P, ...SPONSOR_PAIR.landscape });
     ctx.restore();
   }
-
-  // Small eyebrow: unmistakably the conference, before the big tier name.
-  const eyebrowIn = easeOut(phase(p, 0.06, 0.16));
-  drawSpacedText(ctx, "TUM BLOCKCHAIN CONFERENCE 26", P, 128, {
-    size: 28,
+  const eyebrowIn = easeOut(phase(p, 0.08, 0.18));
+  drawSpacedText(ctx, tierEyebrow(content.tier), P, 136, {
+    size: 26,
     spacing: 6,
-    color: "rgba(255,255,255,0.65)",
+    color: "rgba(255,255,255,0.6)",
     alpha: eyebrowIn,
     weight: 700,
     font: brandFont(),
-    maxWidth: w * 0.6,
+    maxWidth: w * 0.5,
   });
 
-  // The tier headline — big, filled with its own colour sweep.
-  const headIn = easeOut(phase(p, 0.12, 0.26));
-  const headGradient = localGradient(ctx, P, 188, 960, 130, a.colors);
-  drawFittedText(ctx, TIER_LABEL[content.tier], P, 268, {
-    size: 116,
-    color: headGradient,
-    alpha: headIn,
-    weight: 800,
-    align: "left",
-    maxWidth: w - P * 2,
-  });
-
-  // Logo grid, sized to how many sponsors are in this post.
-  const gridTop = 350;
-  const gridBottom = h - 260;
-  const grid = computeSponsorGrid(
-    content.logoUrls.length,
-    { x: P, y: gridTop, w: w - P * 2, h: gridBottom - gridTop },
-    0.055,
+  // The tier line, centred, set in the tier's own colours under a short rule.
+  const tierY = 318;
+  drawAccentRule(
+    ctx,
+    w / 2,
+    tierY - 60,
+    90,
+    localGradient(ctx, w / 2 - 45, tierY - 62, 90, 6, a.colors),
+    easeOut(phase(p, 0.12, 0.24)),
+    true,
   );
-  grid.forEach((box, i) => {
-    const logo = a.logos[i];
-    if (!logo) return;
-    const stagger = i * 0.035;
-    const chipIn = easeOut(phase(p, 0.28 + stagger, 0.44 + stagger));
-    drawPartnerChip(ctx, logo.img, box, chipIn, logo.useLightChip);
-  });
-
-  // Bottom bar: the sponsor line on its own, then the separator and the
-  // date. "OFFICIAL SPONSOR" is what the post is about, so it gets its own
-  // size rather than sharing a line with the date and venue.
-  const infoIn = easeOut(phase(p, 0.6, 0.72));
-  drawSpacedText(ctx, GENERIC_SPONSOR_LABEL, w / 2, h - 190, {
-    size: 46,
-    spacing: 10,
-    color: "#ffffff",
-    alpha: infoIn,
+  drawSpacedText(ctx, `OFFICIAL ${TIER_LABEL[content.tier]}`, w / 2, tierY, {
+    size: 44,
+    spacing: 12,
+    color: localGradient(ctx, w / 2 - 420, tierY - 30, 840, 60, a.colors),
+    alpha: easeOut(phase(p, 0.14, 0.28)),
     align: "center",
     weight: 800,
     font: brandFont(),
     maxWidth: w - P * 2,
   });
+
+  // The sponsor's logo on one large plate — the hero of the card. A white
+  // plate for dark ink, the glass one for light ink, decided per logo.
+  const logo = a.logos[0];
+  const plateIn = easeOut(phase(p, 0.24, 0.42));
+  if (logo) {
+    drawPartnerChip(
+      ctx,
+      logo.img,
+      { x: w / 2 - 440, y: 384 + (1 - plateIn) * 24, w: 880, h: 400 },
+      plateIn,
+      logo.useLightChip,
+    );
+  }
+
+  // Footer: a hairline and the date.
+  const infoIn = easeOut(phase(p, 0.56, 0.68));
   ctx.save();
   ctx.globalAlpha = infoIn * 0.16;
   ctx.fillStyle = "#ffffff";
@@ -2288,12 +2290,11 @@ function drawSponsorPortrait(
     });
     ctx.restore();
   }
-
-  const eyebrowIn = easeOut(phase(p, 0.06, 0.16));
-  drawSpacedText(ctx, "TUM BLOCKCHAIN CONFERENCE 26", w / 2, 210, {
-    size: 22,
+  const eyebrowIn = easeOut(phase(p, 0.08, 0.18));
+  drawSpacedText(ctx, tierEyebrow(content.tier), w / 2, 226, {
+    size: 20,
     spacing: 4,
-    color: "rgba(255,255,255,0.65)",
+    color: "rgba(255,255,255,0.6)",
     alpha: eyebrowIn,
     align: "center",
     weight: 700,
@@ -2301,59 +2302,66 @@ function drawSponsorPortrait(
     maxWidth: w - P * 2,
   });
 
-  const headIn = easeOut(phase(p, 0.12, 0.26));
-  const headGradient = localGradient(ctx, P, 250, w - P * 2, 100, a.colors);
-  drawFittedText(ctx, TIER_LABEL[content.tier], w / 2, 270, {
-    size: 66,
-    color: headGradient,
-    alpha: headIn,
-    weight: 800,
+  const tierY = 336;
+  drawAccentRule(
+    ctx,
+    w / 2,
+    tierY - 52,
+    80,
+    localGradient(ctx, w / 2 - 40, tierY - 54, 80, 6, a.colors),
+    easeOut(phase(p, 0.12, 0.24)),
+    true,
+  );
+  drawSpacedText(ctx, `OFFICIAL ${TIER_LABEL[content.tier]}`, w / 2, tierY, {
+    size: 32,
+    spacing: 8,
+    color: localGradient(ctx, P, tierY - 24, w - P * 2, 48, a.colors),
+    alpha: easeOut(phase(p, 0.14, 0.28)),
     align: "center",
+    weight: 800,
+    font: brandFont(),
     maxWidth: w - P * 2,
   });
 
-  const gridTop = 380;
-  const gridBottom = h - 240;
-  const grid = computeSponsorGrid(
-    content.logoUrls.length,
-    { x: P, y: gridTop, w: w - P * 2, h: gridBottom - gridTop },
-    0.06,
-  );
-  grid.forEach((box, i) => {
-    const logo = a.logos[i];
-    if (!logo) return;
-    const stagger = i * 0.035;
-    const chipIn = easeOut(phase(p, 0.28 + stagger, 0.44 + stagger));
-    drawPartnerChip(ctx, logo.img, box, chipIn, logo.useLightChip);
-  });
+  const logo = a.logos[0];
+  const plateIn = easeOut(phase(p, 0.24, 0.42));
+  if (logo) {
+    drawPartnerChip(
+      ctx,
+      logo.img,
+      { x: P, y: 420 + (1 - plateIn) * 24, w: w - P * 2, h: 540 },
+      plateIn,
+      logo.useLightChip,
+    );
+  }
 
-  const infoIn = easeOut(phase(p, 0.6, 0.72));
-  drawSpacedText(ctx, GENERIC_SPONSOR_LABEL, w / 2, h - 146, {
-    size: 38,
-    spacing: 8,
-    color: "#ffffff",
+  const infoIn = easeOut(phase(p, 0.56, 0.68));
+  ctx.save();
+  ctx.globalAlpha = infoIn * 0.16;
+  ctx.fillStyle = "#ffffff";
+  const sepW = (w - P * 2) * infoIn;
+  ctx.fillRect(w / 2 - sepW / 2, h - 190, sepW, 2);
+  ctx.restore();
+  drawSpacedText(ctx, CONFERENCE_DATE, w / 2, h - 138, {
+    size: 26,
+    spacing: 3,
+    color: "rgba(255,255,255,0.92)",
     alpha: infoIn,
     align: "center",
     weight: 700,
     font: brandFont(),
     maxWidth: w - P * 2,
   });
-  drawSpacedText(
-    ctx,
-    `${CONFERENCE_DATE}  ·  ${CONFERENCE_LOCATION}`,
-    w / 2,
-    h - 96,
-    {
-      size: 22,
-      spacing: 2,
-      color: "rgba(255,255,255,0.65)",
-      alpha: infoIn,
-      align: "center",
-      weight: 600,
-      font: brandFont(),
-      maxWidth: w - P * 2,
-    },
-  );
+  drawSpacedText(ctx, CONFERENCE_LOCATION, w / 2, h - 90, {
+    size: 22,
+    spacing: 2,
+    color: "rgba(255,255,255,0.62)",
+    alpha: infoIn,
+    align: "center",
+    weight: 600,
+    font: brandFont(),
+    maxWidth: w - P * 2,
+  });
 }
 
 function drawExternalSponsorPortrait(
