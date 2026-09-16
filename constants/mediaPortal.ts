@@ -4,6 +4,35 @@ export const MEDIA_LINK = buildMediaUtmLink();
 
 export const HEADER_GRAPHIC_SRC = "/media/tbc-conference-26-header.png";
 
+/**
+ * Ready-to-use key visuals, free for anyone to download. The pixel size shown
+ * next to each one is measured from the file at build time
+ * (util/imageDimensions.ts), so the labels cannot go stale — and an entry
+ * whose file is not in `public/` yet is skipped rather than shown broken.
+ */
+export const visualAssets = [
+  {
+    src: "/banners/c26-pr-banner-1920x1080.png",
+    title: "PR banner",
+    note: "Lockup centred — for articles, press coverage and slides.",
+  },
+  {
+    src: "/banners/c26-event-banner-1920x1080.png",
+    title: "Event banner",
+    note: "Lockup to the left — for event pages and cover images.",
+  },
+  {
+    src: "/banners/c26-social-1080x1350.png",
+    title: "Social post",
+    note: "The format Instagram and LinkedIn show largest in the feed.",
+  },
+  {
+    src: HEADER_GRAPHIC_SRC,
+    title: "Header graphic",
+    note: "The wide banner, for the top of an article or a newsletter.",
+  },
+];
+
 /** The 2026 conference video, shared with the partner portal. */
 export const CONFERENCE_VIDEO_SRC = "/partner/conference-teaser.mp4";
 
