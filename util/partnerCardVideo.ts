@@ -133,7 +133,9 @@ export type CardContent = {
 /** How many characters each field can hold and still lay out cleanly. */
 export const SPEAKER_LIMITS = {
   name: 26,
-  job: 40,
+  // Job title and company on one line ("Head of Digital Assets, DWS"), so
+  // roomier than a bare title would need.
+  job: 52,
   blurb: 160,
 } as const;
 

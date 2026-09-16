@@ -8,6 +8,7 @@ import { CheckIcon } from "@radix-ui/react-icons";
 import { downloadBlob } from "@/util/exportLogo";
 import { prepareImage } from "@/util/imageCompression";
 import {
+  renderSpeakerCardStill,
   renderSpeakerCardVideo,
   SPEAKER_LIMITS,
   type CardOrientation,
@@ -39,6 +40,7 @@ export const SpeakerCardGenerator = () => {
   const [videoExt, setVideoExt] = useState<"mp4" | "webm">("webm");
   const [note, setNote] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [savingImage, setSavingImage] = useState(false);
 
   const hasPhoto = !!file && !!previewUrl;
   const hasName = name.trim().length > 0;
@@ -156,6 +158,28 @@ export const SpeakerCardGenerator = () => {
     );
   };
 
+  // The still is the card's end state — everything faded in — so it works as
+  // a plain image wherever a video is awkward to post.
+  const handleDownloadImage = async () => {
+    if (!previewUrl || !hasDetails || savingImage) return;
+    setSavingImage(true);
+    setErrorMsg(null);
+    try {
+      const blob = await renderSpeakerCardStill(previewUrl, orientation, {
+        name: name.trim(),
+        job: job.trim(),
+        blurb: blurb.trim(),
+        day,
+      });
+      downloadBlob(blob, `tbc-conference-26-speaker-card-${orientation}.png`);
+    } catch (err) {
+      console.error("Still image generation failed:", err);
+      setErrorMsg("The image could not be created. Please try again.");
+    } finally {
+      setSavingImage(false);
+    }
+  };
+
   const inputClass =
     "w-full rounded-md border border-line bg-black px-4 py-2.5 text-sm text-white outline-none transition-colors placeholder:text-faint focus:border-line-strong";
 
@@ -256,8 +280,9 @@ export const SpeakerCardGenerator = () => {
           <div className={stepClass(3, hasDetails)}>
             <StepHeader n={3} title="About you" complete={hasDetails} />
             <Text textType="small" className="text-muted">
-              Name, job title and a line about your talk all go on the card. The
-              counters show how much fits so the card always looks good.
+              Name, job title with company, and a line about your talk all go on
+              the card. The counters show how much fits so the card always looks
+              good.
             </Text>
 
             <div className="flex flex-col gap-1">
@@ -283,7 +308,7 @@ export const SpeakerCardGenerator = () => {
             <div className="flex flex-col gap-1">
               <div className="flex items-center justify-between">
                 <label htmlFor="sp-job" className="text-xs text-muted">
-                  Job title
+                  Job title &amp; company
                 </label>
                 <span className="text-xs text-faint">
                   {job.length}/{SPEAKER_LIMITS.job}
@@ -294,7 +319,7 @@ export const SpeakerCardGenerator = () => {
                 type="text"
                 value={job}
                 onChange={(e) => setJob(e.target.value)}
-                placeholder="e.g. Founder at Acme"
+                placeholder="e.g. Head of Digital Assets, Acme"
                 maxLength={SPEAKER_LIMITS.job}
                 className={inputClass}
               />
@@ -323,7 +348,7 @@ export const SpeakerCardGenerator = () => {
 
           {/* Step 4 — format + generate */}
           <div className={stepClass(4, false)}>
-            <StepHeader n={4} title="Format and generate" complete={false} />
+            <StepHeader n={4} title="Format and download" complete={false} />
             <div className="flex flex-wrap gap-2">
               {(["landscape", "portrait"] as const).map((opt) => (
                 <button
@@ -340,7 +365,7 @@ export const SpeakerCardGenerator = () => {
                 </button>
               ))}
             </div>
-            <div>
+            <div className="flex flex-wrap gap-3">
               <Button
                 buttonType="cta"
                 disabled={!ready || status === "generating"}
@@ -348,7 +373,16 @@ export const SpeakerCardGenerator = () => {
               >
                 {status === "generating"
                   ? `Rendering… ${Math.round(progress * 100)}%`
-                  : "Generate card"}
+                  : "Generate video"}
+              </Button>
+              {/* The image needs no recording, so it does not wait on the
+                  video being generated first. */}
+              <Button
+                buttonType="primary"
+                disabled={!ready || savingImage}
+                onClick={handleDownloadImage}
+              >
+                {savingImage ? "Rendering…" : "Download image (PNG)"}
               </Button>
             </div>
             {note && (
