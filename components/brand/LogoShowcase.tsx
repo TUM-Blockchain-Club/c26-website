@@ -29,7 +29,11 @@ const LogoCard = ({ asset }: { asset: LogoAsset }) => {
 
   return (
     <div className="card-tbc-soft flex flex-col overflow-hidden">
-      <div className="flex h-40 items-center justify-center bg-black p-8">
+      <div
+        className={`flex h-40 items-center justify-center p-8 ${
+          asset.background === "light" ? "bg-white" : "bg-black"
+        }`}
+      >
         <Image
           src={asset.svgSrc}
           alt={asset.name}

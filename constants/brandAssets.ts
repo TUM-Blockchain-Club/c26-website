@@ -8,16 +8,28 @@ export type LogoAsset = {
   description: string;
   svgSrc: string;
   /** Preview background this asset was actually designed for. */
-  background: "dark";
+  background: "dark" | "light";
 };
 
 export const logoAssets: LogoAsset[] = [
   {
     id: "c26-wordmark",
     name: "TUM Blockchain Conference 26 + Hackathon",
-    description: "Primary wordmark for this year's edition.",
+    description:
+      "Primary wordmark for this year's edition, for dark backgrounds.",
     svgSrc: "/logos/c26-wordmark.svg",
     background: "dark",
+  },
+  {
+    id: "c26-wordmark-light",
+    name: "TUM Blockchain Conference 26 + Hackathon (light background)",
+    description:
+      "The same wordmark for white and light backgrounds: lettering in black, the 26 and the Hackathon script unchanged.",
+    // Derived from c26-wordmark.svg by hand: only the lettering's fill and
+    // the script's knockout outline (black on the dark mark, white here)
+    // differ. Regenerate from the dark file if that one ever changes.
+    svgSrc: "/logos/c26-wordmark-light.svg",
+    background: "light",
   },
   {
     id: "tbc-wordmark",
