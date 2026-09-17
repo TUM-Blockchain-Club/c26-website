@@ -3,6 +3,7 @@ import { Text } from "@/components/text";
 import { Link } from "@/components/link";
 import { fetchCommunityPartners } from "@/components/service/contentStrapi";
 import { staticCommunityPartners } from "@/constants/communityPartners";
+import { mediaPartners } from "@/constants/mediaPartners";
 import { LogoBackground } from "@/util/logoTone";
 
 type PartnerLogoProps = {
@@ -60,7 +61,7 @@ const PartnerLogo = ({ name, src, website, background }: PartnerLogoProps) => {
 const CommunityPartners = async () => {
   const fromStrapi = await fetchCommunityPartners();
 
-  const partners: PartnerLogoProps[] = fromStrapi.length
+  const community: PartnerLogoProps[] = fromStrapi.length
     ? fromStrapi
         .filter((partner) => partner.logo?.url)
         .map((partner) => ({
@@ -70,6 +71,10 @@ const CommunityPartners = async () => {
           background: partner.logoBackground ?? "light",
         }))
     : staticCommunityPartners;
+
+  // Media partners are appended rather than merged into the Strapi list, so
+  // they stay on the page once Strapi starts serving the community ones.
+  const partners: PartnerLogoProps[] = [...community, ...mediaPartners];
 
   if (partners.length === 0) return null;
 
@@ -82,15 +87,15 @@ const CommunityPartners = async () => {
         Standing with us
       </Text>
       <Text textType={"sub_hero"} className="text-gradient text-center">
-        Community Partners
+        Community &amp; Media Partners
       </Text>
       <Text
         as="p"
         textType="small"
         className="text-secondary max-w-2xl text-center mt-2"
       >
-        These communities support the TUM Blockchain Conference 26. More are
-        announced regularly.
+        The communities and outlets supporting the TUM Blockchain Conference 26
+        and helping spread the word. More are announced regularly.
       </Text>
 
       <div className="mt-8 flex flex-wrap items-center justify-center gap-4 md:gap-6">
