@@ -4,6 +4,7 @@ import { Text } from "@/components/text";
 import { SpeakerApplicationForm } from "@/components/brand/SpeakerApplicationForm";
 // import { fetchSpeakers } from "@/components/service/contentStrapi";
 import { pastSpeakers } from "@/constants/PastSpeakers";
+import { speakers26 } from "@/constants/Speakers26";
 
 const SpeakersPage = async () => {
   // const speakers = await fetchSpeakers();
@@ -46,6 +47,40 @@ const SpeakersPage = async () => {
               <SpeakerApplicationForm />
             </div>
           </section>
+
+          {speakers26.length > 0 && (
+            <section id="speakers-26" className="mt-32 z-10 scroll-mt-28">
+              <div className="max-w-3xl flex flex-col gap-3">
+                <Text as="p" textType="small" className="eyebrow-tbc">
+                  On stage this year
+                </Text>
+                <Text textType={"sub_hero"} className="text-gradient text-left">
+                  Speakers
+                </Text>
+                <Text
+                  as="p"
+                  textType="paragraph"
+                  className="text-secondary max-w-2xl leading-relaxed"
+                >
+                  The first speakers confirmed for the TUM Blockchain Conference
+                  26. More are announced as the programme fills up.
+                </Text>
+              </div>
+              <div
+                className={
+                  "grid grid-cols-2 lg:grid-cols-4 gap-x-3 gap-y-6 lg:gap-6 mt-16 justify-items-center"
+                }
+              >
+                {speakers26.map((speaker) => (
+                  <SpeakerComponent
+                    key={speaker.id}
+                    {...speaker}
+                    id={speaker.id}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
 
           <div className={"mt-32 z-10 max-w-3xl"}>
             <div className="lg:flex items-center">
