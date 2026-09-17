@@ -1,33 +1,55 @@
+import type { StaticImageData } from "next/image";
 import { buildMediaUtmLink } from "@/util/utmLink";
+import prBanner from "@/public/banners/c26-pr-banner-1920x1080.png";
+import eventBanner from "@/public/banners/c26-event-banner-1920x1080.png";
+import socialPost from "@/public/banners/c26-social-1080x1350.png";
+import headerGraphic from "@/public/media/tbc-conference-26-header.png";
 
 export const MEDIA_LINK = buildMediaUtmLink();
 
 export const HEADER_GRAPHIC_SRC = "/media/tbc-conference-26-header.png";
 
 /**
- * Ready-to-use key visuals, free for anyone to download. The pixel size shown
- * next to each one is measured from the file at build time
- * (util/imageDimensions.ts), so the labels cannot go stale — and an entry
- * whose file is not in `public/` yet is skipped rather than shown broken.
+ * Ready-to-use key visuals, free for anyone to download. Each one is imported
+ * statically, so Next records its pixel size at build time — the size printed
+ * next to a download comes from the file itself and cannot go stale. (This
+ * used to be measured with sharp from `public/` at render time, which does
+ * not work once the page re-renders on the server, where `public/` is not on
+ * disk.) `href` is the plain public path, so the download keeps a readable
+ * file name and the untouched original bytes.
  */
-export const visualAssets = [
+export const visualAssets: {
+  image: StaticImageData;
+  href: string;
+  fileName: string;
+  title: string;
+  note: string;
+}[] = [
   {
-    src: "/banners/c26-pr-banner-1920x1080.png",
+    image: prBanner,
+    href: "/banners/c26-pr-banner-1920x1080.png",
+    fileName: "c26-pr-banner-1920x1080.png",
     title: "PR banner",
     note: "Lockup centred — for articles, press coverage and slides.",
   },
   {
-    src: "/banners/c26-event-banner-1920x1080.png",
+    image: eventBanner,
+    href: "/banners/c26-event-banner-1920x1080.png",
+    fileName: "c26-event-banner-1920x1080.png",
     title: "Event banner",
     note: "Lockup to the left — for event pages and cover images.",
   },
   {
-    src: "/banners/c26-social-1080x1350.png",
+    image: socialPost,
+    href: "/banners/c26-social-1080x1350.png",
+    fileName: "c26-social-1080x1350.png",
     title: "Social post",
     note: "The format Instagram and LinkedIn show largest in the feed.",
   },
   {
-    src: HEADER_GRAPHIC_SRC,
+    image: headerGraphic,
+    href: HEADER_GRAPHIC_SRC,
+    fileName: "tbc-conference-26-header.png",
     title: "Header graphic",
     note: "The wide banner, for the top of an article or a newsletter.",
   },

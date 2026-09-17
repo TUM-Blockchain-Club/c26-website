@@ -8,7 +8,7 @@ import { TimelineRail } from "@/components/brand/TimelineRail";
 import { MediaGallery } from "@/components/brand/MediaGallery";
 import { LogoDownloads } from "@/components/brand/LogoShowcase";
 import WhatsNew from "@/sections/WhatsNew";
-import { readImageDimensions } from "@/util/imageDimensions";
+import { aspectRatioLabel } from "@/util/aspectRatio";
 import {
   mediaIntro,
   visualAssets,
@@ -63,17 +63,11 @@ const SectionHeader = ({
   </div>
 );
 
-export default async function MediaPage() {
-  // Sizes come from the files themselves; an asset that is not in public/ yet
-  // drops out of the list instead of rendering as a broken image.
-  const visuals = (
-    await Promise.all(
-      visualAssets.map(async (visual) => ({
-        ...visual,
-        dimensions: await readImageDimensions(visual.src),
-      })),
-    )
-  ).filter((visual) => visual.dimensions !== null);
+export default function MediaPage() {
+  const visuals = visualAssets.map((visual) => ({
+    ...visual,
+    ratio: aspectRatioLabel(visual.image.width, visual.image.height),
+  }));
 
   return (
     <div className="flex justify-center">
@@ -277,17 +271,15 @@ export default async function MediaPage() {
               <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
                 {visuals.map((visual) => (
                   <div
-                    key={visual.src}
+                    key={visual.href}
                     className="card-tbc flex flex-col gap-5 p-7"
                   >
                     {/* Preview goes through the optimizer — the originals
                         are up to 4MB, and the download link below still
                         points at the untouched file. */}
                     <Image
-                      src={visual.src}
+                      src={visual.image}
                       alt={`TUM Blockchain Conference 26 — ${visual.title}`}
-                      width={visual.dimensions!.width}
-                      height={visual.dimensions!.height}
                       sizes="(max-width: 1024px) 100vw, 50vw"
                       className="h-auto w-full rounded-md"
                     />
@@ -296,12 +288,8 @@ export default async function MediaPage() {
                         {visual.title}
                       </Text>
                       <Text as="p" textType="small" className="text-muted">
-                        {visual.dimensions!.width} × {visual.dimensions!.height}{" "}
-                        px
-                        {visual.dimensions!.ratio
-                          ? ` · ${visual.dimensions!.ratio}`
-                          : ""}{" "}
-                        · PNG
+                        {visual.image.width} × {visual.image.height} px
+                        {visual.ratio ? ` · ${visual.ratio}` : ""} · PNG
                       </Text>
                       <Text as="p" textType="small" className="text-faint">
                         {visual.note}
@@ -313,10 +301,7 @@ export default async function MediaPage() {
                         asChild
                         className="w-fit px-5"
                       >
-                        <a
-                          href={visual.src}
-                          download={visual.src.split("/").pop()}
-                        >
+                        <a href={visual.href} download={visual.fileName}>
                           Download PNG
                         </a>
                       </Button>
