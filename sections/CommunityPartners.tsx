@@ -3,7 +3,7 @@ import { Text } from "@/components/text";
 import { Link } from "@/components/link";
 import { fetchCommunityPartners } from "@/components/service/contentStrapi";
 import { staticCommunityPartners } from "@/constants/communityPartners";
-import { mediaPartners } from "@/constants/mediaPartners";
+import { extraPartners } from "@/constants/extraPartners";
 import { LogoBackground } from "@/util/logoTone";
 
 type PartnerLogoProps = {
@@ -72,9 +72,9 @@ const CommunityPartners = async () => {
         }))
     : staticCommunityPartners;
 
-  // Media partners are appended rather than merged into the Strapi list, so
-  // they stay on the page once Strapi starts serving the community ones.
-  const partners: PartnerLogoProps[] = [...community, ...mediaPartners];
+  // Appended rather than merged into the Strapi list, so they stay on the
+  // page once Strapi starts serving the community ones.
+  const partners: PartnerLogoProps[] = [...community, ...extraPartners];
 
   if (partners.length === 0) return null;
 
