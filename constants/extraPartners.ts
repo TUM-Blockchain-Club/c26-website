@@ -14,7 +14,7 @@ export const extraPartners: StaticCommunityPartner[] = [
   {
     // Media partner.
     name: "Cryptopolitan",
-    src: "/media-partners26/cryptopolitan.png",
+    src: "/extra-partners26/cryptopolitan.png",
     website: "https://www.cryptopolitan.com",
     // Dark navy wordmark on white — belongs on the white card.
     background: "light" as LogoBackground,
@@ -23,7 +23,7 @@ export const extraPartners: StaticCommunityPartner[] = [
     // The club's own 20-week programme, formerly run by the Frankfurt School
     // Blockchain Center.
     name: "Web3 Talents",
-    src: "/media-partners26/web3-talents.png",
+    src: "/extra-partners26/web3-talents.png",
     website: "https://www.web3-talents.com",
     // Black wordmark with a colourful mark, on white.
     background: "light" as LogoBackground,
