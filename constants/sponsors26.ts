@@ -72,6 +72,13 @@ export const sponsors26: Sponsor26[] = [
     background: "light",
   },
   {
+    name: "Staking Facilities",
+    tier: "silver",
+    src: "/sponsors26/staking-facilities.png",
+    website: "https://stakingfacilities.com",
+    background: "light",
+  },
+  {
     name: "softstack",
     tier: "bronze",
     src: "/sponsors26/softstack.svg",
