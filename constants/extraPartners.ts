@@ -28,4 +28,13 @@ export const extraPartners: StaticCommunityPartner[] = [
     // Black wordmark with a colourful mark, on white.
     background: "light" as LogoBackground,
   },
+  {
+    // German crypto education and comparison platform — media partner.
+    name: "LIGHT UP",
+    src: "/extra-partners26/light-up.png",
+    website: "https://lightupkryptos.de",
+    // Black wordmark with an orange mark; the supplied light-background
+    // variant, so it belongs on the white card.
+    background: "light" as LogoBackground,
+  },
 ];
