@@ -11,7 +11,6 @@ const trackStyle = (name: string) =>
 
 type Talk = Extract<AgendaEntry, { kind: "talk" }>;
 type Break = Extract<AgendaEntry, { kind: "break" }>;
-type Milestone = Extract<AgendaEntry, { kind: "milestone" }>;
 
 const isDad = (e: AgendaEntry) => e.event === "digital-assets-day";
 const dadTalks = agendaEntries.filter(
@@ -19,9 +18,6 @@ const dadTalks = agendaEntries.filter(
 );
 const dadBreaks = agendaEntries.filter(
   (e): e is Break => e.kind === "break" && isDad(e),
-);
-const dadMilestones = agendaEntries.filter(
-  (e): e is Milestone => e.kind === "milestone" && isDad(e),
 );
 
 /** The three stages, in the order Bundesblock publishes them. */
@@ -148,21 +144,6 @@ const boxFor = (start: string, duration: number) => ({
   height: topFor(toMin(start) + duration) - topFor(toMin(start)) - 6,
 });
 
-const Band = ({ time, label }: { time: string; label: string }) => (
-  <div className="flex flex-wrap items-center justify-center gap-2 rounded-lg border border-blue-400/40 bg-blue-400/[0.07] px-4 py-3 text-center">
-    <Text as="span" textType="small" className="font-bold text-blue-200">
-      {time}
-    </Text>
-    <Text
-      as="span"
-      textType="small"
-      className="uppercase tracking-widest text-secondary"
-    >
-      {label}
-    </Text>
-  </div>
-);
-
 const StageHeader = ({
   name,
   subtitle,
@@ -246,15 +227,6 @@ export const DigitalAssetsDayAgenda = () => {
   const sorted = [...dadTalks, ...dadBreaks].sort(
     (a, b) => toMin(a.time) - toMin(b.time),
   );
-  // Open-ended entries (no end time) close the day below the grid; the
-  // afterparty is listed once even though all three stages carry it.
-  const closing = dadMilestones.filter(
-    (m) => m.time && toMin(m.time) >= 17 * 60,
-  );
-  const closingUnique = closing.filter(
-    (m, i) => closing.findIndex((o) => o.label === m.label) === i,
-  );
-
   return (
     <div className="flex flex-col gap-6">
       <Text
@@ -332,10 +304,6 @@ export const DigitalAssetsDayAgenda = () => {
           ),
         )}
       </div>
-
-      {closingUnique.map((m) => (
-        <Band key={m.label} time={`from ${m.time}`} label={m.label} />
-      ))}
 
       <div className="flex flex-wrap gap-x-5 gap-y-2 pt-1">
         {DAD_TRACKS.map((track) => (
