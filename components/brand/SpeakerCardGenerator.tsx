@@ -44,10 +44,10 @@ export const SpeakerCardGenerator = () => {
 
   const hasPhoto = !!file && !!previewUrl;
   const hasName = name.trim().length > 0;
-  // Job title and talk carry the card as much as the name does, so all three
-  // are required rather than optional.
-  const hasDetails =
-    hasName && job.trim().length > 0 && blurb.trim().length > 0;
+  // Name and job title carry the card, so both are required. The talk is
+  // optional: it is often not fixed yet when the card goes out, and the card
+  // reads fine without it.
+  const hasDetails = hasName && job.trim().length > 0;
   const ready = hasPhoto && hasDetails;
   // Step 1 (the day) always has a default, so guidance starts at the photo.
   const activeStep = !hasPhoto ? 2 : !hasDetails ? 3 : 4;
@@ -328,7 +328,8 @@ export const SpeakerCardGenerator = () => {
             <div className="flex flex-col gap-1">
               <div className="flex items-center justify-between">
                 <label htmlFor="sp-blurb" className="text-xs text-muted">
-                  What you&apos;ll talk about
+                  What you&apos;ll talk about{" "}
+                  <span className="text-faint">(optional)</span>
                 </label>
                 <span className="text-xs text-faint">
                   {blurb.length}/{SPEAKER_LIMITS.blurb}
@@ -432,7 +433,7 @@ export const SpeakerCardGenerator = () => {
               <Text textType="small" className="text-faint">
                 {hasDetails
                   ? "Ready. Click Generate."
-                  : "Now add your name, job title and talk."}
+                  : "Now add your name and job title."}
               </Text>
             </div>
           ) : (

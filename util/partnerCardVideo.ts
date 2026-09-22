@@ -1438,29 +1438,38 @@ function drawPersonPortrait(
     ctx.restore();
   }
 
+  // The speaker card puts the eyebrow in the header row, top-left against the
+  // mark in the opposite corner, the way the landscape card does it: centred
+  // on a line of its own it read as a stray label with nothing to anchor it.
+  // The attendee card keeps the centred line, because both of its marks take
+  // up the whole top row and leave no corner free.
   const eyebrowIn = easeOut(phase(p, 0.1, 0.2));
+  const eyebrowY = isAttendee ? 240 : 150;
+  const eyebrowX = isAttendee ? w / 2 : P;
   drawAccentRule(
     ctx,
-    w / 2,
-    240 - 40,
+    eyebrowX,
+    eyebrowY - 40,
     104,
     gradient,
     easeOut(phase(p, 0.08, 0.18)),
-    true,
+    isAttendee,
   );
-  drawSpacedText(ctx, a.eyebrow, w / 2, 240 + (1 - eyebrowIn) * 14, {
+  drawSpacedText(ctx, a.eyebrow, eyebrowX, eyebrowY + (1 - eyebrowIn) * 14, {
     size: 40,
     spacing: 12,
     color: "#ffffff",
     alpha: eyebrowIn,
-    align: "center",
+    align: isAttendee ? "center" : "left",
     weight: 800,
     font: brandFont(),
-    maxWidth: w - P * 2,
+    // Left-aligned it has to stop short of the mark in the other corner.
+    maxWidth: isAttendee ? w - P * 2 : w - P * 2 - 340,
   });
 
   const photoIn = easeOut(phase(p, 0.16, 0.32));
-  const photo = { x: (w - 560) / 2, y: 300, w: 560, h: 560 };
+  // Freed by the eyebrow moving up into the header row.
+  const photo = { x: (w - 560) / 2, y: isAttendee ? 300 : 240, w: 560, h: 560 };
   drawSpeakerPhoto(
     ctx,
     a,
