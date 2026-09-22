@@ -47,7 +47,10 @@ const formatDay = (iso: string) =>
   });
 
 const EntryRow = ({ entry }: { entry: AgendaEntry }) => {
-  if (entry.kind === "milestone") {
+  // Breaks and milestones are both one quiet line; a break additionally says
+  // which stage it belongs to, because the three stages pause at their own
+  // times and would otherwise look like duplicated rows.
+  if (entry.kind === "milestone" || entry.kind === "break") {
     return (
       <div className="flex items-center gap-3 px-1 py-1.5">
         {entry.time && (
@@ -66,6 +69,11 @@ const EntryRow = ({ entry }: { entry: AgendaEntry }) => {
         >
           {entry.label}
         </Text>
+        {entry.stage && (
+          <Text as="p" textType="small" className="truncate text-faint">
+            {entry.stage}
+          </Text>
+        )}
       </div>
     );
   }
