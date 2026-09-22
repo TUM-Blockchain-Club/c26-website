@@ -23,3 +23,14 @@ export const bundesblockAccounts = {
   },
   // No confirmed official Instagram account found for Bundesblock.
 };
+
+/**
+ * The Digital Assets Day's own pages. It is curated by Bundesblock and has no
+ * account of its own on X — Bundesblock's handle covers the day there.
+ */
+export const digitalAssetsDayAccounts = {
+  linkedin: {
+    handle: "DIGITAL ASSETS DAY by Bundesblock",
+    url: "https://www.linkedin.com/company/digital-assets-day-by-bundesblock/",
+  },
+};
