@@ -100,7 +100,7 @@ export const lastYearParagraphs = [
 
 export const thisYearParagraphs = () => [
   "The TUM Blockchain Conference 26 takes place October 29 to 31, 2026 at the House of Communication in Munich, hosted by TUM Blockchain Club. Born at TUM, the Technical University of Munich and one of Europe's leading universities, it is built for the entire blockchain ecosystem. Three days where curious newcomers, students, builders, researchers, founders, policymakers and industry leaders all come together, and everyone is welcome: you do not need to be a student or an expert to attend.",
-  "Day 1 is the First Conference Day: the talks, panels and people shaping Web3, across many tracks. Day 2 is the Digital Assets Day, curated for the first time by Bundesblock, bringing together policymakers, regulators, financial institutions, corporates and digital asset leaders to discuss the future of digital assets in Europe. On Day 2 and 3, the 30 hour Hackathon runs alongside the conference, open to builders of all levels.",
+  "Day 1 is the First Conference Day: the talks, panels and people shaping Web3, across many tracks. Day 2 is the Digital Assets Day, curated for the first time by Bundesblock, bringing together policymakers, regulators, financial institutions, corporates and digital asset leaders to discuss the future of digital assets in Europe. On Day 2 and 3, the 32 hour Hackathon runs alongside the conference, open to builders of all levels.",
 ];
 
 export const mediaNewsletter = () => ({
@@ -113,7 +113,7 @@ Day 1, First Conference Day: the talks, panels and people shaping Web3, across m
 
 Day 2, Digital Assets Day by Bundesblock: where traditional finance meets the onchain economy.
 
-Day 2 and 3, the Hackathon: 30 hours to build, ship and compete across many partner tracks.
+Day 2 and 3, the Hackathon: 32 hours to build, ship and compete across many partner tracks.
 
 Last year's edition brought together more than 1,200 attendees, 125 speakers and 18 sponsors, with a stage that included Paul Brody (EY), Justin Drake (Ethereum Foundation), Friederike Ernst (Gnosis) and Patrick Hansen (Circle).
 
