@@ -51,7 +51,7 @@ export const visualAssets: {
     fileName: "c26-social-1080x1350.png",
     title: "Social post",
     note: "The format Instagram and LinkedIn show largest in the feed.",
-    caption: `Munich, October 29 to 31: the TUM Blockchain Conference 26 🚀 Three days of talks and panels, the Digital Assets Day by Bundesblock and a 32 hour Hackathon, open to everyone from the curious to the industry leaders shaping the space. Tickets via the link in our bio. #TUMBlockchainConference26 #Web3 #Munich`,
+    caption: `Munich, October 29 to 31: the TUM Blockchain Conference 26 🚀 Three days of talks and panels, the Digital Assets Day by Bundesblock and a 32 hour Hackathon, open to everyone from the curious to the industry leaders shaping the space. Tickets via the link in the bio of @tumblockchain. #TUMBlockchainConference26 #Web3 #Munich`,
   },
   {
     image: headerGraphic,
@@ -174,9 +174,9 @@ export const mediaPosts: PlatformCopy[] = [
   {
     platform: "Instagram",
     variants: {
-      short: `TUM Blockchain Conference 26 · Munich · Oct 29 to 31 🚀 Tickets via link in bio. Hosted by ${IG} #TUMBlockchainConference26`,
-      medium: `📣 The TUM Blockchain Conference 26 is coming to Munich, Oct 29 to 31!\n\nThree days of talks, panels, the Digital Assets Day by Bundesblock and a 32h Hackathon, for everyone from the curious to the people building it. We are on board as media partner 🎉\n\nTickets via link in bio. Hosted by ${IG}. #TUMBlockchainConference26 #Web3 #Munich`,
-      long: `📣 The TUM Blockchain Conference 26 is coming to Munich, Oct 29 to 31!\n\nBorn at TUM, one of Europe's leading universities, and built for the entire blockchain ecosystem. Oct 29: talks and panels across many tracks. Oct 30: the Digital Assets Day by Bundesblock, where regulators, banks and corporates meet builders. Oct 30 to 31: a 32h Blockchain & AI Hackathon, open to all levels. Last edition: 1,200+ attendees and 125+ speakers.\n\nWe are on board as media partner and will be covering it 🎉 Tickets via link in bio. Hosted by ${IG}.\n\n#TUMBlockchainConference26 #Web3 #Blockchain #Munich`,
+      short: `TUM Blockchain Conference 26 · Munich · Oct 29 to 31 🚀 Tickets via the link in the bio of ${IG} #TUMBlockchainConference26`,
+      medium: `📣 The TUM Blockchain Conference 26 is coming to Munich, Oct 29 to 31!\n\nThree days of talks, panels, the Digital Assets Day by Bundesblock and a 32h Hackathon, for everyone from the curious to the people building it. We are on board as media partner 🎉\n\nTickets via the link in the bio of ${IG}. #TUMBlockchainConference26 #Web3 #Munich`,
+      long: `📣 The TUM Blockchain Conference 26 is coming to Munich, Oct 29 to 31!\n\nBorn at TUM, one of Europe's leading universities, and built for the entire blockchain ecosystem. Oct 29: talks and panels across many tracks. Oct 30: the Digital Assets Day by Bundesblock, where regulators, banks and corporates meet builders. Oct 30 to 31: a 32h Blockchain & AI Hackathon, open to all levels. Last edition: 1,200+ attendees and 125+ speakers.\n\nWe are on board as media partner and will be covering it 🎉 Tickets via the link in the bio of ${IG}.\n\n#TUMBlockchainConference26 #Web3 #Blockchain #Munich`,
     },
   },
   {
