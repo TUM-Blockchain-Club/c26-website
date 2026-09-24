@@ -13,7 +13,7 @@ type Row = {
 const ROWS: Row[] = [
   {
     date: "29 Oct",
-    title: "Conference Day",
+    title: "TUM Blockchain Conference Day",
     line: "Talks and panels — from zero-knowledge cryptography to production systems.",
   },
   {
