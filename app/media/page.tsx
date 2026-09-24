@@ -7,6 +7,9 @@ import { PartnerNewsletter } from "@/components/brand/PartnerNewsletter";
 import { TimelineRail } from "@/components/brand/TimelineRail";
 import { MediaGallery } from "@/components/brand/MediaGallery";
 import { LogoDownloads } from "@/components/brand/LogoShowcase";
+import { PressRelease } from "@/components/brand/PressRelease";
+import { MediaPosts } from "@/components/brand/MediaPosts";
+import { CopyButton } from "@/components/brand/CopyButton";
 import WhatsNew from "@/sections/WhatsNew";
 import { aspectRatioLabel } from "@/util/aspectRatio";
 import {
@@ -216,6 +219,24 @@ export default function MediaPage() {
 
             <section className="flex flex-col gap-12">
               <SectionHeader
+                eyebrow="Ready to publish"
+                title="Press Release"
+                intro="The official announcement of the 2026 edition, written to be published as it is: dates, venue, the three days, announced speakers and sponsors, and a press contact. Shorten it, quote from it or run it in full."
+              />
+              <PressRelease />
+            </section>
+
+            <section className="flex flex-col gap-12">
+              <SectionHeader
+                eyebrow="Ready to post"
+                title="Social Media"
+                intro="Post templates for X, Instagram and LinkedIn in three lengths, each linking with your media address so we can see what your coverage brings in. Pair them with a banner from below. Adapt them however fits your channels."
+              />
+              <MediaPosts />
+            </section>
+
+            <section className="flex flex-col gap-12">
+              <SectionHeader
                 eyebrow="Ready to send"
                 title="Newsletter"
                 intro="If you run a newsletter, here is a draft you can drop straight in. It is written in a neutral voice on purpose, so you can shorten it, rewrite it or just take the facts, whatever fits your format."
@@ -263,8 +284,8 @@ export default function MediaPage() {
             <section className="flex flex-col gap-12">
               <SectionHeader
                 eyebrow="Assets"
-                title="Visuals"
-                intro="Our key visuals for your article, post or newsletter, in the formats you are most likely to need. Every file is free to use as it is; the size is listed so you can pick the right one."
+                title="Visuals & Ad Banners"
+                intro="Our key visuals for your article, post, newsletter or ad placement, in the formats you are most likely to need. Every file is free to use as it is; the size is listed so you can pick the right one, and each comes with a caption you can post it with."
               />
               {/* items-start so a tall portrait visual does not stretch the
                   card beside it into a block of empty space. */}
@@ -295,7 +316,23 @@ export default function MediaPage() {
                         {visual.note}
                       </Text>
                     </div>
-                    <div className="mt-auto">
+                    <div className="flex flex-col gap-2 rounded-md border border-line-subtle bg-white/[0.03] p-4">
+                      <Text
+                        as="p"
+                        textType="small"
+                        className="text-faint uppercase tracking-widest"
+                      >
+                        Caption
+                      </Text>
+                      <Text
+                        as="p"
+                        textType="small"
+                        className="text-secondary break-words"
+                      >
+                        {visual.caption}
+                      </Text>
+                    </div>
+                    <div className="mt-auto flex flex-wrap items-center gap-3">
                       <Button
                         buttonType="primary"
                         asChild
@@ -305,6 +342,7 @@ export default function MediaPage() {
                           Download PNG
                         </a>
                       </Button>
+                      <CopyButton value={visual.caption} label="Copy caption" />
                     </div>
                   </div>
                 ))}
