@@ -159,26 +159,6 @@ export default function DigitalAssetsDayPage() {
               </div>
             </section>
 
-            {/* Speakers & Sponsors */}
-            <section className="flex flex-col gap-10">
-              <SectionHeader eyebrow="Line-up" title="Speakers & Sponsors" />
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                {["Speakers", "Sponsors"].map((label) => (
-                  <div
-                    key={label}
-                    className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-blue-400/40 bg-blue-400/[0.03] px-6 py-12 text-center"
-                  >
-                    <Text as="p" textType="lgsmall" className="font-bold">
-                      {label}
-                    </Text>
-                    <Text as="p" textType="small" className="text-muted">
-                      To be announced soon
-                    </Text>
-                  </div>
-                ))}
-              </div>
-            </section>
-
             {/* Tickets */}
             <section className="flex flex-col gap-8">
               <SectionHeader
