@@ -213,10 +213,11 @@ body::after {
   display: flex;
   width: max-content;
   animation: marquee-scroll 55s linear infinite;
-}
-
-.marquee:hover .marquee-track {
-  animation-play-state: paused;
+  /* Give the track its own compositing layer. The mask on the parent
+     otherwise keeps the animation on the main thread, where mobile Safari
+     drops it and the strip sits still. */
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
 /* Second row drifting the other way, for the photo film-strip. */
@@ -224,15 +225,26 @@ body::after {
   animation-direction: reverse;
 }
 
-/* Variant that keeps drifting under the cursor (the photo strip — there is
-   nothing to click, so pausing just feels broken). */
-.marquee.marquee-no-pause:hover .marquee-track {
-  animation-play-state: running;
+/* Pause under the cursor — but only where a pointer can really hover. On a
+   touch screen the :hover state sticks after a tap, which stopped the
+   marquee for good. The photo strip keeps drifting either way: there is
+   nothing to click, so pausing just feels broken. */
+@media (hover: hover) {
+  .marquee:hover .marquee-track {
+    animation-play-state: paused;
+  }
+
+  .marquee.marquee-no-pause:hover .marquee-track {
+    animation-play-state: running;
+  }
 }
 
 @keyframes marquee-scroll {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
   to {
-    transform: translateX(-50%);
+    transform: translate3d(-50%, 0, 0);
   }
 }
 
