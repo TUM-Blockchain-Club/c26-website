@@ -28,6 +28,10 @@ const DAY_PRIMARY: Record<SpeakerDay, string> = {
 };
 const CONFERENCE_SPAN =
   "TUM BLOCKCHAIN CONFERENCE 26 · OCTOBER 29 TO 31, 2026 · MUNICH";
+/** Speaker cards name a single day above, so the closing line says that the
+ * day is part of the conference rather than repeating the event name. */
+const SPEAKER_SPAN =
+  "PART OF TUM BLOCKCHAIN CONFERENCE 26 · OCTOBER 29 TO 31 · MUNICH";
 /** Attendee cards spell the day out under the conference line: both the
  * Digital Assets Day and the Hackathon are conference days, not separate
  * events, and someone who only ever saw that branding should recognise it. */
@@ -125,6 +129,8 @@ export const ATTENDEE_HACKATHON_CARD_CONFIG: CardConfig = {
 export type CardContent = {
   name: string;
   job?: string;
+  /** Company on its own line under the job title, when given separately. */
+  company?: string;
   blurb?: string;
   /** Which day the speaker is on. Day 2 is the Digital Assets Day (blue). */
   day?: SpeakerDay;
@@ -1135,6 +1141,8 @@ function personTextBlock(
     jobSize: number;
     blurbSize: number;
     jobDrop: number;
+    /** Company line below the job line, when there is one. */
+    companyDrop: number;
     blurbDrop: number;
     blurbGap: number;
     maxLines: number;
@@ -1154,19 +1162,27 @@ function personTextBlock(
 
   // Offsets are relative to the name's own centre line.
   const jobY = content.job ? o.jobDrop : null;
-  const blurbY = blurbLines ? (content.job ? o.blurbDrop : o.jobDrop) : null;
+  const companyY =
+    content.company && jobY !== null ? jobY + o.companyDrop : null;
+  const lastLine = companyY ?? jobY;
+  const blurbY = blurbLines
+    ? lastLine !== null
+      ? lastLine + (o.blurbDrop - o.jobDrop)
+      : o.jobDrop
+    : null;
   const top = -o.nameSize / 2;
   const bottom =
     blurbY !== null
       ? blurbY + (blurbLines - 1) * o.blurbGap + o.blurbSize / 2
-      : jobY !== null
-        ? jobY + o.jobSize / 2
+      : lastLine !== null
+        ? lastLine + o.jobSize / 2
         : o.nameSize / 2;
 
   const nameY = o.centerY - (top + bottom) / 2;
   return {
     nameY,
     jobY: jobY === null ? null : nameY + jobY,
+    companyY: companyY === null ? null : nameY + companyY,
     blurbY: blurbY === null ? null : nameY + blurbY,
   };
 }
@@ -1227,7 +1243,6 @@ function drawPersonLandscape(
   const P = 150;
   const day: SpeakerDay = content.day ?? "day1";
   const isAttendee = a.kind === "attendee";
-  const topLogo = !isAttendee && day === "day2" ? a.dadLogo : a.confLogo;
   const rowY = 156;
 
   // The header row is one line: eyebrow, hairline, conference mark, then the
@@ -1281,8 +1296,26 @@ function drawPersonLandscape(
         },
       });
     } else {
-      // Speakers keep the single top-right mark (blue one on day 2).
-      drawContain(ctx, topLogo, { x: w - P - 430, y: 92, w: 430, h: 116 });
+      // Speakers keep the single top-right mark (blue one on day 2). It is
+      // the ink-tight copy, so its lettering sits flush on the right margin
+      // and centred on the eyebrow row, about twice its original size: the
+      // corner read as empty and the mark has to survive a phone screen.
+      // Day 2 carries the Digital Assets Day mark, day 1 the conference
+      // wordmark, both flush on the right margin and centred on the row.
+      const mark = day === "day2" ? a.dayMark : a.confMark;
+      const markH = day === "day2" ? 140 : 150;
+      const rowMid = rowY - 20;
+      drawContain(
+        ctx,
+        mark,
+        {
+          x: P + eyebrowW + 60,
+          y: rowMid - markH / 2,
+          w: w - P - (P + eyebrowW + 60),
+          h: markH,
+        },
+        "right",
+      );
     }
     ctx.restore();
   }
@@ -1306,6 +1339,7 @@ function drawPersonLandscape(
     jobSize: 46,
     blurbSize: 40,
     jobDrop: 94,
+    companyDrop: 64,
     blurbDrop: 190,
     blurbGap: 56,
     maxLines: 4,
@@ -1323,11 +1357,23 @@ function drawPersonLandscape(
   });
 
   if (content.job && block.jobY !== null) {
+    // With a company line the title steps back and the company carries the
+    // accent, so the company stands out; alone, the title keeps the accent.
     drawFittedText(ctx, content.job, colX, block.jobY, {
-      size: 46,
-      color: a.colors.yellow,
+      size: content.company ? 40 : 46,
+      color: content.company ? "rgba(255,255,255,0.86)" : a.colors.yellow,
       alpha: easeOut(phase(p, 0.36, 0.46)),
-      weight: 700,
+      weight: content.company ? 600 : 700,
+      align: "left",
+      maxWidth: colW,
+    });
+  }
+  if (content.company && block.companyY !== null) {
+    drawFittedText(ctx, content.company, colX, block.companyY, {
+      size: 48,
+      color: a.colors.yellow,
+      alpha: easeOut(phase(p, 0.4, 0.5)),
+      weight: 800,
       align: "left",
       maxWidth: colW,
     });
@@ -1393,7 +1439,7 @@ function drawPersonLandscape(
       font: brandFont(),
       maxWidth: w - P * 2,
     });
-    drawSpacedText(ctx, CONFERENCE_SPAN, w / 2, h - 90, {
+    drawSpacedText(ctx, SPEAKER_SPAN, w / 2, h - 90, {
       size: 26,
       spacing: 4,
       color: "rgba(255,255,255,0.62)",
@@ -1417,7 +1463,6 @@ function drawPersonPortrait(
   const P = 110;
   const day: SpeakerDay = content.day ?? "day1";
   const isAttendee = a.kind === "attendee";
-  const topLogo = !isAttendee && day === "day2" ? a.dadLogo : a.confLogo;
 
   const logoIn = easeOut(phase(p, 0.06, 0.18));
   if (logoIn > 0) {
@@ -1431,9 +1476,6 @@ function drawPersonPortrait(
         dayMark: { x: w - P - 370, w: 370, h: 78, drop: 7 },
         confMark: { x: P, w: 200, h: 100 },
       });
-    } else {
-      // Speakers keep the single top-right mark (blue one on day 2).
-      drawContain(ctx, topLogo, { x: w - P - 300, y: 96, w: 300, h: 88 });
     }
     ctx.restore();
   }
@@ -1455,17 +1497,46 @@ function drawPersonPortrait(
     easeOut(phase(p, 0.08, 0.18)),
     isAttendee,
   );
-  drawSpacedText(ctx, a.eyebrow, eyebrowX, eyebrowY + (1 - eyebrowIn) * 14, {
-    size: 40,
-    spacing: 12,
-    color: "#ffffff",
-    alpha: eyebrowIn,
-    align: isAttendee ? "center" : "left",
-    weight: 800,
-    font: brandFont(),
-    // Left-aligned it has to stop short of the mark in the other corner.
-    maxWidth: isAttendee ? w - P * 2 : w - P * 2 - 340,
-  });
+  const eyebrowW = drawSpacedText(
+    ctx,
+    a.eyebrow,
+    eyebrowX,
+    eyebrowY + (1 - eyebrowIn) * 14,
+    {
+      size: isAttendee ? 40 : 32,
+      spacing: isAttendee ? 12 : 7,
+      color: "#ffffff",
+      alpha: eyebrowIn,
+      align: isAttendee ? "center" : "left",
+      weight: 800,
+      font: brandFont(),
+      // Left-aligned it has to stop short of the mark in the other corner.
+      maxWidth: isAttendee ? w - P * 2 : w - P * 2 - 340,
+    },
+  );
+  if (!isAttendee && logoIn > 0) {
+    ctx.save();
+    ctx.globalAlpha = logoIn;
+    // The ink-tight mark takes the width the eyebrow leaves in the header
+    // row, flush on the right margin and centred on the row, so it reads on
+    // a phone without crowding the label. Day 2: Digital Assets Day mark,
+    // day 1: the conference wordmark.
+    const mark = day === "day2" ? a.dayMark : a.confMark;
+    const markH = day === "day2" ? 112 : 120;
+    const rowMid = eyebrowY - 20;
+    drawContain(
+      ctx,
+      mark,
+      {
+        x: P + eyebrowW + 48,
+        y: rowMid - markH / 2,
+        w: w - P - (P + eyebrowW + 48),
+        h: markH,
+      },
+      "right",
+    );
+    ctx.restore();
+  }
 
   const photoIn = easeOut(phase(p, 0.16, 0.32));
   // Freed by the eyebrow moving up into the header row.
@@ -1485,6 +1556,7 @@ function drawPersonPortrait(
     jobSize: 38,
     blurbSize: 34,
     jobDrop: 68,
+    companyDrop: 54,
     blurbDrop: 120,
     blurbGap: 42,
     maxLines: 3,
@@ -1503,10 +1575,20 @@ function drawPersonPortrait(
 
   if (content.job && block.jobY !== null) {
     drawFittedText(ctx, content.job, w / 2, block.jobY, {
-      size: 38,
-      color: a.colors.yellow,
+      size: content.company ? 34 : 38,
+      color: content.company ? "rgba(255,255,255,0.86)" : a.colors.yellow,
       alpha: easeOut(phase(p, 0.38, 0.48)),
-      weight: 700,
+      weight: content.company ? 600 : 700,
+      align: "center",
+      maxWidth: w - P * 2,
+    });
+  }
+  if (content.company && block.companyY !== null) {
+    drawFittedText(ctx, content.company, w / 2, block.companyY, {
+      size: 40,
+      color: a.colors.yellow,
+      alpha: easeOut(phase(p, 0.42, 0.52)),
+      weight: 800,
       align: "center",
       maxWidth: w - P * 2,
     });
@@ -1570,7 +1652,7 @@ function drawPersonPortrait(
       font: brandFont(),
       maxWidth: w - P * 2,
     });
-    drawSpacedText(ctx, CONFERENCE_SPAN, w / 2, h - 78, {
+    drawSpacedText(ctx, SPEAKER_SPAN, w / 2, h - 78, {
       size: 22,
       spacing: 2,
       color: "rgba(255,255,255,0.62)",
@@ -1656,11 +1738,14 @@ async function loadAssets(
   const isDad = config.kind === "speaker" && day === "day2";
   const isAttendee = config.kind === "attendee";
   // Attendee and community partner cards place the marks by their ink.
-  const inkMarks = isAttendee || config.kind === "partner";
+  // Attendee, partner and speaker headers place the marks by their ink, so
+  // they need the trimmed copies; the pixel scan is skipped otherwise.
+  const inkMarks =
+    isAttendee || config.kind === "partner" || config.kind === "speaker";
   return {
     confLogo,
     dadLogo,
-    // Only the attendee lockup needs the trimmed copies; skip the pixel scan
+    // Only cards that place marks by their ink need the trimmed copies; skip the pixel scan
     // for every other card.
     confMark: inkMarks ? trimTransparent(confLogo) : confLogo,
     dayMark: inkMarks ? trimTransparent(dadLogo) : dadLogo,
@@ -1857,6 +1942,60 @@ export const renderSpeakerCardStill = (
   content: CardContent,
 ): Promise<Blob> =>
   renderPartnerCardStill(photoUrl, orientation, content, SPEAKER_CARD_CONFIG);
+
+/**
+ * Renders the speaker/attendee animation frame by frame at a fixed clock
+ * instead of recording it live: one callback per frame, in order. For batch
+ * exports outside a normal browser session — a headless browser cannot keep
+ * MediaRecorder at full frame rate, but it can paint frames one after
+ * another, and ffmpeg can assemble them into the same 9-second, 30fps video
+ * the live recorder makes. Mirrors `renderSponsorCardFrames`.
+ */
+export async function renderPersonCardFrames(
+  photoUrl: string,
+  orientation: CardOrientation,
+  content: CardContent,
+  onFrame: (frame: Blob, index: number, total: number) => Promise<void>,
+  config: CardConfig = SPEAKER_CARD_CONFIG,
+  quality = 0.92,
+): Promise<void> {
+  const dims = DIMENSIONS[orientation];
+  const canvas = document.createElement("canvas");
+  canvas.width = dims.w;
+  canvas.height = dims.h;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Canvas 2D context unavailable");
+
+  try {
+    await document.fonts.ready;
+  } catch {
+    // System fonts are fine as a fallback.
+  }
+
+  // Assets are loaded once for the whole clip, not per frame.
+  const assets = await loadAssets(photoUrl, config, content.day);
+  const total = Math.round((DURATION_MS / 1000) * FPS);
+  for (let i = 0; i < total; i++) {
+    const elapsed = (i / FPS) * 1000;
+    drawCard(
+      ctx,
+      dims,
+      assets,
+      elapsed / DURATION_MS,
+      elapsed,
+      orientation,
+      content,
+    );
+    const frame = await new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob(
+        (blob) => (blob ? resolve(blob) : reject(new Error("Frame failed"))),
+        "image/jpeg",
+        quality,
+      );
+    });
+    await onFrame(frame, i, total);
+  }
+}
 
 /** Attendee card: same brand animation, "I'M ATTENDING", no day split. */
 export const renderAttendeeCardVideo = (

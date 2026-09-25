@@ -43,5 +43,7 @@ export function downloadBlob(blob: Blob, filename: string) {
   document.body.appendChild(a);
   a.click();
   a.remove();
-  URL.revokeObjectURL(url);
+  // Safari and Firefox may not have started reading the blob when click()
+  // returns; revoking it right away left them with an empty download.
+  setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }
