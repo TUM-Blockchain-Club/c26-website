@@ -1,6 +1,5 @@
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
-import { SmoothScroll } from "@/components/SmoothScroll";
 import { CardGlow } from "@/components/CardGlow";
 import { MarketingConsent } from "@/components/analytics/MarketingConsent";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -96,7 +95,6 @@ export default function RootLayout({
       >
         {" "}
         {/* FIX: Items center and justify-center are enforcing center alignment for everything*/}
-        <SmoothScroll />
         <CardGlow />
         <Header />
         {children}

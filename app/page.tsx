@@ -18,7 +18,6 @@ import Partners from "@/sections/Partners";
 import Speaker from "@/sections/Speaker";
 import CommunityPartners from "@/sections/CommunityPartners";
 import CurrentSponsors from "@/sections/CurrentSponsors";
-import SponsorStrip from "@/sections/SponsorStrip";
 import Sponsors from "@/sections/Sponsors";
 import GetInvolved from "@/sections/GetInvolved";
 import ThreeDays from "@/sections/ThreeDays";
@@ -41,17 +40,21 @@ export default function Home() {
           <Container className={"w-full"}>
             <div className={"flex flex-col w-full max-w-7xl mx-auto z-10"}>
               <Hero />
-              {/* Order follows the question a visitor asks next: who backs
-                  this, what are the three days and what is new, how do I get
-                  in, what was last year like, who else is
-                  behind it — and finally, how do I take part myself. */}
+              {/* Order follows the question a visitor asks next: what are
+                  the three days and what is new, who backs it, how do I get
+                  in, what was last year like, who else is behind it, and
+                  finally how do I take part myself. */}
               <div className={"flex flex-col pb-24 gap-32"}>
-                <SponsorStrip />
                 <Reveal>
                   <ThreeDays />
                 </Reveal>
                 <Reveal>
                   <WhatsNew />
+                </Reveal>
+                {/* Who backs it, once and in tiers: the credibility beat
+                    right before the ticket ask. */}
+                <Reveal>
+                  <CurrentSponsors />
                 </Reveal>
                 {/* <Manifesto /> */}
                 {/* <Tracks /> */}
@@ -75,9 +78,6 @@ export default function Home() {
                   <Speaker />
                 </Reveal>
                 {/* This year's ecosystem first, the history after it. */}
-                <Reveal>
-                  <CurrentSponsors />
-                </Reveal>
                 <Reveal>
                   <CommunityPartners />
                 </Reveal>

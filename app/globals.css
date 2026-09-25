@@ -264,21 +264,6 @@ body::after {
   }
 }
 
-/* Lenis smooth scrolling (see components/SmoothScroll.tsx). Native CSS
-   smooth-scroll must yield while Lenis drives the scroll position. */
-html.lenis,
-html.lenis body {
-  height: auto;
-}
-
-.lenis.lenis-smooth {
-  scroll-behavior: auto !important;
-}
-
-.lenis.lenis-stopped {
-  overflow: hidden;
-}
-
 .cta-border {
   border-image: linear-gradient(
       135deg,
