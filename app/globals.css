@@ -78,7 +78,10 @@
 }
 
 html {
-  scroll-behavior: smooth;
+  /* No scroll-behavior here on purpose: with it, anchor links, browser
+     back/forward and scrollIntoView all glide instead of jumping, which is
+     not what a page normally does. Wheel and touch scrolling were never
+     affected by it either way. */
   overflow-x: hidden;
 }
 
