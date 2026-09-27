@@ -72,6 +72,13 @@ export const sponsors26: Sponsor26[] = [
     background: "light",
   },
   {
+    name: "Cardano",
+    tier: "gold",
+    src: "/sponsors26/cardano.png",
+    website: "https://cardano.org",
+    background: "light",
+  },
+  {
     name: "Staking Facilities",
     tier: "silver",
     src: "/sponsors26/staking-facilities.png",
