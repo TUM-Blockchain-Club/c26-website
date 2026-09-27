@@ -4,7 +4,6 @@ export const dynamic = "force-static";
 export const revalidate = 600;
 
 import Sparkle from "@/components/Sparkle";
-import Reveal from "@/components/Reveal";
 import { Container } from "@/components/container";
 import Statistic from "@/sections/Statistic";
 import AcademicForum from "@/sections/AcademicForum";
@@ -45,48 +44,26 @@ export default function Home() {
                   in, what was last year like, who else is behind it, and
                   finally how do I take part myself. */}
               <div className={"flex flex-col pb-24 gap-32"}>
-                <Reveal>
-                  <ThreeDays />
-                </Reveal>
-                <Reveal>
-                  <WhatsNew />
-                </Reveal>
+                <ThreeDays />
+                <WhatsNew />
                 {/* Who backs it, once and in tiers: the credibility beat
                     right before the ticket ask. */}
-                <Reveal>
-                  <CurrentSponsors />
-                </Reveal>
+                <CurrentSponsors />
                 {/* <Manifesto /> */}
                 {/* <Tracks /> */}
                 {/* <Venue /> */}
-                <Reveal>
-                  <Tickets />
-                </Reveal>
+                <Tickets />
                 {/* <Grants /> */}
                 {/* Last year, as proof: the aftermovie, the numbers, the
                     photos and the speakers who were on stage. */}
-                <Reveal>
-                  <Video />
-                </Reveal>
-                <Reveal>
-                  <Statistic />
-                </Reveal>
-                <Reveal>
-                  <LastYearGallery />
-                </Reveal>
-                <Reveal>
-                  <Speaker />
-                </Reveal>
+                <Video />
+                <Statistic />
+                <LastYearGallery />
+                <Speaker />
                 {/* This year's ecosystem first, the history after it. */}
-                <Reveal>
-                  <CommunityPartners />
-                </Reveal>
-                <Reveal>
-                  <Sponsors />
-                </Reveal>
-                <Reveal>
-                  <GetInvolved />
-                </Reveal>
+                <CommunityPartners />
+                <Sponsors />
+                <GetInvolved />
                 {/* <Partners /> */}
               </div>
             </div>
