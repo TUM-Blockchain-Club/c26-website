@@ -91,8 +91,8 @@ body {
 
 /* =====================================================================
    POLISH LAYER (local experiment)
-   Subtle film grain, brand selection color, scroll reveals and
-   micro-interactions. All motion respects prefers-reduced-motion.
+   Subtle film grain, brand selection color and micro-interactions.
+   All motion respects prefers-reduced-motion.
    ===================================================================== */
 
 /* Film grain: keeps the pure-black background from feeling flat, like a
@@ -141,30 +141,6 @@ body::after {
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgb(255 255 255 / 0.3);
-}
-
-/* Scroll reveal: sections drift up and fade in the first time they enter
-   the viewport (driven by components/Reveal.tsx). */
-.reveal {
-  opacity: 0;
-  transform: translateY(28px);
-  transition:
-    opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: opacity, transform;
-}
-
-.reveal-visible {
-  opacity: 1;
-  transform: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .reveal {
-    opacity: 1;
-    transform: none;
-    transition: none;
-  }
 }
 
 /* Cursor glow: a soft light that follows the pointer across cards
