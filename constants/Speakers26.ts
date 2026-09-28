@@ -641,9 +641,10 @@ export const speakers26: Speaker[] = [
     name: "Daniel Heinen",
     position: "Managing Director",
     company_name: "HEINI",
-    // Two things as submitted: the picture is the HEINI logo rather than a
-    // portrait, and the link goes to the company page, not a personal profile.
-    // "GF" in the form is the German abbreviation for Managing Director.
+    // The form gave the HEINI logo instead of a portrait; he sent a real one
+    // afterwards, which is what is used here. The link still goes to the
+    // company page rather than a personal profile, as submitted. "GF" in the
+    // form is the German abbreviation for Managing Director.
     url: "https://www.linkedin.com/company/129804110/",
     priority: 42,
     createdAt: "",

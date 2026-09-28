@@ -107,6 +107,13 @@ export const sponsors26: Sponsor26[] = [
     background: "light",
   },
   {
+    name: "Talos",
+    tier: "bronze",
+    src: "/sponsors26/talos.png",
+    website: "https://www.talos.com",
+    background: "light",
+  },
+  {
     name: "Fnality",
     tier: "bronze",
     src: "/sponsors26/fnality.svg",
@@ -118,6 +125,16 @@ export const sponsors26: Sponsor26[] = [
     tier: "premium",
     src: "/sponsors26/bsv-association.png",
     website: "https://bsvassociation.org",
+    background: "light",
+  },
+  // Cardano backs both tracks, so it appears twice: Gold on the conference
+  // side and Standard on the Hackathon side. The two tracks have their own
+  // tier ladders, so this is one sponsor in two places, not a duplicate.
+  {
+    name: "Cardano",
+    tier: "standard",
+    src: "/sponsors26/cardano.png",
+    website: "https://cardano.org",
     background: "light",
   },
 ];
