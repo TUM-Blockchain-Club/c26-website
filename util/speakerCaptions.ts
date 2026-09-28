@@ -63,11 +63,11 @@ export function buildSpeakerCaptions({
     : ", with the Digital Assets Day by Bundesblock on October 30";
   const alsoLI = isDad ? "" : `, with the ${DAD_LI} on October 30`;
 
-  const x = `🎤 ${rolePrefix}I'm speaking at the TUM Blockchain Conference 26 — ${dayX}!${talkLine}\n\nThe full conference runs Oct 29 to 31 in Munich, hosted by ${X}${alsoX} → ${LINK}\n\n#TUMBlockchainConference26`;
+  const x = `🎤 ${rolePrefix}I'm speaking at the TUM Blockchain Conference 26, as part of ${dayX}!${talkLine}\n\nThe full conference runs Oct 29 to 31 in Munich, hosted by ${X}${alsoX} → ${LINK}\n\n#TUMBlockchainConference26`;
 
   // Instagram gets no raw URL: it would not be clickable in a caption, so the
   // post points at the website and at the host's bio link instead.
-  const instagram = `🎤 ${rolePrefix}I'm speaking at the TUM Blockchain Conference 26 — ${dayIG}!${talkLine}\n\nThe full conference runs October 29 to 31 in Munich${alsoIG}. Tickets on the website, or via the link in the bio of ${IG} 🚀\n\n#TUMBlockchainConference26 #Web3 #Munich`;
+  const instagram = `🎤 ${rolePrefix}I'm speaking at the TUM Blockchain Conference 26, as part of ${dayIG}!${talkLine}\n\nThe full conference runs October 29 to 31 in Munich${alsoIG}. Tickets on the website, or via the link in the bio of ${IG} 🚀\n\n#TUMBlockchainConference26 #Web3 #Munich`;
 
   const linkedin = `I'm honoured to speak at the TUM Blockchain Conference 26.\n\n${rolePrefix}I will be part of ${dayLI}.${talkLine}\n\nThe full conference runs October 29 to 31 in Munich, hosted by ${TBC_LI}${alsoLI}. See the programme: ${LINK}\n\n#TUMBlockchainConference26`;
 
