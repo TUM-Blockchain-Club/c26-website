@@ -10,7 +10,13 @@ export type StaticCommunityPartner = {
 /**
  * Snapshot of the partners published in Strapi, used while the production API
  * token has no read access to the collection yet. Once Strapi answers, its
- * data wins and this list is ignored — see sections/CommunityPartners.tsx.
+ * data wins and this list is ignored entirely, so an entry here can never
+ * duplicate one from there — see sections/CommunityPartners.tsx.
+ *
+ * Keep it in step with Strapi by hand until that token gets read access: names,
+ * websites and logo filenames are copied from the API, the filename being the
+ * partner's documentId, which is what the logo cache writes. Anything added in
+ * Strapi and not mirrored here stays invisible in production.
  */
 export const staticCommunityPartners: StaticCommunityPartner[] = [
   {
@@ -26,6 +32,30 @@ export const staticCommunityPartners: StaticCommunityPartner[] = [
     name: "Academy Consult",
     src: "/community-partners26/lf5cmstgy5638wv26z0mvrhb.png",
     website: "https://academyconsult.de",
+    background: "light",
+  },
+  {
+    name: "Blockchain Learning Foundation",
+    src: "/community-partners26/qmreblmbmr1fvwapuc51dhtd.png",
+    website: "https://blockchainlearningfoundation.org",
+    background: "light",
+  },
+  {
+    name: "Blockchain Student Association EPFL",
+    src: "/community-partners26/hexlutkw3o8z264ptts18pcu.png",
+    website: "https://www.bsaepfl.ch",
+    background: "dark",
+  },
+  {
+    name: "Bundesverband Alternative Investments e.V.",
+    src: "/community-partners26/bp5i0f3op3unuo2fkug324kx.jpe",
+    website: "https://www.bvai.de",
+    background: "light",
+  },
+  {
+    name: "ODTÜ Blockchain",
+    src: "/community-partners26/amh2n13lmtfelx8rc245gdj3.png",
+    website: "https://www.odtublockchain.com",
     background: "light",
   },
   {
