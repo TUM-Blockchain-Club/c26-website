@@ -8,8 +8,11 @@
  * The Digital Assets Day entries mirror Bundesblock's own published agenda
  * (bundesblock.de/dad-agenda) one to one: three stages, the same titles, times
  * and focus tracks. It is still a draft on their side and will keep changing.
- * Speakers and moderators are not assigned yet, so no entry carries a speaker;
- * a talk without one renders a silhouette and "Speaker to be announced".
+ *
+ * No entry carries a speaker. Bundesblock's agenda names none: every session
+ * there reads "Program in progress", and the confirmed-agenda export they
+ * offer is empty. Nobody is put against a session until their agenda says so.
+ * A talk without one renders a silhouette and "Speaker to be announced".
  */
 
 export type AgendaEventKey = "conference" | "digital-assets-day" | "hackathon";
@@ -287,7 +290,7 @@ export const agendaEntries: AgendaEntry[] = [
     duration: 10,
     stage: FUTURE,
     track: "Tokenization & RWA",
-    title: "Programmable Supply Chains",
+    title: "Tokenization & Industry Utility in the Steel Sector",
   },
   {
     ...DAD,
@@ -404,6 +407,16 @@ export const agendaEntries: AgendaEntry[] = [
     track: "Institutional Trust Infrastructure",
     title:
       "All ways lead to Rome: Pontes, Appia & the necessary marriage of financial & technical sovereignty",
+  },
+  {
+    ...DAD,
+    kind: "talk",
+    time: "14:05",
+    duration: 15,
+    stage: FORUM,
+    track: "Tokenization & RWA",
+    title:
+      "From Tokenization to Allocation: How Institutions Evaluate On-Chain Real-World Assets",
   },
   {
     ...DAD,

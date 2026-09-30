@@ -14,6 +14,15 @@ export type StaticCommunityPartner = {
  */
 export const staticCommunityPartners: StaticCommunityPartner[] = [
   {
+    // In Strapi under this name, so it stays put once Strapi answers and this
+    // snapshot is dropped. The logo is the horizontal lockup they sent us,
+    // colours untouched; the white variant Strapi carries is not in the repo.
+    name: "Association for Women in Cryptocurrency (AWIC)",
+    src: "/community-partners26/women-in-crypto.png",
+    website: "https://www.womenincrypto.org",
+    background: "light",
+  },
+  {
     name: "Academy Consult",
     src: "/community-partners26/lf5cmstgy5638wv26z0mvrhb.png",
     website: "https://academyconsult.de",

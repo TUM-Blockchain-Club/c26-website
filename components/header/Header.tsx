@@ -207,10 +207,18 @@ export const Header = React.forwardRef<HeaderElement, HeaderProps>(
     const pathName = usePathname();
 
     useEffect(() => {
+      // Read the scroll position inside a frame instead of on every scroll
+      // event, and only re-render when the threshold is actually crossed.
+      let queued = false;
       const handleScroll = () => {
-        setIsScrolled(window.scrollY > 100);
+        if (queued) return;
+        queued = true;
+        requestAnimationFrame(() => {
+          queued = false;
+          setIsScrolled(window.scrollY > 100);
+        });
       };
-      window.addEventListener("scroll", handleScroll);
+      window.addEventListener("scroll", handleScroll, { passive: true });
       return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
@@ -220,13 +228,20 @@ export const Header = React.forwardRef<HeaderElement, HeaderProps>(
           {...propRest}
           className={classNames(
             className,
-            "fixed z-[9999] w-full py-3 md:py-4 flex justify-center items-center px-4 md:px-8 lg:px-12 xl:px-20 transition-all duration-300",
+            "fixed z-[9999] w-full py-3 md:py-4 flex justify-center items-center px-4 md:px-8 lg:px-12 xl:px-20 transition-colors duration-300",
             {
-              "dark:bg-black/50 backdrop-blur-md border-b border-white/5":
-                isScrolled,
+              "dark:bg-black/50 border-b border-white/5": isScrolled,
               "bg-transparent border-b border-transparent": !isScrolled,
             },
           )}
+          // The blur is set here rather than through a class so the property is
+          // always present: the compositor layer then exists from the first
+          // paint and only its radius changes on scroll. Switching it on
+          // mid-scroll used to cost a frame of up to a quarter of a second.
+          style={{
+            backdropFilter: isScrolled ? "blur(12px)" : "blur(0px)",
+            WebkitBackdropFilter: isScrolled ? "blur(12px)" : "blur(0px)",
+          }}
           ref={ref}
         >
           <div className="max-w-7xl w-full flex justify-between items-center gap-4">
@@ -235,9 +250,12 @@ export const Header = React.forwardRef<HeaderElement, HeaderProps>(
                 <Image
                   src={logoUrl || "/logos/c24-sticker-1.png"}
                   alt="TUM Blockchain Conference sticker logo"
-                  className="transition-all duration-300"
-                  width={isScrolled ? 44 : 56}
-                  height={isScrolled ? 44 : 56}
+                  className={classNames(
+                    "origin-left transition-transform duration-300",
+                    isScrolled ? "scale-[0.79]" : "scale-100",
+                  )}
+                  width={56}
+                  height={56}
                   priority
                 />
               </NextLink>
