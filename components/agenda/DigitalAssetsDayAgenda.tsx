@@ -55,9 +55,26 @@ const CARD_CHROME = 40;
 const LINE = 16;
 const CHARS_PER_LINE = 36;
 const MIN_BREAK = 24;
-const minHeightFor = (title: string | undefined) => {
+/** The flex gap the card puts between title and names. */
+const CARD_GAP = 6;
+/** Confirmed speakers, and the moderator after them. Declared rather than
+ * assigned because the time scale below is built while the module loads, and
+ * that runs before any const in this file is initialised. */
+function namesOf(talk: Talk) {
+  const parts = [...(talk.speakers ?? [])];
+  if (talk.moderator) parts.push(`${talk.moderator} (moderation)`);
+  return parts.length ? parts.join(", ") : undefined;
+}
+
+const minHeightFor = (title: string | undefined, names?: string) => {
   const lines = Math.min(Math.ceil((title ?? "").length / CHARS_PER_LINE), 4);
-  return CARD_CHROME + Math.max(lines, 1) * LINE;
+  // The names sit under the title on their own lines, so the segment has to
+  // grow with them or they are clipped out of the card.
+  // Names wrap earlier than a title does — they are long and never break
+  // mid-word — and they add one more gap to the card's flex column.
+  const nameLines = names ? Math.min(Math.ceil(names.length / 30), 4) : 0;
+  const nameRoom = names ? nameLines * LINE + CARD_GAP : 0;
+  return CARD_CHROME + Math.max(lines, 1) * LINE + nameRoom;
 };
 
 /**
@@ -71,7 +88,7 @@ const buildScale = () => {
     ...dadTalks.map((t) => ({
       start: toMin(t.time),
       end: toMin(t.time) + t.duration,
-      min: minHeightFor(t.title),
+      min: minHeightFor(t.title, namesOf(t)),
     })),
     ...dadBreaks.map((b) => ({
       start: toMin(b.time),
@@ -162,6 +179,7 @@ const StageHeader = ({
 );
 
 const SessionCard = ({ talk }: { talk: Talk }) => {
+  const names = namesOf(talk);
   const style = trackStyle(talk.track);
   return (
     <div
@@ -182,6 +200,11 @@ const SessionCard = ({ talk }: { talk: Talk }) => {
       <Text as="p" textType="small" className="font-bold leading-snug">
         {talk.title ?? "Title to be announced"}
       </Text>
+      {names && (
+        <Text as="p" textType="small" className="leading-snug text-secondary">
+          {names}
+        </Text>
+      )}
     </div>
   );
 };
@@ -238,7 +261,7 @@ export const DigitalAssetsDayAgenda = () => {
         Executive Forum goes deep in curated formats, and the Future Stage shows
         what industry already builds. All three open together with the joint
         opening session. This is Bundesblock&apos;s working draft and may still
-        change; speakers are announced as they are confirmed.
+        change, and only speakers who have confirmed are named.
       </Text>
 
       {/* Desktop: time-aligned three-column grid */}
