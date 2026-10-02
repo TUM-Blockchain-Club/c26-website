@@ -816,23 +816,6 @@ export const speakers26: Speaker[] = [
   },
   {
     id: 53,
-    documentId: "c26-daniel-heinen",
-    name: "Daniel Heinen",
-    position: "Managing Director",
-    company_name: "HEINI",
-    // The form gave the HEINI logo instead of a portrait; he sent a real one
-    // afterwards, which is what is used here. The link still goes to the
-    // company page rather than a personal profile, as submitted. "GF" in the
-    // form is the German abbreviation for Managing Director.
-    url: "https://www.linkedin.com/company/129804110/",
-    priority: 53,
-    createdAt: "",
-    updatedAt: "",
-    publishedAt: "",
-    profile_photo: profilePhoto("/speakers26/daniel-heinen.jpg"),
-  },
-  {
-    id: 54,
     documentId: "c26-gerhard-wimmer",
     name: "Gerhard Wimmer",
     position: "CEO",
@@ -840,21 +823,21 @@ export const speakers26: Speaker[] = [
     // Salzburg flight-school group with its own aviation token. He gave the
     // company site; this is his profile as indexed ("CEO bei Skygate Network").
     url: "https://www.linkedin.com/in/gerhard-wimmer-ba76a92a3/",
-    priority: 54,
+    priority: 53,
     createdAt: "",
     updatedAt: "",
     publishedAt: "",
     profile_photo: profilePhoto("/speakers26/gerhard-wimmer.jpg"),
   },
   {
-    id: 55,
+    id: 54,
     documentId: "c26-felix-rihacek",
     name: "Felix Rihacek",
     position: "President & Head of Industry",
     company_name: "TUM Blockchain Club",
     // Host rather than guest — he opens the conference — so he closes the list.
     url: "https://www.linkedin.com/in/felix-rihacek/",
-    priority: 55,
+    priority: 54,
     createdAt: "",
     updatedAt: "",
     publishedAt: "",
