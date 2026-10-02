@@ -161,11 +161,6 @@ export const AgendaFeed = ({ entries }: { entries: AgendaEntry[] }) => {
               <Text as="p" textType="sub_title" className="font-bold">
                 {formatDay(entry.day)}
               </Text>
-              <span className="rounded-full border border-line px-3.5 py-1.5">
-                <Text as="span" textType="small" className="text-secondary">
-                  Speakers to be announced
-                </Text>
-              </span>
             </div>
           ) : null;
         lastDay = entry.day;
