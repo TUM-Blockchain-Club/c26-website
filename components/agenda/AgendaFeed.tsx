@@ -1,5 +1,6 @@
 import classNames from "classnames";
 import { Text } from "@/components/text";
+import { SpeakerFaces, facesOf } from "@/components/agenda/SpeakerFaces";
 import {
   DAD_TRACKS,
   type AgendaEntry,
@@ -26,16 +27,6 @@ const EVENT_BADGES: Record<
 
 const trackStyle = (name: string) =>
   DAD_TRACKS.find((t) => t.name === name) ?? DAD_TRACKS[DAD_TRACKS.length - 1];
-
-/** Placeholder headshot until speakers are announced: a black silhouette. */
-const SpeakerPlaceholder = () => (
-  <span className="flex h-10 w-10 shrink-0 items-end justify-center overflow-hidden rounded-full border border-line bg-white/15">
-    <svg viewBox="0 0 40 40" className="h-full w-full" aria-hidden>
-      <circle cx="20" cy="15" r="7.5" fill="#000" />
-      <path d="M5 41c2-8.5 8-13 15-13s13 4.5 15 13Z" fill="#000" />
-    </svg>
-  </span>
-);
 
 const formatDay = (iso: string) =>
   new Date(iso).toLocaleDateString("en-DE", {
@@ -122,7 +113,7 @@ const EntryRow = ({ entry }: { entry: AgendaEntry }) => {
 
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <span className="flex min-w-0 items-center gap-3">
-          <SpeakerPlaceholder />
+          <SpeakerFaces names={facesOf(entry)} />
           <Text as="span" textType="small" className="text-secondary">
             {entry.speakers?.length
               ? entry.speakers.join(", ")
