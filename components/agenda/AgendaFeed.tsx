@@ -1,5 +1,7 @@
 import classNames from "classnames";
+import Image from "next/image";
 import { Text } from "@/components/text";
+import { portraitFor } from "@/util/speakerPortraits";
 import {
   DAD_TRACKS,
   type AgendaEntry,
@@ -27,15 +29,61 @@ const EVENT_BADGES: Record<
 const trackStyle = (name: string) =>
   DAD_TRACKS.find((t) => t.name === name) ?? DAD_TRACKS[DAD_TRACKS.length - 1];
 
-/** Placeholder headshot until speakers are announced: a black silhouette. */
-const SpeakerPlaceholder = () => (
-  <span className="flex h-10 w-10 shrink-0 items-end justify-center overflow-hidden rounded-full border border-line bg-white/15">
+/** Placeholder headshot: a black silhouette, used where a session has no
+ * confirmed speaker yet and for the few confirmed names the speaker list has
+ * no portrait of. */
+const SpeakerPlaceholder = ({ title }: { title?: string }) => (
+  <span
+    title={title}
+    className="flex h-10 w-10 shrink-0 items-end justify-center overflow-hidden rounded-full border border-line bg-white/15 ring-2 ring-black"
+  >
     <svg viewBox="0 0 40 40" className="h-full w-full" aria-hidden>
       <circle cx="20" cy="15" r="7.5" fill="#000" />
       <path d="M5 41c2-8.5 8-13 15-13s13 4.5 15 13Z" fill="#000" />
     </svg>
   </span>
 );
+
+/** One face in the row. Falls back to the silhouette rather than to a generic
+ * stock photo, so a missing portrait reads as missing. */
+const SpeakerFace = ({ name }: { name: string }) => {
+  const photo = portraitFor(name);
+  if (!photo) return <SpeakerPlaceholder title={name} />;
+  return (
+    <Image
+      src={photo}
+      alt={name}
+      title={name}
+      width={80}
+      height={80}
+      className="h-10 w-10 shrink-0 rounded-full border border-line object-cover ring-2 ring-black"
+    />
+  );
+};
+
+/** The largest panel in the agenda is five people, so five faces fit without
+ * anyone being summarised away. The overflow chip below is the guard for a
+ * larger panel appearing in a later export; the names are written out next to
+ * the faces either way. */
+const FACE_LIMIT = 5;
+
+const SpeakerFaces = ({ names }: { names: string[] }) => {
+  if (!names.length) return <SpeakerPlaceholder />;
+  const shown = names.slice(0, FACE_LIMIT);
+  const rest = names.length - shown.length;
+  return (
+    <span className="flex shrink-0 items-center -space-x-3">
+      {shown.map((name) => (
+        <SpeakerFace key={name} name={name} />
+      ))}
+      {rest > 0 && (
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-line bg-white/10 text-xs font-bold text-secondary ring-2 ring-black">
+          +{rest}
+        </span>
+      )}
+    </span>
+  );
+};
 
 const formatDay = (iso: string) =>
   new Date(iso).toLocaleDateString("en-DE", {
@@ -122,7 +170,12 @@ const EntryRow = ({ entry }: { entry: AgendaEntry }) => {
 
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <span className="flex min-w-0 items-center gap-3">
-          <SpeakerPlaceholder />
+          <SpeakerFaces
+            names={[
+              ...(entry.speakers ?? []),
+              ...(entry.moderator ? [entry.moderator] : []),
+            ]}
+          />
           <Text as="span" textType="small" className="text-secondary">
             {entry.speakers?.length
               ? entry.speakers.join(", ")
