@@ -46,9 +46,13 @@ export const Speaker = React.forwardRef<HTMLDivElement, SpeakerProps>(
         className={classNames(
           className,
           "group flex w-full max-w-[220px] flex-col gap-4 items-start",
+          // Room for the sticky header when the agenda links straight here.
+          "scroll-mt-32",
         )}
         ref={ref}
-        {...{ ...rest, id: undefined }} // Exclude the `id` property
+        {...{ ...rest, id: undefined }} // the numeric `id` prop is not a DOM id
+        // The card's own anchor, so /speakers#c26-<name> lands on this person.
+        id={documentId}
       >
         <div
           className={

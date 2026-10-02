@@ -1,6 +1,7 @@
 import classNames from "classnames";
 import Image from "next/image";
-import { portraitFor } from "@/util/speakerPortraits";
+import Link from "next/link";
+import { speakerLinkFor } from "@/util/speakerPortraits";
 
 /**
  * The row of faces a session shows for its confirmed speakers. Shared by both
@@ -47,22 +48,33 @@ export const SpeakerPlaceholder = ({
   </span>
 );
 
+/** A face links to the speaker's own card on the speakers page, which carries
+ * their role, company and profile link. Only speakers we actually have a card
+ * for get a face, so every face has somewhere to go. */
 const SpeakerFace = ({ name, size }: { name: string; size: Size }) => {
-  const photo = portraitFor(name);
-  if (!photo) return <SpeakerPlaceholder title={name} size={size} />;
+  const speaker = speakerLinkFor(name);
+  if (!speaker) return <SpeakerPlaceholder title={name} size={size} />;
   return (
-    <Image
-      src={photo}
-      alt={name}
+    <Link
+      href={`/speakers#${speaker.anchor}`}
       title={name}
-      width={80}
-      height={80}
+      aria-label={`${name} on the speakers page`}
       className={classNames(
-        "shrink-0 rounded-full border border-line object-cover",
+        "shrink-0 rounded-full transition-transform duration-200 hover:z-10 hover:scale-110 focus-visible:z-10 focus-visible:scale-110 focus-visible:outline-none",
         BOX[size],
-        RING,
       )}
-    />
+    >
+      <Image
+        src={speaker.photo}
+        alt={name}
+        width={80}
+        height={80}
+        className={classNames(
+          "h-full w-full rounded-full border border-line object-cover",
+          RING,
+        )}
+      />
+    </Link>
   );
 };
 
@@ -83,10 +95,7 @@ export const SpeakerFaces = ({
   const shown = names.slice(0, FACE_LIMIT);
   const rest = names.length - shown.length;
   return (
-    <span
-      className={classNames("flex shrink-0 items-center", OVERLAP[size])}
-      aria-hidden
-    >
+    <span className={classNames("flex shrink-0 items-center", OVERLAP[size])}>
       {shown.map((name) => (
         <SpeakerFace key={name} name={name} size={size} />
       ))}
