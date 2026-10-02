@@ -331,6 +331,18 @@ export const DigitalAssetsDayAgenda = () => {
               <Text as="p" textType="lgsmall" className="font-bold">
                 {e.title ?? "Title to be announced"}
               </Text>
+              {namesOf(e) && (
+                <span className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-2">
+                  <SpeakerFaces names={facesOf(e)} />
+                  <Text
+                    as="p"
+                    textType="small"
+                    className="leading-snug text-secondary"
+                  >
+                    {namesOf(e)}
+                  </Text>
+                </span>
+              )}
             </div>
           ),
         )}
