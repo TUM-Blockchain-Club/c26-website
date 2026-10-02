@@ -1,5 +1,6 @@
 import classNames from "classnames";
 import { Text } from "@/components/text";
+import { SpeakerFaces, facesOf } from "@/components/agenda/SpeakerFaces";
 import {
   DAD_TRACKS,
   agendaEntries,
@@ -57,6 +58,8 @@ const CHARS_PER_LINE = 36;
 const MIN_BREAK = 24;
 /** The flex gap the card puts between title and names. */
 const CARD_GAP = 6;
+/** Height of the small face row, matching the "sm" size in SpeakerFaces. */
+const FACE_ROW = 24;
 /** Confirmed speakers, and the moderator after them. Declared rather than
  * assigned because the time scale below is built while the module loads, and
  * that runs before any const in this file is initialised. */
@@ -74,7 +77,9 @@ const minHeightFor = (title: string | undefined, names?: string) => {
   // mid-word — and they add one more gap to the card's flex column.
   const nameLines = names ? Math.min(Math.ceil(names.length / 30), 4) : 0;
   const nameRoom = names ? nameLines * LINE + CARD_GAP : 0;
-  return CARD_CHROME + Math.max(lines, 1) * LINE + nameRoom;
+  // A session with names also carries their faces on a row of their own.
+  const faceRoom = names ? FACE_ROW + CARD_GAP : 0;
+  return CARD_CHROME + Math.max(lines, 1) * LINE + nameRoom + faceRoom;
 };
 
 /**
@@ -201,9 +206,12 @@ const SessionCard = ({ talk }: { talk: Talk }) => {
         {talk.title ?? "Title to be announced"}
       </Text>
       {names && (
-        <Text as="p" textType="small" className="leading-snug text-secondary">
-          {names}
-        </Text>
+        <>
+          <SpeakerFaces names={facesOf(talk)} size="sm" />
+          <Text as="p" textType="small" className="leading-snug text-secondary">
+            {names}
+          </Text>
+        </>
       )}
     </div>
   );
