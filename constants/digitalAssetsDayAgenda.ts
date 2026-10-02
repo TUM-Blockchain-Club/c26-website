@@ -208,7 +208,6 @@ export const agendaEntries: AgendaEntry[] = [
     stage: FUTURE,
     track: "General Interest",
     title: "Digital Product Passport",
-    speakers: ["Daniel Heinen"],
   },
   {
     ...DAD,
