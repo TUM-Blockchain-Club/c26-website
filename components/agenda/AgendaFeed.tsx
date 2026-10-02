@@ -121,10 +121,18 @@ const EntryRow = ({ entry }: { entry: AgendaEntry }) => {
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-        <span className="flex items-center gap-3">
+        <span className="flex min-w-0 items-center gap-3">
           <SpeakerPlaceholder />
           <Text as="span" textType="small" className="text-secondary">
-            {entry.speaker ?? "Speaker to be announced"}
+            {entry.speakers?.length
+              ? entry.speakers.join(", ")
+              : "Speaker to be announced"}
+            {entry.moderator && (
+              <span className="text-faint">
+                {" · moderated by "}
+                {entry.moderator}
+              </span>
+            )}
           </Text>
         </span>
         <span className="flex items-center gap-2">

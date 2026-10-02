@@ -9,10 +9,16 @@
  * (bundesblock.de/dad-agenda) one to one: three stages, the same titles, times
  * and focus tracks. It is still a draft on their side and will keep changing.
  *
- * No entry carries a speaker. Bundesblock's agenda names none: every session
- * there reads "Program in progress", and the confirmed-agenda export they
- * offer is empty. Nobody is put against a session until their agenda says so.
- * A talk without one renders a silhouette and "Speaker to be announced".
+ * Times, titles, stages, tracks and names are generated from the internal
+ * agenda export Bundesblock sends (`internal-agenda.xls`), not from their
+ * public page, which shows "Program in progress" everywhere. Each name there
+ * carries its own status; only the ones marked Confirmed are carried here, so
+ * nobody is announced before they have agreed. A talk without a confirmed name
+ * renders a silhouette and "Speaker to be announced".
+ *
+ * Their export also lists the closing remarks and the afterparty on all three
+ * stages. Those are deliberately left out: they were removed from this agenda
+ * once before and should not come back with an update.
  */
 
 export type AgendaEventKey = "conference" | "digital-assets-day" | "hackathon";
@@ -77,7 +83,11 @@ export type AgendaEntry =
       track: DadTrackName;
       title?: string; // missing = to be announced
       format?: string;
-      speaker?: string; // missing = to be announced
+      /** Only speakers Bundesblock marks as confirmed in the internal agenda;
+       * contacted or uncontacted names stay off the site. Missing = none
+       * confirmed yet, which renders "Speaker to be announced". */
+      speakers?: string[];
+      moderator?: string;
     })
   | (Common & {
       // Breaks come straight from the published agenda rather than being
@@ -106,7 +116,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "break",
-    time: "8:00",
+    time: "08:00",
     duration: 45,
     stage: MAIN,
     label: "Arrival & Networking",
@@ -114,17 +124,18 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
-    time: "8:45",
+    time: "08:45",
     duration: 15,
     stage: MAIN,
     track: "General Interest",
     title: "Welcome & Opening",
+    speakers: ["Daniela Boback", "Sebastian Becker", "Hagen Weiss"],
   },
   {
     ...DAD,
     kind: "talk",
-    time: "8:50",
-    duration: 55,
+    time: "08:50",
+    duration: 45,
     stage: FORUM,
     track: "General Interest",
     title: "Opening Session (Main Stage)",
@@ -132,7 +143,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
-    time: "8:50",
+    time: "08:50",
     duration: 55,
     stage: FUTURE,
     track: "General Interest",
@@ -141,7 +152,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
-    time: "9:00",
+    time: "09:00",
     duration: 10,
     stage: MAIN,
     track: "General Interest",
@@ -150,48 +161,44 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
-    time: "9:10",
+    time: "09:10",
     duration: 15,
     stage: MAIN,
     track: "General Interest",
     title: "The State of Digital Assets 2026",
+    speakers: ["Manfred Richels"],
   },
   {
     ...DAD,
     kind: "talk",
-    time: "9:25",
+    time: "09:25",
     duration: 20,
     stage: MAIN,
     track: "Policy & Regulation",
     title:
       "A European Digital Assets Strategy? The French-German Task Force on the Future of Financial Markets",
+    speakers: ["Christoph Hock"],
+    moderator: "Hagen Weiss",
   },
   {
     ...DAD,
     kind: "talk",
-    time: "9:45",
+    time: "09:35",
+    duration: 40,
+    stage: FORUM,
+    track: "Stablecoins & Payments",
+    title: "AI x Blockchain Beyond Payments - Decision-Maker Briefing",
+    speakers: ["Silvan Jongerius", "Lukas Beckenbauer"],
+  },
+  {
+    ...DAD,
+    kind: "talk",
+    time: "09:45",
     duration: 15,
     stage: MAIN,
     track: "Stablecoins & Payments",
     title: "From Digital Euro to Stablecoin Rails - The New Money Stack",
-  },
-  {
-    ...DAD,
-    kind: "talk",
-    time: "9:45",
-    duration: 30,
-    stage: FORUM,
-    track: "Digital Capital Markets",
-    title: "European Banking Consortia driving Digital Capital Markets",
-  },
-  {
-    ...DAD,
-    kind: "talk",
-    time: "10:00",
-    duration: 35,
-    stage: MAIN,
-    track: "Stablecoins & Payments",
-    title: "The New Money Stack - what's Europe's positioning",
+    speakers: ["Franziska Huber"],
   },
   {
     ...DAD,
@@ -201,6 +208,23 @@ export const agendaEntries: AgendaEntry[] = [
     stage: FUTURE,
     track: "General Interest",
     title: "Digital Product Passport",
+    speakers: ["Daniel Heinen"],
+  },
+  {
+    ...DAD,
+    kind: "talk",
+    time: "10:00",
+    duration: 35,
+    stage: MAIN,
+    track: "Stablecoins & Payments",
+    title: "The New Money Stack - what's Europe's positioning",
+    speakers: [
+      "Claus George",
+      "Courtney Lamar Williams",
+      "Ramin Ghafari",
+      "Henri de Jong",
+    ],
+    moderator: "Matthias Kröner",
   },
   {
     ...DAD,
@@ -220,6 +244,7 @@ export const agendaEntries: AgendaEntry[] = [
     stage: FUTURE,
     track: "General Interest",
     title: "How to manage energy in the future",
+    speakers: ["Prof. Thomas Fürstner"],
   },
   {
     ...DAD,
@@ -253,16 +278,28 @@ export const agendaEntries: AgendaEntry[] = [
     stage: MAIN,
     track: "Digital Capital Markets",
     title: "Portfolio Construction in the Age of Digital Assets",
+    speakers: ["Christoph Pliessnig"],
   },
   {
     ...DAD,
     kind: "talk",
     time: "11:00",
-    duration: 55,
+    duration: 50,
     stage: FORUM,
     track: "Stablecoins & Payments",
     title:
       "Corporate Treasuries & Agentic AI Payments - must-have Capabilities for the German Economy",
+    speakers: ["Claus George", "Valerie von Lucke"],
+    moderator: "Prof. Philipp Maume",
+  },
+  {
+    ...DAD,
+    kind: "talk",
+    time: "11:10",
+    duration: 20,
+    stage: FUTURE,
+    track: "Tokenization & RWA",
+    title: "From ERP to Autonomous Enterprises",
   },
   {
     ...DAD,
@@ -273,15 +310,13 @@ export const agendaEntries: AgendaEntry[] = [
     track: "Digital Capital Markets",
     title:
       "Capital Markets 2.0 - Digital Securities, Market Infrastructure & Institutional Allocation",
-  },
-  {
-    ...DAD,
-    kind: "talk",
-    time: "11:10",
-    duration: 20,
-    stage: FUTURE,
-    track: "Tokenization & RWA",
-    title: "From ERP to Autonomous Enterprises",
+    speakers: [
+      "Simone Cortese",
+      "Michael Reinhard",
+      "Lewin Boehnke",
+      "Christian Bock",
+    ],
+    moderator: "Stefan Grasmann",
   },
   {
     ...DAD,
@@ -299,7 +334,9 @@ export const agendaEntries: AgendaEntry[] = [
     duration: 10,
     stage: FUTURE,
     track: "Tokenization & RWA",
-    title: "Pilot Training @Airport Salzburg",
+    title:
+      "From the cockpit to the blockchain: How & why an aviation company is building a MiCAR-compliant token",
+    speakers: ["Gerhard Wimmer"],
   },
   {
     ...DAD,
@@ -310,6 +347,8 @@ export const agendaEntries: AgendaEntry[] = [
     track: "Stablecoins & Payments",
     title:
       "AI x Blockchain Beyond Payments - Agents, Data Markets & Trusted Automation",
+    speakers: ["Jens Strüker", "Patrick Tobler", "Andre Liesenfeld"],
+    moderator: "Sarah Gottwald",
   },
   {
     ...DAD,
@@ -319,15 +358,23 @@ export const agendaEntries: AgendaEntry[] = [
     stage: FUTURE,
     track: "Tokenization & RWA",
     title: "The programmable Company",
+    speakers: ["Jürgen Kleeberger", "Christoph Jentzsch"],
   },
   {
     ...DAD,
     kind: "talk",
     time: "11:55",
-    duration: 55,
+    duration: 50,
     stage: FORUM,
     track: "Digital Capital Markets",
     title: "Portfolio Construction & Institutional Allocation",
+    speakers: [
+      "Marcel Uhlmann",
+      "Ralf Kubli",
+      "Christian Bock",
+      "Hannes Claut",
+    ],
+    moderator: "Daniela Boback",
   },
   {
     ...DAD,
@@ -348,7 +395,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "break",
-    time: "12:50",
+    time: "12:45",
     duration: 45,
     stage: FORUM,
     label: "Lunch Break",
@@ -374,20 +421,12 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
-    time: "13:35",
-    duration: 40,
-    stage: MAIN,
-    track: "Tokenization & RWA",
-    title: "What should be Tokenized First?",
-  },
-  {
-    ...DAD,
-    kind: "talk",
-    time: "13:35",
-    duration: 45,
+    time: "13:30",
+    duration: 30,
     stage: FORUM,
-    track: "Stablecoins & Payments",
-    title: "AI x Blockchain Beyond Payments - Decision-Maker Briefing",
+    track: "Digital Capital Markets",
+    title: "European Banking Consortia driving Digital Capital Markets",
+    speakers: ["Michael Cyrus"],
   },
   {
     ...DAD,
@@ -401,12 +440,29 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    time: "13:35",
+    duration: 40,
+    stage: MAIN,
+    track: "Tokenization & RWA",
+    title: "What should be Tokenized First?",
+    speakers: [
+      "Raphael Neuberger",
+      "Moritz Stumpf",
+      "Lorenzo Rigatti",
+      "Christian Million",
+    ],
+    moderator: "Jessica Kreysar",
+  },
+  {
+    ...DAD,
+    kind: "talk",
     time: "13:55",
     duration: 45,
     stage: FUTURE,
     track: "Institutional Trust Infrastructure",
     title:
       "All ways lead to Rome: Pontes, Appia & the necessary marriage of financial & technical sovereignty",
+    speakers: ["Dolf Diederichsen"],
   },
   {
     ...DAD,
@@ -427,15 +483,33 @@ export const agendaEntries: AgendaEntry[] = [
     track: "Policy & Regulation",
     title:
       "Regulation, Tax & Competitiveness - MiCA 2.0, DAC8, DORA and beyond",
+    speakers: ["Alireza Siadat"],
+    moderator: "Dr. Nina-Luisa Siedler",
   },
   {
     ...DAD,
     kind: "talk",
     time: "14:20",
-    duration: 60,
+    duration: 55,
     stage: FORUM,
     track: "Tokenization & RWA",
     title: "Tokenization Deep Dive - Assets, Adoption & Distribution",
+    speakers: [
+      "Daniel Wernicke",
+      "Markus Kluge",
+      "Raphael Neuberger",
+      "Christoph Jentzsch",
+    ],
+  },
+  {
+    ...DAD,
+    kind: "talk",
+    time: "14:40",
+    duration: 45,
+    stage: FUTURE,
+    track: "Digital Capital Markets",
+    title: "Leaders vs. Laggards: Financial Institutions of the Future",
+    speakers: ["David Kurz", "Mykolas Majauskas"],
   },
   {
     ...DAD,
@@ -449,20 +523,13 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
-    time: "14:40",
-    duration: 45,
-    stage: FUTURE,
-    track: "Digital Capital Markets",
-    title: "Leaders vs. Laggards: Financial Institutions of the Future",
-  },
-  {
-    ...DAD,
-    kind: "talk",
     time: "14:55",
     duration: 35,
     stage: MAIN,
     track: "Institutional Trust Infrastructure",
     title: "Scaling Institutional Trust: Custody, Wallets, Identity & Security",
+    speakers: ["Martin Kreitmair", "Niclas Voigt"],
+    moderator: "Oliver Naegele",
   },
   {
     ...DAD,
@@ -496,6 +563,15 @@ export const agendaEntries: AgendaEntry[] = [
     stage: FORUM,
     track: "General Interest",
     title: "The Innovation Challenge - a Call to Action",
+    speakers: ["Alexander Höptner"],
+  },
+  {
+    ...DAD,
+    kind: "talk",
+    time: "15:50",
+    duration: 10,
+    stage: FUTURE,
+    track: "General Interest",
   },
   {
     ...DAD,
@@ -505,15 +581,8 @@ export const agendaEntries: AgendaEntry[] = [
     stage: MAIN,
     track: "General Interest",
     title: "How to Collaborate: Industry x Blockchain Foundations",
-  },
-  {
-    ...DAD,
-    kind: "talk",
-    time: "15:50",
-    duration: 10,
-    stage: FUTURE,
-    track: "General Interest",
-    title: "To be announced",
+    speakers: ["Patricia Albrecht", "Fabian Bormann"],
+    moderator: "Sebastian Becker",
   },
   {
     ...DAD,
@@ -524,16 +593,18 @@ export const agendaEntries: AgendaEntry[] = [
     track: "General Interest",
     title:
       "Bridging the crypto Language gap - how Technology, Institutions and Regulators can understand each other",
+    speakers: ["Afra Stöhr", "Pavlina Pavlova"],
   },
   {
     ...DAD,
     kind: "talk",
-    time: "16:10",
-    duration: 55,
+    time: "16:15",
+    duration: 50,
     stage: FORUM,
     track: "Institutional Trust Infrastructure",
     title:
       "Trust Infrastructure for Institutions - Custody, Wallets, Identity & Compliance",
+    speakers: ["Lewin Boehnke", "Niclas Voigt"],
   },
   {
     ...DAD,
@@ -544,6 +615,7 @@ export const agendaEntries: AgendaEntry[] = [
     track: "Institutional Trust Infrastructure",
     title:
       "Digital Public Infrastructure - EU Business Wallet, Deutschland Stack & Sovereignty",
+    speakers: ["Jens Strüker"],
   },
   {
     ...DAD,
@@ -554,6 +626,8 @@ export const agendaEntries: AgendaEntry[] = [
     track: "General Interest",
     title:
       "A strategic look at the Crypto Taxation Debate in Germany & Austria",
+    speakers: ["Marie Christin Rinke", "Florian Wimmer"],
+    moderator: "Paul Pöltner",
   },
   {
     ...DAD,
@@ -564,6 +638,7 @@ export const agendaEntries: AgendaEntry[] = [
     track: "Policy & Regulation",
     title:
       "European Champions: Forming Future Financial Players in the German-speaking Markets",
+    speakers: ["Lewin Boehnke", "Michael Reinhard"],
   },
   {
     ...DAD,
@@ -573,6 +648,7 @@ export const agendaEntries: AgendaEntry[] = [
     stage: MAIN,
     track: "General Interest",
     title: "Society 2035 - AI, Digital Assets & our Future Economic Backend",
+    moderator: "Max Muth",
   },
   {
     ...DAD,
@@ -583,6 +659,7 @@ export const agendaEntries: AgendaEntry[] = [
     track: "Digital Capital Markets",
     title:
       "Rewiring of Financial Market Infrastructure & the vision for a Deutschland AG 2.0",
+    speakers: ["Oliver Naegele"],
   },
   {
     ...DAD,
@@ -592,33 +669,5 @@ export const agendaEntries: AgendaEntry[] = [
     stage: MAIN,
     track: "General Interest",
     title: "The Race for international Digital Assets Leadership",
-  },
-  {
-    ...DAD,
-    kind: "milestone",
-    label: "Closing Remarks & Transition to Afterparty",
-    time: "17:55",
-    stage: MAIN,
-  },
-  {
-    ...DAD,
-    kind: "milestone",
-    label: "Official Afterparty",
-    time: "18:20",
-    stage: MAIN,
-  },
-  {
-    ...DAD,
-    kind: "milestone",
-    label: "Official Afterparty",
-    time: "18:20",
-    stage: FORUM,
-  },
-  {
-    ...DAD,
-    kind: "milestone",
-    label: "Official Afterparty",
-    time: "18:20",
-    stage: FUTURE,
   },
 ];

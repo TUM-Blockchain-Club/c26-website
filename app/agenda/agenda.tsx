@@ -96,7 +96,8 @@ export const Agenda: React.FC<AgendaProps> = ({ sessions, speakers }) => {
         entry.format,
         entry.track,
         entry.stage,
-        entry.speaker,
+        entry.speakers?.join(" "),
+        entry.moderator,
       ]
         .filter(Boolean)
         .join(" | ")
