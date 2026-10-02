@@ -375,10 +375,12 @@ export const speakers26: Speaker[] = [
     id: 23,
     documentId: "c26-stefan-grasmann",
     name: "Stefan Grasmann",
-    position: "Curator and connector in digital finance",
+    position: "Signal in the Noise · Digital Assets",
     company_name: "Independent",
     // Long-time Partner and Chief of Blockchain at Zühlke, co-founder of
     // Blockchain:Circle; now independent, as he put it in the form.
+    // Role line and photo are his own later wording and headshot, sent in
+    // on 2 October, which replace what the form originally carried.
     url: "https://www.linkedin.com/in/sgrasmann/",
     priority: 23,
     createdAt: "",
