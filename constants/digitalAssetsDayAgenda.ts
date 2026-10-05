@@ -755,7 +755,7 @@ export const agendaEntries: AgendaEntry[] = [
     track: "Stablecoins & Payments",
     title:
       "AI x Blockchain Beyond Payments - Agents, Data Markets & Trusted Automation",
-    speakers: ["Jens Strüker", "Patrick Tobler", "Andre Liesenfeld"],
+    speakers: ["Jens Strüker", "Patrick Tobler", "André Liesenfeld"],
     moderator: "Sarah Gottwald",
   },
   {
