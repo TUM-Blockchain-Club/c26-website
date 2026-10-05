@@ -14,6 +14,11 @@ import { speakers26 } from "@/constants/Speakers26";
  */
 const bareName = (name: string) =>
   name
+    // Bundesblock's exports have shipped a narrow no-break space between first
+    // and last name, which matches nothing; fold every kind of whitespace, and
+    // compose accents the one way, before comparing.
+    .normalize("NFC")
+    .replace(/\s+/g, " ")
     .replace(/^(?:(?:Prof\.|Dr\.(?:-Ing\.)?)\s+)+/, "")
     .trim()
     .toLowerCase();

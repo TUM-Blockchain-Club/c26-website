@@ -1,33 +1,60 @@
 /**
  * The published conference programme, one entry per session so every event can
- * interleave its sessions chronologically in the same feed. So far only the
- * Digital Assets Day (Day 2, October 30, 2026, curated by Bundesblock) is
- * announced; add First Conference Day and Hackathon sessions in between as
- * they are published, keeping the array in chronological order.
+ * interleave its sessions chronologically in the same feed. Two of the three
+ * days are in: the First Conference Day (October 29, Main, Research and Side
+ * Stage) and the Digital Assets Day (October 30, curated by Bundesblock, Main
+ * Stage, Executive Forum and Future Stage). Add the Hackathon in between as it
+ * is published, keeping the array in chronological order.
  *
- * The Digital Assets Day entries mirror Bundesblock's own published agenda
- * (bundesblock.de/dad-agenda) one to one: three stages, the same titles, times
- * and focus tracks. It is still a draft on their side and will keep changing.
+ * Everything is generated from the internal agenda exports, one CSV per stage
+ * for the first day and one XLS for the Digital Assets Day, not from any
+ * public page: Bundesblock's shows "Program in progress" everywhere. Each name
+ * in those exports carries its own status, and only the ones marked Confirmed
+ * are carried here, so nobody is announced before they have agreed. A session
+ * without a confirmed name renders a silhouette and "Speaker to be announced".
  *
- * Times, titles, stages, tracks and names are generated from the internal
- * agenda export Bundesblock sends (`internal-agenda.xls`), not from their
- * public page, which shows "Program in progress" everywhere. Each name there
- * carries its own status; only the ones marked Confirmed are carried here, so
- * nobody is announced before they have agreed. A talk without a confirmed name
- * renders a silhouette and "Speaker to be announced".
+ * Where an export writes a placeholder instead of a title, "TBD" or an
+ * internal note, the entry carries no title and renders "Title to be
+ * announced" rather than repeating the note.
  *
- * Their export also lists the closing remarks and the afterparty on all three
- * stages. Those are deliberately left out: they were removed from this agenda
- * once before and should not come back with an update.
+ * Both days are still drafts on the organisers' side and will keep changing.
+ *
+ * The Digital Assets Day export also lists the closing remarks and the
+ * afterparty on all three stages. Those are deliberately left out: they were
+ * removed from this agenda once before and should not come back with an
+ * update.
  */
 
 export type AgendaEventKey = "conference" | "digital-assets-day" | "hackathon";
 
-export const AGENDA_STAGES = [
-  "Main Stage",
-  "Executive Forum",
-  "Future Stage",
+/**
+ * The three rooms of the venue. Both days use all three and each gives them
+ * its own label, so filtering by room has to match either label. Nakamoto is
+ * the big one and carries the main programme on both days.
+ */
+export const ROOMS = [
+  {
+    room: "Nakamoto",
+    labels: { conference: "Nakamoto", "digital-assets-day": "Main Stage" },
+  },
+  {
+    room: "Turing",
+    labels: { conference: "Turing", "digital-assets-day": "Executive Forum" },
+  },
+  {
+    room: "Hopper",
+    labels: { conference: "Hopper", "digital-assets-day": "Future Stage" },
+  },
 ] as const;
+
+/** Every stage label in use, whichever day it belongs to. */
+export const AGENDA_STAGES = ROOMS.flatMap((r) =>
+  Object.values(r.labels),
+) as readonly string[];
+
+/** The room a stage label belongs to, for filtering across both days. */
+export const roomOfStage = (stage?: string) =>
+  ROOMS.find((r) => Object.values(r.labels).includes(stage as never))?.room;
 
 /** Focus tracks of the Digital Assets Day (they only exist on that day). */
 // Colors sampled from the official Bundesblock agenda PDF.
@@ -72,6 +99,22 @@ export const DAD_TRACKS = [
 
 export type DadTrackName = (typeof DAD_TRACKS)[number]["name"];
 
+/** Tracks of the First Conference Day. Its export only ever says "Research" or
+ * "Other"; "Other" carries no meaning for a reader, so those sessions get no
+ * track rather than an invented one. */
+export const CONFERENCE_TRACKS = [
+  {
+    name: "Research",
+    dot: "bg-[#8b5cf6]",
+    accent: "border-[#8b5cf6]",
+    active: "border-[#8b5cf6] bg-[#8b5cf6]/15 text-white",
+  },
+] as const;
+
+export const AGENDA_TRACKS = [...DAD_TRACKS, ...CONFERENCE_TRACKS];
+
+export type AgendaTrackName = (typeof AGENDA_TRACKS)[number]["name"];
+
 type Common = { event: AgendaEventKey; day: string };
 
 export type AgendaEntry =
@@ -80,7 +123,9 @@ export type AgendaEntry =
       time: string;
       duration: number; // minutes
       stage: string;
-      track: DadTrackName;
+      /** Missing where the programme does not sort the session into a track,
+       * which is most of the First Conference Day. */
+      track?: AgendaTrackName;
       title?: string; // missing = to be announced
       format?: string;
       /** Only speakers Bundesblock marks as confirmed in the internal agenda;
@@ -106,13 +151,396 @@ export type AgendaEntry =
       stage?: string;
     });
 
+const TBC: Common = { event: "conference", day: "2026-10-29" };
 const DAD: Common = { event: "digital-assets-day", day: "2026-10-30" };
+// The venue has three rooms. Each day labels them its own way, so an entry
+// carries the label of its own day and ROOMS below ties the two together.
+const NAKAMOTO = "Nakamoto";
+const TURING = "Turing";
+const HOPPER = "Hopper";
 const MAIN = "Main Stage";
 const FORUM = "Executive Forum";
 const FUTURE = "Future Stage";
 
 // Chronological order, then by stage, so the feed reads top to bottom.
 export const agendaEntries: AgendaEntry[] = [
+  // ---------------------------------------- First Conference Day, Oct 29
+  {
+    ...TBC,
+    kind: "talk",
+    time: "09:00",
+    duration: 15,
+    stage: NAKAMOTO,
+    title: "Opening",
+    format: "Opening",
+  },
+  {
+    ...TBC,
+    kind: "talk",
+    time: "09:20",
+    duration: 40,
+    stage: NAKAMOTO,
+    title: "CEX and DEX: Convergence or Competition?",
+    format: "Panel",
+  },
+  {
+    ...TBC,
+    kind: "talk",
+    time: "09:20",
+    duration: 25,
+    stage: TURING,
+    track: "Research",
+    title: "Why the Future of AI Depends on Verifiable Science",
+  },
+  {
+    ...TBC,
+    kind: "talk",
+    time: "09:20",
+    duration: 25,
+    stage: HOPPER,
+    title: "The Anatomy of a dapp",
+    format: "Keynote",
+    speakers: ["Václav Pavlín"],
+  },
+  {
+    ...TBC,
+    kind: "talk",
+    time: "09:50",
+    duration: 25,
+    stage: TURING,
+    track: "Research",
+    title: "Atomic composability in EVM ecosystems and beyond",
+    format: "Keynote",
+  },
+  {
+    ...TBC,
+    kind: "talk",
+    time: "09:50",
+    duration: 25,
+    stage: HOPPER,
+    title: "The Mechanics of Market Manipulation",
+    speakers: ["Dr. Nina-Luisa Siedler"],
+  },
+  {
+    ...TBC,
+    kind: "talk",
+    time: "10:05",
+    duration: 40,
+    stage: NAKAMOTO,
+    title:
+      "Hyperscalers Meet Crypto Rails — Cloud Infrastructure for the Machine Economy",
+    format: "Panel",
+    speakers: ["André Liesenfeld"],
+  },
+  {
+    ...TBC,
+    kind: "talk",
+    time: "10:20",
+    duration: 25,
+    stage: TURING,
+    title: "Inside Crypto’s Race for Speed",
+    format: "Keynote",
+  },
+  {
+    ...TBC,
+    kind: "talk",
+    time: "10:20",
+    duration: 25,
+    stage: HOPPER,
+    title:
+      "The Infrastructure Vulnerability: Key Compromises, Bridge Exploits, and the Limits of Security Audits",
+    format: "Keynote",
+  },
+  {
+    ...TBC,
+    kind: "talk",
+    time: "10:50",
+    duration: 40,
+    stage: NAKAMOTO,
+    title:
+      "Technical Regulatory Panel: Autonomous Code Compliance and EU Regulation",
+    format: "Panel",
+    speakers: ["Billy Rennekamp", "Pawel Grischuk", "Dr. Nina-Luisa Siedler"],
+    moderator: "Ondřej Kovařík",
+  },
+  {
+    ...TBC,
+    kind: "talk",
+    time: "10:50",
+    duration: 25,
+    stage: TURING,
+    track: "Research",
+    title: "Flock: Fast Proving for Batch Boolean Computations",
+    speakers: ["William Wang"],
+  },
+  {
+    ...TBC,
+    kind: "talk",
+    time: "10:50",
+    duration: 40,
+    stage: HOPPER,
+    title: "Identity in a World of Humans and AI",
+    format: "Panel",
+    speakers: ["Felix Hoops", "Raj"],
+  },
+  {
+    ...TBC,
+    kind: "talk",
+    time: "11:20",
+    duration: 25,
+    stage: TURING,
+    track: "Research",
+    format: "Keynote",
+    speakers: ["Andrew Zitek"],
+  },
+  {
+    ...TBC,
+    kind: "talk",
+    time: "11:35",
+    duration: 40,
+    stage: NAKAMOTO,
+    title:
+      "How Prediction Markets Actually Resolve — Oracles, Disputes & Settlement",
+    format: "Panel",
+    speakers: ["Jonas Gebele", "Ivan Morozov"],
+  },
+  {
+    ...TBC,
+    kind: "talk",
+    time: "11:35",
+    duration: 40,
+    stage: HOPPER,
+    title: "AI-Powered Smart Contract Security: From Weeks to Seconds",
+    format: "Panel",
+  },
+  {
+    ...TBC,
+    kind: "talk",
+    time: "11:50",
+    duration: 25,
+    stage: TURING,
+    track: "Research",
+    format: "Keynote",
+    speakers: ["Vadim Lyubashevsky"],
+  },
+  {
+    ...TBC,
+    kind: "talk",
+    time: "12:20",
+    duration: 25,
+    stage: NAKAMOTO,
+    title: "What It Takes to Build an Agent Economy",
+    format: "Keynote",
+  },
+  {
+    ...TBC,
+    kind: "talk",
+    time: "12:20",
+    duration: 25,
+    stage: TURING,
+    track: "Research",
+    format: "Keynote",
+    speakers: ["Pavel Hubacek"],
+  },
+  {
+    ...TBC,
+    kind: "talk",
+    time: "12:20",
+    duration: 25,
+    stage: HOPPER,
+    title:
+      "Self-Custody in 2026 — Hardware Wallets After a Year of Record Hacks",
+    format: "Panel",
+  },
+  {
+    ...TBC,
+    kind: "break",
+    time: "12:45",
+    duration: 45,
+    stage: NAKAMOTO,
+    label: "Lunch Break",
+  },
+  {
+    ...TBC,
+    kind: "break",
+    time: "12:45",
+    duration: 45,
+    stage: TURING,
+    label: "Lunch Break",
+  },
+  {
+    ...TBC,
+    kind: "break",
+    time: "12:45",
+    duration: 45,
+    stage: HOPPER,
+    label: "Lunch Break",
+  },
+  {
+    ...TBC,
+    kind: "talk",
+    time: "13:30",
+    duration: 40,
+    stage: NAKAMOTO,
+    title: "Beyond the Hype Cycle: Where Crypto VCs Are Deploying Capital Now",
+    format: "Panel",
+    speakers: ["Anies Khan", "David An"],
+  },
+  {
+    ...TBC,
+    kind: "talk",
+    time: "13:30",
+    duration: 25,
+    stage: TURING,
+    track: "Research",
+    title: "How to be Private on a Public Blockchain",
+    format: "Keynote",
+    speakers: ["Sergey Shemyakov"],
+  },
+  {
+    ...TBC,
+    kind: "talk",
+    time: "13:30",
+    duration: 40,
+    stage: HOPPER,
+    title: "Learners, Builders, Speculators — Who Is Community For?",
+    format: "Panel",
+    speakers: ["Andi Schmitt"],
+  },
+  {
+    ...TBC,
+    kind: "talk",
+    time: "14:00",
+    duration: 25,
+    stage: TURING,
+    track: "Research",
+    title: "Plonk Without Random Oracles",
+    format: "Keynote",
+    speakers: ["Marek Sefranek"],
+  },
+  {
+    ...TBC,
+    kind: "talk",
+    time: "14:15",
+    duration: 40,
+    stage: NAKAMOTO,
+    title:
+      "Architects of Tomorrow: How Student Innovation is Redefining Industry Standards",
+    format: "Keynote",
+  },
+  {
+    ...TBC,
+    kind: "talk",
+    time: "14:15",
+    duration: 25,
+    stage: HOPPER,
+    title: "The Case for Invisible Infrastructure",
+    format: "Keynote",
+    speakers: ["Karim Jedda"],
+  },
+  {
+    ...TBC,
+    kind: "talk",
+    time: "14:30",
+    duration: 25,
+    stage: TURING,
+    track: "Research",
+    title: "Language-Agnostic Detection of Bugs in ZKP Programs",
+    format: "Keynote",
+    speakers: ["Arman Kolozyan"],
+  },
+  {
+    ...TBC,
+    kind: "talk",
+    time: "14:45",
+    duration: 40,
+    stage: HOPPER,
+    title:
+      "Tokenize Everything — Ondo, xStocks, Paxos & the Race for Onchain Equities",
+    format: "Panel",
+  },
+  {
+    ...TBC,
+    kind: "talk",
+    time: "15:00",
+    duration: 30,
+    stage: NAKAMOTO,
+    title: "The Future of Privacy on Solana",
+    format: "Fireside Chat",
+    speakers: ["Tilo Carl Palfner"],
+  },
+  {
+    ...TBC,
+    kind: "talk",
+    time: "15:00",
+    duration: 25,
+    stage: TURING,
+    track: "Research",
+    speakers: ["Kasra EdalatNejad"],
+  },
+  {
+    ...TBC,
+    kind: "talk",
+    time: "15:30",
+    duration: 25,
+    stage: TURING,
+    track: "Research",
+    title: "Cryptanalysis of Witness Encryption: A Path to Bitcoin Privacy",
+    speakers: ["Markus Schofnegger"],
+  },
+  {
+    ...TBC,
+    kind: "talk",
+    time: "15:30",
+    duration: 25,
+    stage: HOPPER,
+    track: "Research",
+    title: "DLT Interoperabilität thanks to Open Source",
+    format: "Keynote",
+  },
+  {
+    ...TBC,
+    kind: "talk",
+    time: "15:35",
+    duration: 40,
+    stage: NAKAMOTO,
+    title: "Sovereign Rails vs. Global Giants: Europe’s Payment Infrastructure",
+    format: "Panel",
+    speakers: ["Sveinn Valfells"],
+  },
+  {
+    ...TBC,
+    kind: "talk",
+    time: "16:00",
+    duration: 25,
+    stage: TURING,
+    track: "Research",
+    title:
+      "The Exotic Derivatives Missing from Blockchain Interest-Rate Markets",
+    format: "Keynote",
+    speakers: ["Ivan von Greiff"],
+  },
+  {
+    ...TBC,
+    kind: "talk",
+    time: "16:00",
+    duration: 40,
+    stage: HOPPER,
+    title: "The Agentic Payments Stack",
+    format: "Panel",
+  },
+  {
+    ...TBC,
+    kind: "talk",
+    time: "16:30",
+    duration: 25,
+    stage: TURING,
+    track: "Research",
+    format: "Keynote",
+    speakers: ["Dr. Slobodan Sudaric-Hefner"],
+  },
+
+  // ------------------------------------------- Digital Assets Day, Oct 30
   {
     ...DAD,
     kind: "break",

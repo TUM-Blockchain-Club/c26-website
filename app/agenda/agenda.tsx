@@ -11,9 +11,11 @@ import { Session, Speaker } from "@/components/service/contentStrapi_static";
 import AgendaFeed from "@/components/agenda/AgendaFeed";
 import {
   agendaEntries,
-  AGENDA_STAGES,
+  ROOMS,
+  roomOfStage,
   DAD_TRACKS,
-  type DadTrackName,
+  CONFERENCE_TRACKS,
+  type AgendaTrackName,
 } from "@/constants/digitalAssetsDayAgenda";
 type AgendaProps = { sessions: Session[]; speakers: Speaker[] };
 
@@ -24,7 +26,7 @@ type AgendaProps = { sessions: Session[]; speakers: Speaker[] };
 const EVENTS = [
   {
     key: "conference",
-    label: "First Conference Day",
+    label: "TUM Blockchain Conference Day",
     dot: "bg-gradient-tbc",
     active: "border-tbc-yellow bg-tbc-yellow/15 text-white",
   },
@@ -44,12 +46,43 @@ const EVENTS = [
 
 type EventKey = (typeof EVENTS)[number]["key"];
 
+/** Session formats, read off the programme so the list cannot go stale. */
+const FORMATS = [
+  ...new Set(
+    agendaEntries.flatMap((entry) =>
+      entry.kind === "talk" && entry.format ? [entry.format] : [],
+    ),
+  ),
+].sort();
+
+/** The two track families. The First Conference Day sorts only its research
+ * sessions; the Digital Assets Day sorts all of its own. */
+const TRACK_GROUPS = [
+  {
+    label: "Digital Assets Day",
+    tracks: DAD_TRACKS as readonly {
+      name: string;
+      dot: string;
+      active: string;
+    }[],
+  },
+  {
+    label: "TUM Blockchain Conference Day",
+    tracks: CONFERENCE_TRACKS as readonly {
+      name: string;
+      dot: string;
+      active: string;
+    }[],
+  },
+];
+
 export const Agenda: React.FC<AgendaProps> = ({ sessions, speakers }) => {
   const [titleFilter, setTitleFilter] = useState<string>("");
   const [dayFilter, setDayFilter] = useState<Date>();
   const [eventFilter, setEventFilter] = useState<EventKey>();
-  const [stageFilter, setStageFilter] = useState<string>();
-  const [dadTrackFilter, setDadTrackFilter] = useState<DadTrackName>();
+  const [roomFilter, setRoomFilter] = useState<string>();
+  const [trackFilter, setTrackFilter] = useState<AgendaTrackName>();
+  const [formatFilter, setFormatFilter] = useState<string>();
 
   const STAGE_PRIORITY: Record<string, number> = {
     "Stage 3": 0, // Nakamoto — highest priority
@@ -77,19 +110,20 @@ export const Agenda: React.FC<AgendaProps> = ({ sessions, speakers }) => {
     if (eventFilter && entry.event !== eventFilter) return false;
 
     if (entry.kind !== "talk") {
-      if (feedQuery || dadTrackFilter) return false;
+      if (feedQuery || trackFilter || formatFilter) return false;
       if (
-        stageFilter &&
+        roomFilter &&
         "stage" in entry &&
         entry.stage &&
-        entry.stage !== stageFilter
+        roomOfStage(entry.stage) !== roomFilter
       )
         return false;
       return true;
     }
 
-    if (stageFilter && entry.stage !== stageFilter) return false;
-    if (dadTrackFilter && entry.track !== dadTrackFilter) return false;
+    if (roomFilter && roomOfStage(entry.stage) !== roomFilter) return false;
+    if (trackFilter && entry.track !== trackFilter) return false;
+    if (formatFilter && entry.format !== formatFilter) return false;
     if (feedQuery) {
       const haystack = [
         entry.title,
@@ -109,7 +143,21 @@ export const Agenda: React.FC<AgendaProps> = ({ sessions, speakers }) => {
   const visibleTalksCount = visibleEntries.filter(
     (entry) => entry.kind === "talk",
   ).length;
-  const feedHasOwnFilters = !!(feedQuery || stageFilter || dadTrackFilter);
+  const feedHasOwnFilters = !!(
+    feedQuery ||
+    roomFilter ||
+    trackFilter ||
+    formatFilter
+  );
+  const anyFilter = !!(feedHasOwnFilters || dayFilter || eventFilter);
+  const clearFilters = () => {
+    setTitleFilter("");
+    setDayFilter(undefined);
+    setEventFilter(undefined);
+    setRoomFilter(undefined);
+    setTrackFilter(undefined);
+    setFormatFilter(undefined);
+  };
 
   let filteredSessions = null;
 
@@ -282,17 +330,58 @@ export const Agenda: React.FC<AgendaProps> = ({ sessions, speakers }) => {
           </div>
         </div>
         <div className="flex flex-col gap-3 h-fit">
+          <div className="flex flex-col gap-1">
+            <Text textType={"paragraph"} className="font-bold text-left" as="p">
+              Stages
+            </Text>
+            <Text textType={"small"} className="text-muted text-left" as="p">
+              Three rooms, used by both days under their own names.
+            </Text>
+          </div>
+          <div className="flex flex-row md:flex-col flex-wrap gap-2">
+            {ROOMS.map((room) => (
+              <Toggle
+                key={room.room}
+                onClick={() =>
+                  setRoomFilter(
+                    roomFilter === room.room ? undefined : room.room,
+                  )
+                }
+                pressed={roomFilter === room.room}
+                className="rounded-sm w-fit md:w-full rounded-lg text-white border py-2 px-3"
+              >
+                <span className="flex flex-col gap-0.5 text-left">
+                  <Text
+                    textType={"small"}
+                    className="!text-inherit text-left font-bold"
+                    as="p"
+                  >
+                    {room.room}
+                  </Text>
+                  <Text
+                    textType={"small"}
+                    className="text-muted text-left"
+                    as="p"
+                  >
+                    {room.labels["digital-assets-day"]} on Oct 30
+                  </Text>
+                </span>
+              </Toggle>
+            ))}
+          </div>
+        </div>
+        <div className="flex flex-col gap-3 h-fit">
           <Text textType={"paragraph"} className="font-bold text-left" as="p">
-            Stages
+            Format
           </Text>
           <div className="flex flex-row md:flex-col flex-wrap gap-2">
-            {AGENDA_STAGES.map((stage) => (
+            {FORMATS.map((format) => (
               <Toggle
-                key={stage}
+                key={format}
                 onClick={() =>
-                  setStageFilter(stageFilter === stage ? undefined : stage)
+                  setFormatFilter(formatFilter === format ? undefined : format)
                 }
-                pressed={stageFilter === stage}
+                pressed={formatFilter === format}
                 className="rounded-sm py-2 w-fit md:w-full rounded-lg text-white border py-2 px-3"
               >
                 <Text
@@ -300,57 +389,83 @@ export const Agenda: React.FC<AgendaProps> = ({ sessions, speakers }) => {
                   className="!text-inherit text-center"
                   as="p"
                 >
-                  {stage}
+                  {format}
                 </Text>
               </Toggle>
             ))}
           </div>
         </div>
-        <div className="flex flex-col gap-3 h-fit">
+        <div className="flex flex-col gap-4 h-fit">
           <div className="flex flex-col gap-1">
             <Text textType={"paragraph"} className="font-bold text-left" as="p">
               Tracks
             </Text>
             <Text textType={"small"} className="text-muted text-left" as="p">
-              These tracks exist on the Digital Assets Day only.
+              Only sessions the programme sorts into a track carry one.
             </Text>
           </div>
-          <div className="flex flex-row md:flex-col flex-wrap gap-2">
-            {DAD_TRACKS.map((track) => {
-              const selected = dadTrackFilter === track.name;
-              return (
-                <button
-                  key={track.name}
-                  type="button"
-                  onClick={() =>
-                    setDadTrackFilter(selected ? undefined : track.name)
-                  }
-                  className={classNames(
-                    "flex items-center gap-2.5 rounded-lg border py-2 px-3 text-left transition-colors w-fit md:w-full",
-                    selected
-                      ? track.active
-                      : "border-line text-secondary hover:border-line-strong hover:text-white",
-                  )}
-                >
-                  <span
-                    className={classNames(
-                      "inline-block h-3 w-3 shrink-0 rounded-full",
-                      track.dot,
-                    )}
-                    aria-hidden
-                  />
-                  <Text
-                    textType={"small"}
-                    className="!text-inherit text-left"
-                    as="p"
-                  >
-                    {track.name}
-                  </Text>
-                </button>
-              );
-            })}
-          </div>
+          {TRACK_GROUPS.map((group) => (
+            <div key={group.label} className="flex flex-col gap-2">
+              <Text
+                textType={"small"}
+                className="text-muted text-left uppercase tracking-widest"
+                as="p"
+              >
+                {group.label}
+              </Text>
+              <div className="flex flex-row md:flex-col flex-wrap gap-2">
+                {group.tracks.map((track) => {
+                  const selected = trackFilter === track.name;
+                  return (
+                    <button
+                      key={track.name}
+                      type="button"
+                      onClick={() =>
+                        setTrackFilter(
+                          selected
+                            ? undefined
+                            : (track.name as AgendaTrackName),
+                        )
+                      }
+                      className={classNames(
+                        "flex items-center gap-2.5 rounded-lg border py-2 px-3 text-left transition-colors w-fit md:w-full",
+                        selected
+                          ? track.active
+                          : "border-line text-secondary hover:border-line-strong hover:text-white",
+                      )}
+                    >
+                      <span
+                        className={classNames(
+                          "inline-block h-3 w-3 shrink-0 rounded-full",
+                          track.dot,
+                        )}
+                        aria-hidden
+                      />
+                      <Text
+                        textType={"small"}
+                        className="!text-inherit text-left"
+                        as="p"
+                      >
+                        {track.name}
+                      </Text>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </div>
+        {anyFilter && (
+          <button
+            type="button"
+            onClick={clearFilters}
+            className="w-fit md:w-full rounded-lg border border-line px-3 py-2 text-secondary transition-colors hover:border-line-strong hover:text-white"
+          >
+            <Text textType={"small"} className="!text-inherit" as="p">
+              Clear all filters
+            </Text>
+          </button>
+        )}
       </div>
       <div id="sessions" className="flex w-full flex-col gap-y-4">
         <div className="flex w-full flex-col items-center md:items-start">
@@ -431,8 +546,8 @@ export const Agenda: React.FC<AgendaProps> = ({ sessions, speakers }) => {
                     textType="small"
                     className="text-secondary max-w-md"
                   >
-                    The First Conference Day and Hackathon programmes are in the
-                    making and will be published right here. Stay tuned!
+                    The Hackathon programme is in the making and will be
+                    published right here. Stay tuned!
                   </Text>
                 </div>
               )
