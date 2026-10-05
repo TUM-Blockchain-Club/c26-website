@@ -221,23 +221,28 @@ export const Header = React.forwardRef<HeaderElement, HeaderProps>(
           {...propRest}
           className={classNames(
             className,
-            "fixed z-[9999] w-full py-3 md:py-4 flex justify-center items-center px-4 md:px-8 lg:px-12 xl:px-20 transition-colors duration-300",
-            {
-              "dark:bg-black/50 border-b border-white/5": isScrolled,
-              "bg-transparent border-b border-transparent": !isScrolled,
-            },
+            "fixed z-[9999] w-full py-3 md:py-4 flex justify-center items-center px-4 md:px-8 lg:px-12 xl:px-20",
           )}
-          // The blur is set here rather than through a class so the property is
-          // always present: the compositor layer then exists from the first
-          // paint and only its radius changes on scroll. Switching it on
-          // mid-scroll used to cost a frame of up to a quarter of a second.
-          style={{
-            backdropFilter: isScrolled ? "blur(12px)" : "blur(0px)",
-            WebkitBackdropFilter: isScrolled ? "blur(12px)" : "blur(0px)",
-          }}
           ref={ref}
         >
-          <div className="max-w-7xl w-full flex justify-between items-center gap-4">
+          {/* The scrolled look lives on its own layer and fades in and out.
+              It used to be classes on the header itself, so crossing the
+              threshold transitioned background-color and border-bottom-color
+              and changed the blur radius, none of which the compositor can
+              take over: a short fast scroll past 100px put the page through
+              300ms of style recalculation and repainting, which is exactly
+              where it felt stuck. Opacity is composited, and the blur is
+              declared once and never changes. */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 border-b border-white/5 bg-black/50 transition-opacity duration-300"
+            style={{
+              opacity: isScrolled ? 1 : 0,
+              backdropFilter: "blur(12px)",
+              WebkitBackdropFilter: "blur(12px)",
+            }}
+          />
+          <div className="relative max-w-7xl w-full flex justify-between items-center gap-4">
             <div className="w-10 md:w-12 lg:w-16 shrink-0">
               <NextLink href="/">
                 <Image

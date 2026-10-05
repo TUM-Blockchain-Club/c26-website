@@ -107,12 +107,6 @@ body::after {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* Text selection in brand purple instead of default blue. */
-::selection {
-  background: rgb(var(--color-brand-purple-rgb) / 0.6);
-  color: #fff;
-}
-
 /* Visible, on-brand keyboard focus. */
 :focus-visible {
   outline: 2px solid rgb(var(--color-brand-purple-rgb) / 0.9);
@@ -267,11 +261,13 @@ body::after {
   border-style: solid;
 }
 
-.glow {
+/* Both of these animate box-shadow, which repaints rather than composites.
+   They now run only while their section is hovered, so an idle page is idle. */
+.glow:hover {
   animation: glow 5s infinite;
 }
 
-.shadow-glow {
+.shadow-glow:hover {
   animation: shadow-glow 5s infinite;
 }
 
@@ -359,26 +355,14 @@ body::after {
   );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  /* Slow shimmer: the gradient drifts through the letters. Subtle enough
-     to feel alive without calling attention to itself. */
-  background-size: 220% 220%;
-  animation: gradient-pan 10s ease-in-out infinite;
-}
-
-@keyframes gradient-pan {
-  0%,
-  100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .text-gradient {
-    animation: none;
-  }
+  /* The gradient used to drift slowly through the letters. It animated
+     background-position, which the compositor cannot take over, so every
+     gradient heading on the page recalculated style and repainted on every
+     frame, for as long as the page was open. With .text-gradient on 39
+     components that was most of the style work a scroll had to compete with,
+     measured at over 600ms of recalc across six seconds of scrolling. The
+     gradient stays, the drift is gone. */
+  background-size: 100% 100%;
 }
 
 /* Rounded card with a 1px brand-gradient border (border-image can't round corners,
@@ -599,15 +583,26 @@ body::after {
   );
 }
 
+/* The slide timer under the venue carousel. It used to animate width, which
+   lays the page out again on every frame, for as long as the homepage is
+   open; scaleX looks the same and stays on the compositor. */
 .line-anim {
+  transform-origin: left center;
   animation: lineAnim 4s linear infinite;
+  will-change: transform;
 }
 
 @keyframes lineAnim {
   0% {
-    width: 0;
+    transform: scaleX(0);
   }
   100% {
-    width: 100%;
+    transform: scaleX(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .line-anim {
+    animation: none;
   }
 }
