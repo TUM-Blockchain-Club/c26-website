@@ -1,6 +1,6 @@
 import classNames from "classnames";
 import { Text } from "@/components/text";
-import { SpeakerFaces, facesOf } from "@/components/agenda/SpeakerFaces";
+import { AgendaSpeakers } from "@/components/agenda/AgendaSpeakers";
 import {
   DAD_TRACKS,
   type AgendaEntry,
@@ -101,40 +101,26 @@ const EntryRow = ({ entry }: { entry: AgendaEntry }) => {
 
       <div className="flex flex-col gap-1">
         {entry.title ? (
-          <Text as="p" textType="lgsmall" className="font-bold leading-snug">
+          <Text as="p" textType="paragraph" className="font-bold leading-snug">
             {entry.title}
           </Text>
         ) : (
-          <Text as="p" textType="lgsmall" className="text-muted italic">
+          <Text as="p" textType="paragraph" className="text-muted italic">
             Title to be announced
           </Text>
         )}
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-        <span className="flex min-w-0 items-center gap-3">
-          <SpeakerFaces names={facesOf(entry)} />
-          <Text as="span" textType="small" className="text-secondary">
-            {entry.speakers?.length
-              ? entry.speakers.join(", ")
-              : "Speaker to be announced"}
-            {entry.moderator && (
-              <span className="text-faint">
-                {" · moderated by "}
-                {entry.moderator}
-              </span>
-            )}
-          </Text>
-        </span>
-        <span className="flex items-center gap-2">
-          <span
-            className={classNames("h-2 w-2 rounded-full", style.dot)}
-            aria-hidden
-          />
-          <Text as="span" textType="small" className="text-secondary">
-            {entry.track}
-          </Text>
-        </span>
+      <AgendaSpeakers speakers={entry.speakers} moderator={entry.moderator} />
+
+      <div className="flex items-center gap-2">
+        <span
+          className={classNames("h-2 w-2 rounded-full", style.dot)}
+          aria-hidden
+        />
+        <Text as="span" textType="small" className="text-secondary">
+          {entry.track}
+        </Text>
       </div>
     </div>
   );

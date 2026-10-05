@@ -1,6 +1,7 @@
 import classNames from "classnames";
 import { Text } from "@/components/text";
 import { SpeakerFaces, facesOf } from "@/components/agenda/SpeakerFaces";
+import { AgendaSpeakers } from "@/components/agenda/AgendaSpeakers";
 import {
   DAD_TRACKS,
   agendaEntries,
@@ -328,20 +329,16 @@ export const DigitalAssetsDayAgenda = () => {
               <Text as="p" textType="small" className="font-bold text-white">
                 {rangeLabel(e.time, e.duration)} · {e.stage}
               </Text>
-              <Text as="p" textType="lgsmall" className="font-bold">
+              <Text as="p" textType="paragraph" className="font-bold">
                 {e.title ?? "Title to be announced"}
               </Text>
               {namesOf(e) && (
-                <span className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-2">
-                  <SpeakerFaces names={facesOf(e)} />
-                  <Text
-                    as="p"
-                    textType="small"
-                    className="leading-snug text-secondary"
-                  >
-                    {namesOf(e)}
-                  </Text>
-                </span>
+                <div className="mt-2">
+                  <AgendaSpeakers
+                    speakers={e.speakers}
+                    moderator={e.moderator}
+                  />
+                </div>
               )}
             </div>
           ),
