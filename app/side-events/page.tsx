@@ -1,21 +1,12 @@
 import { Container } from "@/components/container";
-import { Events } from "@/components/event/Events";
+import { SideEventList } from "@/components/event/SideEventList";
 import { Text } from "@/components/text";
-import { fetchSideEvents, SideEvent } from "@/components/service/contentStrapi";
 import ScheduleOverview from "@/components/schedule/ScheduleOverview";
 
-export default async function SideEvents() {
-  const sideEvents: SideEvent[] = await fetchSideEvents();
-
-  const items = sideEvents.map((e) => ({
-    title: e.title,
-    description: e.description,
-    image: e.image?.url || "/side-events/pre-event.jpg",
-    startTime: e.startTime,
-    endTime: e.endTime,
-    link: e.link,
-  }));
-
+// Side events come from constants/sideEvents26.ts, not from Strapi: the page
+// used to fetch them and then render a placeholder instead, and the production
+// token has no read access to that collection anyway.
+export default function SideEvents() {
   return (
     <div className={"overflow-x-hidden"}>
       <main className={"w-full pt-page-pt lg:pt-0 z-20 2xl:px-[225px] pb-40"}>
@@ -37,10 +28,18 @@ export default async function SideEvents() {
             >
               Side Events
             </Text>
-            {/* <Events items={items} /> */}
-            <Text textType={"sub_title"} className="text-gradient">
-              Individual side events will be announced soon
+            <Text
+              as="p"
+              textType="paragraph"
+              className="text-secondary max-w-3xl leading-relaxed"
+            >
+              Events other people run in the same week, in or near the same
+              house. Each one has its own host and its own registration, so a
+              conference ticket does not get you in.
             </Text>
+            <div className="mt-6">
+              <SideEventList />
+            </div>
           </div>
         </Container>
       </main>
