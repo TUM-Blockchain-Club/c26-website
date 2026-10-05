@@ -19,10 +19,15 @@ const bareName = (name: string) =>
     .toLowerCase();
 
 export type SpeakerLink = {
+  /** The name as the speaker list spells it, which may carry a title the
+   * agenda leaves off, or the other way round. */
+  name: string;
   /** Path to the portrait in `public/`. */
   photo: string;
   /** Anchor of the speaker's card on the speakers page. */
   anchor: string;
+  position?: string;
+  company?: string;
 };
 
 const BY_NAME = new Map<string, SpeakerLink>(
@@ -31,17 +36,29 @@ const BY_NAME = new Map<string, SpeakerLink>(
       ? [
           [
             bareName(s.name),
-            { photo: s.profile_photo.url, anchor: s.documentId },
+            {
+              name: s.name,
+              photo: s.profile_photo.url,
+              anchor: s.documentId,
+              position: s.position,
+              company: s.company_name,
+            },
           ],
         ]
       : [],
   ),
 );
 
-/** The portrait and card anchor for an agenda name, or undefined if the
- * speaker page does not carry them. */
+/** Everything the agenda can show about a speaker, or undefined if the speaker
+ * page does not carry them. */
 export const speakerLinkFor = (name: string): SpeakerLink | undefined =>
   BY_NAME.get(bareName(name));
+
+/** "Head of Treasury, WIBank", or just the one half we have. */
+export const roleLine = (s?: SpeakerLink): string | undefined =>
+  s
+    ? [s.position, s.company].filter(Boolean).join(", ") || undefined
+    : undefined;
 
 /** Just the portrait, for callers that do not need the link. */
 export const portraitFor = (name: string): string | undefined =>
