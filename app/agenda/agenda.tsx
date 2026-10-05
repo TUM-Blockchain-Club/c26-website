@@ -26,7 +26,7 @@ type AgendaProps = { sessions: Session[]; speakers: Speaker[] };
 const EVENTS = [
   {
     key: "conference",
-    label: "First Conference Day",
+    label: "TUM Blockchain Conference Day",
     dot: "bg-gradient-tbc",
     active: "border-tbc-yellow bg-tbc-yellow/15 text-white",
   },
@@ -67,7 +67,7 @@ const TRACK_GROUPS = [
     }[],
   },
   {
-    label: "First Conference Day",
+    label: "TUM Blockchain Conference Day",
     tracks: CONFERENCE_TRACKS as readonly {
       name: string;
       dot: string;
@@ -546,8 +546,8 @@ export const Agenda: React.FC<AgendaProps> = ({ sessions, speakers }) => {
                     textType="small"
                     className="text-secondary max-w-md"
                   >
-                    The First Conference Day and Hackathon programmes are in the
-                    making and will be published right here. Stay tuned!
+                    The Hackathon programme is in the making and will be
+                    published right here. Stay tuned!
                   </Text>
                 </div>
               )

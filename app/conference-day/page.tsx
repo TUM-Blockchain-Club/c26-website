@@ -112,8 +112,8 @@ export default function ConferenceDayPage() {
                 >
                   Day 1
                 </Text>
-                <Text textType="hero" className="text-gradient text-left">
-                  Conference Day
+                <Text textType="sub_hero" className="text-gradient text-left">
+                  TUM Blockchain Conference Day
                 </Text>
               </div>
               <Text
@@ -146,10 +146,7 @@ export default function ConferenceDayPage() {
           <div className="mt-24 flex flex-col gap-32">
             {/* Vision */}
             <section className="flex flex-col gap-8">
-              <SectionHeader
-                eyebrow="The day"
-                title="What Is the Conference Day?"
-              />
+              <SectionHeader eyebrow="The day" title="What Is Day 1?" />
               <div className="flex flex-col gap-5">
                 {VISION.map((paragraph, i) => (
                   <Text

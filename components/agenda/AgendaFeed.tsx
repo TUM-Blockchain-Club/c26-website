@@ -12,7 +12,7 @@ const EVENT_BADGES: Record<
   { label: string; className: string }
 > = {
   conference: {
-    label: "First Conference Day",
+    label: "TUM Blockchain Conference Day",
     className: "border-tbc-yellow/60 bg-tbc-yellow/10 text-tbc-yellow",
   },
   "digital-assets-day": {

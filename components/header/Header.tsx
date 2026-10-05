@@ -3,12 +3,17 @@
 import { Button } from "@/components/button";
 import { Link } from "@/components/link";
 import { Text } from "@/components/text";
-import { Cross1Icon, HamburgerMenuIcon } from "@radix-ui/react-icons";
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+import {
+  ChevronDownIcon,
+  Cross1Icon,
+  HamburgerMenuIcon,
+} from "@radix-ui/react-icons";
 import classNames from "classnames";
 import Image from "next/image";
 import NextLink from "next/link";
 import { usePathname } from "next/navigation";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { HACKATHON_URL } from "@/constants/Links";
 
 type HeaderElement = React.ElementRef<"header">;
@@ -19,36 +24,43 @@ export type HeaderProps = React.ComponentPropsWithoutRef<"header"> & {
 type HeaderLink = {
   label: string;
   link: string;
-  showsAtHome: boolean;
 };
 
-const links: HeaderLink[] = [
-  { label: "Home", link: "/", showsAtHome: true },
-  { label: "Speakers", link: "/speakers", showsAtHome: true },
-  { label: "Sponsors", link: "/sponsors", showsAtHome: true },
-  { label: "Agenda", link: "/agenda", showsAtHome: true },
-  { label: "Conference Day", link: "/conference-day", showsAtHome: true },
+/**
+ * The navigation, grouped. It used to be one flat row of nine links that the
+ * breakpoints had to truncate into a "More" menu; with a page per conference
+ * day that row stopped fitting anywhere. Everything about the programme now
+ * sits under one heading, everything about partnering under another, which
+ * leaves four things to read across the top instead of nine.
+ *
+ * A group with no children is a plain link.
+ */
+type NavGroup = {
+  label: string;
+  link?: string;
+  children?: HeaderLink[];
+};
+
+const nav: NavGroup[] = [
+  { label: "Home", link: "/" },
   {
-    label: "Digital Assets Day",
-    link: "/digital-assets-day",
-    showsAtHome: true,
+    label: "Programme",
+    children: [
+      { label: "Full Agenda", link: "/agenda" },
+      { label: "TUM Blockchain Conference Day", link: "/conference-day" },
+      { label: "Digital Assets Day", link: "/digital-assets-day" },
+      { label: "Hackathon", link: HACKATHON_URL },
+      { label: "Side Events", link: "/side-events" },
+    ],
   },
+  { label: "Speakers", link: "/speakers" },
   {
-    label: "Hackathon",
-    link: HACKATHON_URL,
-    showsAtHome: true,
+    label: "Partners",
+    children: [
+      { label: "Our Sponsors", link: "/sponsors" },
+      { label: "Become a Partner", link: "/#become-a-partner" },
+    ],
   },
-  { label: "Side Events", link: "/side-events", showsAtHome: true },
-  {
-    label: "Become a Partner",
-    link: "/#become-a-partner",
-    showsAtHome: true,
-  },
-  // { label: "Manifesto", link: "/#manifesto", showsAtHome: true },
-  // { label: "Academic Forum", link: "/academic-forum", showsAtHome: true },
-  // { label: "Workshops", link: "/workshops", showsAtHome: true },
-  // { label: "Student Grants", link: "#grants", showsAtHome: true },
-  // { label: "FAQ", link: "#faq", showsAtHome: true },
 ];
 
 export type SidebarProps = {
@@ -80,12 +92,35 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           </button>
         </div>
 
-        <nav className="flex flex-col gap-6">
-          {links.map((link) => (
-            <Text asChild key={link.label}>
-              <Link href={link.link}>{link.label}</Link>
-            </Text>
-          ))}
+        <nav className="flex flex-col gap-6 overflow-y-auto pb-6">
+          {nav.map((group) =>
+            group.children ? (
+              <div key={group.label} className="flex flex-col gap-3">
+                <Text
+                  as="p"
+                  textType="small"
+                  className="uppercase tracking-widest text-muted"
+                >
+                  {group.label}
+                </Text>
+                <div className="flex flex-col gap-3 border-l border-line pl-4">
+                  {group.children.map((child) => (
+                    <Text asChild key={child.label}>
+                      <Link href={child.link} onClick={onClose}>
+                        {child.label}
+                      </Link>
+                    </Text>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <Text asChild key={group.label}>
+                <Link href={group.link ?? "/"} onClick={onClose}>
+                  {group.label}
+                </Link>
+              </Text>
+            ),
+          )}
 
           <Button buttonType="primary" asChild className="mt-2">
             <Link href="https://www.tum-blockchain.com">
@@ -98,104 +133,61 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   );
 };
 
-const PRIORITY: string[] = [
-  "Home",
-  "Speakers",
-  "Sponsors",
-  "Agenda",
-  "Digital Assets Day",
-  "Hackathon",
-  "Side Events",
-  "Become a Partner",
-];
-
-function NavDesktop({ items }: { items: HeaderLink[] }) {
-  // ensure deterministic order by priority
-  const ordered = useMemo(
-    () =>
-      [...items].sort(
-        (a, b) => PRIORITY.indexOf(a.label) - PRIORITY.indexOf(b.label),
-      ),
-    [items],
-  );
-
-  const top5 = ordered.slice(0, 5);
-  const restAfter5 = ordered.slice(5);
-  const top7 = ordered.slice(0, 7);
-  const restAfter7 = ordered.slice(7);
+/** One group in the top bar: a link, or a label that opens its children. */
+function NavItem({ group }: { group: NavGroup }) {
+  if (!group.children) {
+    return (
+      <Text asChild>
+        <Link href={group.link ?? "/"} className="whitespace-nowrap">
+          {group.label}
+        </Link>
+      </Text>
+    );
+  }
 
   return (
-    <div
-      className={`
-        hidden md:flex h-full items-center justify-center
-        gap-4 lg:gap-6 xl:gap-8
-        min-w-0
-      `}
-    >
-      <div className="md:flex lg:hidden items-center gap-4 min-w-0">
-        {top5.map((l) => (
-          <Text asChild key={`md-${l.label}`}>
-            <Link href={l.link} className="truncate">
-              {l.label}
-            </Link>
-          </Text>
-        ))}
-        {!!restAfter5.length && <MoreMenu items={restAfter5} />}
-      </div>
-
-      <div className="hidden lg:flex xl:hidden items-center gap-6 min-w-0">
-        {top7.map((l) => (
-          <Text asChild key={`lg-${l.label}`}>
-            <Link href={l.link} className="truncate">
-              {l.label}
-            </Link>
-          </Text>
-        ))}
-        {!!restAfter7.length && <MoreMenu items={restAfter7} />}
-      </div>
-
-      {/* XL layout: all inline */}
-      <div className="hidden xl:flex items-center gap-8 min-w-0">
-        {ordered.map((l) => (
-          <Text asChild key={`xl-${l.label}`}>
-            <Link href={l.link} className="truncate">
-              {l.label}
-            </Link>
-          </Text>
-        ))}
-      </div>
-    </div>
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger asChild>
+        <button
+          type="button"
+          className="flex items-center gap-1.5 whitespace-nowrap outline-none transition-colors hover:text-white data-[state=open]:text-white"
+        >
+          <Text as="span">{group.label}</Text>
+          <ChevronDownIcon
+            className="transition-transform duration-200 group-data-[state=open]:rotate-180"
+            aria-hidden
+          />
+        </button>
+      </DropdownMenu.Trigger>
+      <DropdownMenu.Portal>
+        <DropdownMenu.Content
+          sideOffset={14}
+          align="start"
+          className="z-[10000] min-w-56 rounded-xl border border-line-subtle bg-black/90 p-2 shadow-2xl backdrop-blur-xl"
+        >
+          {group.children.map((child) => (
+            <DropdownMenu.Item key={child.label} asChild>
+              <Link
+                href={child.link}
+                className="block cursor-pointer rounded-lg px-3 py-2 whitespace-nowrap outline-none hover:bg-white/5 focus:bg-white/5"
+              >
+                <Text as="span">{child.label}</Text>
+              </Link>
+            </DropdownMenu.Item>
+          ))}
+        </DropdownMenu.Content>
+      </DropdownMenu.Portal>
+    </DropdownMenu.Root>
   );
 }
 
-function MoreMenu({ items }: { items: HeaderLink[] }) {
+function NavDesktop() {
   return (
-    <details className="relative group">
-      <summary className="cursor-pointer list-none select-none">
-        <span>More</span>
-      </summary>
-      <div
-        className={`
-          absolute right-0 mt-2 min-w-52 rounded-xl border border-line-subtle
-          bg-black/90 p-2 backdrop-blur-xl shadow-2xl
-        `}
-      >
-        <ul className="py-1">
-          {items.map((l) => (
-            <li key={l.label}>
-              <Text asChild>
-                <Link
-                  href={l.link}
-                  className="block rounded-lg px-3 py-2 hover:bg-white/5 whitespace-nowrap"
-                >
-                  {l.label}
-                </Link>
-              </Text>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </details>
+    <nav className="hidden min-w-0 items-center gap-5 md:flex lg:gap-8">
+      {nav.map((group) => (
+        <NavItem key={group.label} group={group} />
+      ))}
+    </nav>
   );
 }
 
@@ -263,7 +255,7 @@ export const Header = React.forwardRef<HeaderElement, HeaderProps>(
             </div>
 
             <div className="hidden md:flex items-center gap-3 lg:gap-8">
-              <NavDesktop items={links} />
+              <NavDesktop />
               <Button asChild className="whitespace-nowrap md:px-3 lg:px-4 ">
                 <Link href="https://www.tum-blockchain.com">
                   Visit Club Website
