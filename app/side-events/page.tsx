@@ -31,11 +31,10 @@ export default function SideEvents() {
             <Text
               as="p"
               textType="paragraph"
-              className="text-secondary max-w-3xl leading-relaxed"
+              className="text-secondary max-w-2xl leading-relaxed"
             >
-              Events other people run in the same week, in or near the same
-              house. Each one has its own host and its own registration, so a
-              conference ticket does not get you in.
+              Other people&apos;s events in the same week, each with its own
+              host and its own registration.
             </Text>
             <div className="mt-6">
               <SideEventList />

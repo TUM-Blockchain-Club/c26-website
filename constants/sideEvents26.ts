@@ -4,8 +4,9 @@
  * them. Hand maintained, like the other snapshots in here, so an event only
  * appears once someone has checked its date, venue and registration link.
  *
- * `note` is for the practical catch an attendee would otherwise discover at
- * the door, such as a separate registration.
+ * Keep the entries short: the card is a pointer, not a programme. One line of
+ * description, a handful of topic words, and `note` only for the practical
+ * catch an attendee would otherwise discover at the door.
  */
 export type SideEvent26 = {
   id: string;
@@ -33,7 +34,7 @@ export const sideEvents26: SideEvent26[] = [
     title: "Crypto Tax & Crime Konferenz 2026",
     tagline: "Krypto im Blickwinkel von Strafverfolgung, Besteuerung und AML",
     description:
-      "A full day on the side of crypto that reaches courtrooms and tax offices: seizing and liquidating bitcoin, tracing stolen funds on chain, the anatomy of a hack and how DPRK laundering works, and what DAC8, CARF and the new AML Regulation actually demand. Speakers come from prosecution, forensics, the tax administration and compliance, among them Chainalysis, Tradias, CoinTracking and Bitcoin Suisse.",
+      "Crypto seen from prosecution, taxation and AML: seizure, forensics, DAC8 and CARF.",
     host: "Matthias Steger Consulting and AQ Forensics",
     date: "2026-10-30",
     start: "09:00",
@@ -41,14 +42,8 @@ export const sideEvents26: SideEvent26[] = [
     venue: "House of Communication, Munich",
     language: "German",
     free: true,
-    topics: [
-      "Law enforcement",
-      "Asset seizure",
-      "Blockchain forensics",
-      "DAC8 & CARF",
-      "AML & sanctions",
-    ],
+    topics: ["Law enforcement", "Forensics", "DAC8 & CARF", "AML"],
     link: "https://ctc-conference.de/#m-anmeldung",
-    note: "Same house as the conference, and it runs alongside the Digital Assets Day. Seats are limited and registration is separate: a conference ticket does not cover it.",
+    note: "Separate registration, limited seats. A conference ticket does not cover it.",
   },
 ];
