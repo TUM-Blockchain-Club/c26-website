@@ -27,6 +27,7 @@ const links: HeaderLink[] = [
   { label: "Speakers", link: "/speakers", showsAtHome: true },
   { label: "Sponsors", link: "/sponsors", showsAtHome: true },
   { label: "Agenda", link: "/agenda", showsAtHome: true },
+  { label: "Conference Day", link: "/conference-day", showsAtHome: true },
   {
     label: "Digital Assets Day",
     link: "/digital-assets-day",

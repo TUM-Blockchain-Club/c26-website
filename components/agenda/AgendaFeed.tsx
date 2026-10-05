@@ -2,7 +2,7 @@ import classNames from "classnames";
 import { Text } from "@/components/text";
 import { AgendaSpeakers } from "@/components/agenda/AgendaSpeakers";
 import {
-  DAD_TRACKS,
+  AGENDA_TRACKS,
   type AgendaEntry,
   type AgendaEventKey,
 } from "@/constants/digitalAssetsDayAgenda";
@@ -25,8 +25,11 @@ const EVENT_BADGES: Record<
   },
 };
 
+/** Most First Conference Day sessions carry no track, so this is only called
+ * where one exists. */
 const trackStyle = (name: string) =>
-  DAD_TRACKS.find((t) => t.name === name) ?? DAD_TRACKS[DAD_TRACKS.length - 1];
+  AGENDA_TRACKS.find((t) => t.name === name) ??
+  AGENDA_TRACKS[AGENDA_TRACKS.length - 1];
 
 const formatDay = (iso: string) =>
   new Date(iso).toLocaleDateString("en-DE", {
@@ -70,13 +73,13 @@ const EntryRow = ({ entry }: { entry: AgendaEntry }) => {
   }
 
   const badge = EVENT_BADGES[entry.event];
-  const style = trackStyle(entry.track);
+  const style = entry.track ? trackStyle(entry.track) : undefined;
 
   return (
     <div
       className={classNames(
         "flex flex-col gap-3 rounded-lg border border-l-4 bg-white/[0.02] px-5 py-4",
-        style.accent,
+        style ? style.accent : "border-l-line-strong",
       )}
     >
       <div className="flex flex-wrap items-center gap-2">
@@ -113,15 +116,17 @@ const EntryRow = ({ entry }: { entry: AgendaEntry }) => {
 
       <AgendaSpeakers speakers={entry.speakers} moderator={entry.moderator} />
 
-      <div className="flex items-center gap-2">
-        <span
-          className={classNames("h-2 w-2 rounded-full", style.dot)}
-          aria-hidden
-        />
-        <Text as="span" textType="small" className="text-secondary">
-          {entry.track}
-        </Text>
-      </div>
+      {style && entry.track && (
+        <div className="flex items-center gap-2">
+          <span
+            className={classNames("h-2 w-2 rounded-full", style.dot)}
+            aria-hidden
+          />
+          <Text as="span" textType="small" className="text-secondary">
+            {entry.track}
+          </Text>
+        </div>
+      )}
     </div>
   );
 };
