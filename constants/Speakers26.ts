@@ -644,7 +644,7 @@ export const speakers26: Speaker[] = [
     name: "Markus Kluge",
     position: "CPO & Co-Founder",
     company_name: "tokenforge GmbH",
-
+    // On the Tokenization Deep Dive on the Digital Assets Day.
     url: "https://www.linkedin.com/in/markus-kluge-8785a98/",
     priority: 41,
     createdAt: "",
@@ -658,7 +658,7 @@ export const speakers26: Speaker[] = [
     name: "Dolf Diederichsen",
     position: "Co-founder and CEO",
     company_name: "Hyphe Markets GmbH",
-
+    // Speaks on "All ways lead to Rome" on the Digital Assets Day.
     url: "https://www.linkedin.com/in/dolf-diederichsen",
     priority: 42,
     createdAt: "",
