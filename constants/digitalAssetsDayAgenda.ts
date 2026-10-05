@@ -99,17 +99,10 @@ export const DAD_TRACKS = [
 
 export type DadTrackName = (typeof DAD_TRACKS)[number]["name"];
 
-/** Tracks of the First Conference Day. Its export only ever says "Research" or
- * "Other"; "Other" carries no meaning for a reader, so those sessions get no
- * track rather than an invented one. */
-export const CONFERENCE_TRACKS = [
-  {
-    name: "Research",
-    dot: "bg-[#8b5cf6]",
-    accent: "border-[#8b5cf6]",
-    active: "border-[#8b5cf6] bg-[#8b5cf6]/15 text-white",
-  },
-] as const;
+/** The First Conference Day does not sort its sessions into tracks, so this
+ * list is empty; it stays so a day that does can be added without reshaping
+ * the filter. */
+export const CONFERENCE_TRACKS = [] as const;
 
 export const AGENDA_TRACKS = [...DAD_TRACKS, ...CONFERENCE_TRACKS];
 
@@ -173,6 +166,7 @@ export const agendaEntries: AgendaEntry[] = [
     stage: NAKAMOTO,
     title: "Opening",
     format: "Opening",
+    speakers: ["Felix Rihacek"],
   },
   {
     ...TBC,
@@ -189,8 +183,9 @@ export const agendaEntries: AgendaEntry[] = [
     time: "09:20",
     duration: 25,
     stage: TURING,
-    track: "Research",
     title: "Why the Future of AI Depends on Verifiable Science",
+    // The export still has her as Contacted; Felix confirmed her for this one.
+    speakers: ["Dr. Sandra Vengadasalam"],
   },
   {
     ...TBC,
@@ -208,7 +203,6 @@ export const agendaEntries: AgendaEntry[] = [
     time: "09:50",
     duration: 25,
     stage: TURING,
-    track: "Research",
     title: "Atomic composability in EVM ecosystems and beyond",
     format: "Keynote",
   },
@@ -269,7 +263,6 @@ export const agendaEntries: AgendaEntry[] = [
     time: "10:50",
     duration: 25,
     stage: TURING,
-    track: "Research",
     title: "Flock: Fast Proving for Batch Boolean Computations",
     speakers: ["William Wang"],
   },
@@ -289,7 +282,6 @@ export const agendaEntries: AgendaEntry[] = [
     time: "11:20",
     duration: 25,
     stage: TURING,
-    track: "Research",
     format: "Keynote",
     speakers: ["Andrew Zitek"],
   },
@@ -319,7 +311,6 @@ export const agendaEntries: AgendaEntry[] = [
     time: "11:50",
     duration: 25,
     stage: TURING,
-    track: "Research",
     format: "Keynote",
     speakers: ["Vadim Lyubashevsky"],
   },
@@ -338,7 +329,6 @@ export const agendaEntries: AgendaEntry[] = [
     time: "12:20",
     duration: 25,
     stage: TURING,
-    track: "Research",
     format: "Keynote",
     speakers: ["Pavel Hubacek"],
   },
@@ -392,7 +382,6 @@ export const agendaEntries: AgendaEntry[] = [
     time: "13:30",
     duration: 25,
     stage: TURING,
-    track: "Research",
     title: "How to be Private on a Public Blockchain",
     format: "Keynote",
     speakers: ["Sergey Shemyakov"],
@@ -413,7 +402,6 @@ export const agendaEntries: AgendaEntry[] = [
     time: "14:00",
     duration: 25,
     stage: TURING,
-    track: "Research",
     title: "Plonk Without Random Oracles",
     format: "Keynote",
     speakers: ["Marek Sefranek"],
@@ -444,7 +432,6 @@ export const agendaEntries: AgendaEntry[] = [
     time: "14:30",
     duration: 25,
     stage: TURING,
-    track: "Research",
     title: "Language-Agnostic Detection of Bugs in ZKP Programs",
     format: "Keynote",
     speakers: ["Arman Kolozyan"],
@@ -455,8 +442,7 @@ export const agendaEntries: AgendaEntry[] = [
     time: "14:45",
     duration: 40,
     stage: HOPPER,
-    title:
-      "Tokenize Everything — Ondo, xStocks, Paxos & the Race for Onchain Equities",
+    title: "Tokenize Everything, the Race for Onchain Equities",
     format: "Panel",
   },
   {
@@ -475,7 +461,6 @@ export const agendaEntries: AgendaEntry[] = [
     time: "15:00",
     duration: 25,
     stage: TURING,
-    track: "Research",
     speakers: ["Kasra EdalatNejad"],
   },
   {
@@ -484,7 +469,6 @@ export const agendaEntries: AgendaEntry[] = [
     time: "15:30",
     duration: 25,
     stage: TURING,
-    track: "Research",
     title: "Cryptanalysis of Witness Encryption: A Path to Bitcoin Privacy",
     speakers: ["Markus Schofnegger"],
   },
@@ -494,7 +478,6 @@ export const agendaEntries: AgendaEntry[] = [
     time: "15:30",
     duration: 25,
     stage: HOPPER,
-    track: "Research",
     title: "DLT Interoperabilität thanks to Open Source",
     format: "Keynote",
   },
@@ -514,7 +497,6 @@ export const agendaEntries: AgendaEntry[] = [
     time: "16:00",
     duration: 25,
     stage: TURING,
-    track: "Research",
     title:
       "The Exotic Derivatives Missing from Blockchain Interest-Rate Markets",
     format: "Keynote",
@@ -535,7 +517,6 @@ export const agendaEntries: AgendaEntry[] = [
     time: "16:30",
     duration: 25,
     stage: TURING,
-    track: "Research",
     format: "Keynote",
     speakers: ["Dr. Slobodan Sudaric-Hefner"],
   },

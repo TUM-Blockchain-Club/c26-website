@@ -55,8 +55,9 @@ const FORMATS = [
   ),
 ].sort();
 
-/** The two track families. The First Conference Day sorts only its research
- * sessions; the Digital Assets Day sorts all of its own. */
+/** Track families, one per event that sorts its sessions into tracks. Only
+ * the Digital Assets Day does; the group stays named so it is obvious the
+ * tracks belong to that day and not to the whole programme. */
 const TRACK_GROUPS = [
   {
     label: "Digital Assets Day",
@@ -66,19 +67,10 @@ const TRACK_GROUPS = [
       active: string;
     }[],
   },
-  {
-    label: "TUM Blockchain Conference Day",
-    tracks: CONFERENCE_TRACKS as readonly {
-      name: string;
-      dot: string;
-      active: string;
-    }[],
-  },
-];
+].filter((g) => g.tracks.length > 0);
 
 export const Agenda: React.FC<AgendaProps> = ({ sessions, speakers }) => {
   const [titleFilter, setTitleFilter] = useState<string>("");
-  const [dayFilter, setDayFilter] = useState<Date>();
   const [eventFilter, setEventFilter] = useState<EventKey>();
   const [roomFilter, setRoomFilter] = useState<string>();
   const [trackFilter, setTrackFilter] = useState<AgendaTrackName>();
@@ -94,19 +86,10 @@ export const Agenda: React.FC<AgendaProps> = ({ sessions, speakers }) => {
   };
   const SAME_TIME_WINDOW_MS = 0 * 60 * 1000; // 5 minutes
 
-  function isSameDay(d1: Date, d2: Date) {
-    return (
-      d1.getFullYear() === d2.getFullYear() &&
-      d1.getMonth() === d2.getMonth() &&
-      d1.getDate() === d2.getDate()
-    );
-  }
-
   // The published programme entries (one entity per talk) follow every
   // filter. Breaks, milestones and open slots only accompany the full flow.
   const feedQuery = titleFilter.trim().toLowerCase();
   const visibleEntries = agendaEntries.filter((entry) => {
-    if (dayFilter && !isSameDay(dayFilter, new Date(entry.day))) return false;
     if (eventFilter && entry.event !== eventFilter) return false;
 
     if (entry.kind !== "talk") {
@@ -149,10 +132,9 @@ export const Agenda: React.FC<AgendaProps> = ({ sessions, speakers }) => {
     trackFilter ||
     formatFilter
   );
-  const anyFilter = !!(feedHasOwnFilters || dayFilter || eventFilter);
+  const anyFilter = !!(feedHasOwnFilters || eventFilter);
   const clearFilters = () => {
     setTitleFilter("");
-    setDayFilter(undefined);
     setEventFilter(undefined);
     setRoomFilter(undefined);
     setTrackFilter(undefined);
@@ -163,8 +145,6 @@ export const Agenda: React.FC<AgendaProps> = ({ sessions, speakers }) => {
 
   if (sessions) {
     filteredSessions = sessions.filter((item) => {
-      const matchesDay =
-        !dayFilter || isSameDay(dayFilter, new Date(item.startTime));
       const matchesEvent = !eventFilter || (item as any).event === eventFilter;
 
       const q = titleFilter.trim().toLowerCase();
@@ -199,7 +179,7 @@ export const Agenda: React.FC<AgendaProps> = ({ sessions, speakers }) => {
 
       const matchesTitle = !q || haystack.includes(q);
 
-      return matchesDay && matchesEvent && matchesTitle;
+      return matchesEvent && matchesTitle;
     });
 
     filteredSessions.sort((a, b) => {
@@ -284,49 +264,6 @@ export const Agenda: React.FC<AgendaProps> = ({ sessions, speakers }) => {
                 </button>
               );
             })}
-          </div>
-        </div>
-        <div className="flex flex-col gap-3 h-fit">
-          <Text textType={"paragraph"} className="font-bold text-left" as="p">
-            Days
-          </Text>
-          <div className="flex flex-row md:flex-col gap-2">
-            {[
-              new Date("2026-10-29"),
-              new Date("2026-10-30"),
-              new Date("2026-10-31"),
-            ].map((date, index) => (
-              <Toggle
-                onClick={() =>
-                  dayFilter !== undefined && isSameDay(dayFilter, date)
-                    ? setDayFilter(undefined)
-                    : setDayFilter(date)
-                }
-                pressed={dayFilter !== undefined && isSameDay(dayFilter, date)}
-                className="rounded-sm py-2 w-fit md:w-full w-full rounded-lg text-white border py-2 px-3"
-                key={index}
-              >
-                <Text
-                  textType={"small"}
-                  className="!text-inherit text-center"
-                  as="p"
-                >
-                  {date.toLocaleDateString("en-DE", {
-                    weekday: "long",
-                    timeZone: "Europe/Berlin",
-                  })}
-                  <span className="hidden md:inline">
-                    ,{" "}
-                    {date.toLocaleDateString("en-DE", {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric",
-                      timeZone: "Europe/Berlin",
-                    })}
-                  </span>
-                </Text>
-              </Toggle>
-            ))}
           </div>
         </div>
         <div className="flex flex-col gap-3 h-fit">
