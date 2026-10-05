@@ -46,15 +46,6 @@ const EVENTS = [
 
 type EventKey = (typeof EVENTS)[number]["key"];
 
-/** Session formats, read off the programme so the list cannot go stale. */
-const FORMATS = [
-  ...new Set(
-    agendaEntries.flatMap((entry) =>
-      entry.kind === "talk" && entry.format ? [entry.format] : [],
-    ),
-  ),
-].sort();
-
 /** Track families, one per event that sorts its sessions into tracks. Only
  * the Digital Assets Day does; the group stays named so it is obvious the
  * tracks belong to that day and not to the whole programme. */
@@ -74,7 +65,6 @@ export const Agenda: React.FC<AgendaProps> = ({ sessions, speakers }) => {
   const [eventFilter, setEventFilter] = useState<EventKey>();
   const [roomFilter, setRoomFilter] = useState<string>();
   const [trackFilter, setTrackFilter] = useState<AgendaTrackName>();
-  const [formatFilter, setFormatFilter] = useState<string>();
 
   const STAGE_PRIORITY: Record<string, number> = {
     "Stage 3": 0, // Nakamoto — highest priority
@@ -93,7 +83,7 @@ export const Agenda: React.FC<AgendaProps> = ({ sessions, speakers }) => {
     if (eventFilter && entry.event !== eventFilter) return false;
 
     if (entry.kind !== "talk") {
-      if (feedQuery || trackFilter || formatFilter) return false;
+      if (feedQuery || trackFilter) return false;
       if (
         roomFilter &&
         "stage" in entry &&
@@ -106,7 +96,6 @@ export const Agenda: React.FC<AgendaProps> = ({ sessions, speakers }) => {
 
     if (roomFilter && roomOfStage(entry.stage) !== roomFilter) return false;
     if (trackFilter && entry.track !== trackFilter) return false;
-    if (formatFilter && entry.format !== formatFilter) return false;
     if (feedQuery) {
       const haystack = [
         entry.title,
@@ -126,19 +115,13 @@ export const Agenda: React.FC<AgendaProps> = ({ sessions, speakers }) => {
   const visibleTalksCount = visibleEntries.filter(
     (entry) => entry.kind === "talk",
   ).length;
-  const feedHasOwnFilters = !!(
-    feedQuery ||
-    roomFilter ||
-    trackFilter ||
-    formatFilter
-  );
+  const feedHasOwnFilters = !!(feedQuery || roomFilter || trackFilter);
   const anyFilter = !!(feedHasOwnFilters || eventFilter);
   const clearFilters = () => {
     setTitleFilter("");
     setEventFilter(undefined);
     setRoomFilter(undefined);
     setTrackFilter(undefined);
-    setFormatFilter(undefined);
   };
 
   let filteredSessions = null;
@@ -303,31 +286,6 @@ export const Agenda: React.FC<AgendaProps> = ({ sessions, speakers }) => {
                     {room.labels["digital-assets-day"]} on Oct 30
                   </Text>
                 </span>
-              </Toggle>
-            ))}
-          </div>
-        </div>
-        <div className="flex flex-col gap-3 h-fit">
-          <Text textType={"paragraph"} className="font-bold text-left" as="p">
-            Format
-          </Text>
-          <div className="flex flex-row md:flex-col flex-wrap gap-2">
-            {FORMATS.map((format) => (
-              <Toggle
-                key={format}
-                onClick={() =>
-                  setFormatFilter(formatFilter === format ? undefined : format)
-                }
-                pressed={formatFilter === format}
-                className="rounded-sm py-2 w-fit md:w-full rounded-lg text-white border py-2 px-3"
-              >
-                <Text
-                  textType={"small"}
-                  className="!text-inherit text-center"
-                  as="p"
-                >
-                  {format}
-                </Text>
               </Toggle>
             ))}
           </div>
