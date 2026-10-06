@@ -86,7 +86,8 @@ html {
 }
 
 body {
-  overflow-x: hidden;
+  /* Clip horizontal overflow without making body a second vertical scroller. */
+  overflow-x: clip;
 }
 
 /* =====================================================================

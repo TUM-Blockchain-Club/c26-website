@@ -91,7 +91,7 @@ export default function RootLayout({
         <Script src="https://tally.so/widgets/embed.js"></Script>
       </head>
       <body
-        className={`${montserrat.className} bg-black text-white overflow-x-hidden w-screen items-center justify-center`}
+        className={`${montserrat.className} bg-black text-white overflow-x-clip w-screen items-center justify-center`}
       >
         {" "}
         {/* FIX: Items center and justify-center are enforcing center alignment for everything*/}
