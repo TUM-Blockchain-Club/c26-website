@@ -61,11 +61,20 @@ export default function DigitalAssetsDayPage() {
       <main className="w-full max-w-7xl pt-page-pt lg:pt-0 z-20 pb-40">
         <Container>
           {/* Header with a large blue conference ring behind a white wordmark */}
-          <div className="relative overflow-hidden">
+          {/* Full bleed: the glow is wider than the text column, so clipping
+              it inside the container shows as hard vertical edges. Letting the
+              box reach the screen edge puts the clip where nobody reads it as
+              an edge; the padding here gives the content its column back. */}
+          <div className="relative overflow-hidden -mx-6 px-6 md:-mx-12 md:px-12 lg:-mx-24 lg:px-24">
             {/* Huge, blurry blue ring */}
             <div
               aria-hidden
-              className="pointer-events-none absolute left-1/2 top-[44%] z-0 h-[175vw] w-[175vw] max-h-[1200px] max-w-[1200px] -translate-x-1/2 -translate-y-1/2 opacity-60 blur-[40px]"
+              // The ring is wider than the hero, which clips it. Without a
+              // mask the clip shows as a hard rectangle with visible edges,
+              // which on a phone is most of what you see. Fading it out
+              // before it reaches the edge keeps it a glow at every width,
+              // and it does not need to be 175vw on a narrow screen.
+              className="pointer-events-none absolute left-1/2 top-[44%] z-0 h-[120vw] w-[120vw] max-h-[1200px] max-w-[1200px] -translate-x-1/2 -translate-y-1/2 opacity-60 blur-[40px] [mask-image:radial-gradient(closest-side,black_55%,transparent_100%)] md:h-[175vw] md:w-[175vw]"
             >
               <div className="hero-ring-wobble relative h-full w-full">
                 <Image
