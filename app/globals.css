@@ -81,8 +81,15 @@ html {
   /* No scroll-behavior here on purpose: with it, anchor links, browser
      back/forward and scrollIntoView all glide instead of jumping, which is
      not what a page normally does. Wheel and touch scrolling were never
-     affected by it either way. */
-  overflow-x: hidden;
+     affected by it either way.
+
+     overflow-x is clip rather than hidden for the same reason it is on body
+     below: hidden makes an element a scroll container, clip does not. There is
+     in fact nothing left to clip, measured across seven pages at 1600, 1280,
+     768 and 390 after the body stopped being 100vw wide, but it stays as a
+     guard so one wide element in a future section cannot put a horizontal
+     scrollbar on the whole site. */
+  overflow-x: clip;
 }
 
 body {
