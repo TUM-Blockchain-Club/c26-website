@@ -23,7 +23,21 @@ export const VenueImage = React.forwardRef<VenueElement, VenueProps>(
         ref={ref}
         {...restProps}
       >
-        <Image src={imageSrc} alt={imageAlt} fill={true} />
+        {/* Cover, not the browser default of stretching to the box: the
+            slides are not all exactly the frame's aspect ratio. */}
+        <Image
+          src={imageSrc}
+          alt={imageAlt}
+          fill={true}
+          // The box is 800px from xl up, so the switch has to sit one
+          // pixel below the breakpoint or a 1280px window asks for the
+          // 600px file and upscales it.
+          sizes="(max-width: 639px) 280px, (max-width: 1279px) 600px, 800px"
+          // Every slide but the first sits outside the clipped box, so
+          // lazy loading never started them and they arrived blank.
+          loading="eager"
+          className="object-cover"
+        />
       </div>
     );
   },
