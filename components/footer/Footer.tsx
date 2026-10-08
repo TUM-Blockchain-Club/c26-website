@@ -37,6 +37,8 @@ const links = [
   { href: "/privacy-policy.pdf", label: "Privacy Policy" },
   { href: "https://www.tum-blockchain.com/imprint", label: "Imprint" },
   { href: "/partners", label: "Partners" },
+  // Moved down here when the header's button became the ticket call to action.
+  { href: "https://www.tum-blockchain.com", label: "TUM Blockchain Club" },
 ];
 
 export const Footer = React.forwardRef<FooterElement, FooterProps>(
@@ -76,11 +78,20 @@ export const Footer = React.forwardRef<FooterElement, FooterProps>(
                 <Text textType={"small"} className="text-muted">
                   Organized by
                 </Text>
-                <Image
-                  src={tbcLogo}
-                  alt={"TUM Blockchain Club Logo"}
-                  width={145}
-                />
+                {/* The mark was a dead image. It is the obvious way to the
+                    club, and the header no longer carries that link. */}
+                <Link
+                  href="https://www.tum-blockchain.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-fit opacity-90 transition-opacity hover:opacity-100"
+                >
+                  <Image
+                    src={tbcLogo}
+                    alt={"TUM Blockchain Club Logo"}
+                    width={145}
+                  />
+                </Link>
               </div>
               <div className="mt-1 flex gap-4">
                 {socials.map((s) => (

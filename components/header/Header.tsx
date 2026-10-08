@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/button";
 import { Link } from "@/components/link";
 import { Text } from "@/components/text";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
@@ -15,6 +14,7 @@ import NextLink from "next/link";
 import { usePathname } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { HACKATHON_URL } from "@/constants/Links";
+import { LumaTicketButton } from "@/components/luma-ticket-button/LumaTicketButton";
 
 type HeaderElement = React.ElementRef<"header">;
 export type HeaderProps = React.ComponentPropsWithoutRef<"header"> & {
@@ -122,11 +122,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             ),
           )}
 
-          <Button buttonType="primary" asChild className="mt-2">
-            <Link href="https://www.tum-blockchain.com">
+          <LumaTicketButton
+            id="luma-ticket-btn-sidebar"
+            className="mt-2 w-full"
+          >
+            Get Your Ticket
+          </LumaTicketButton>
+          <Text asChild>
+            <Link href="https://www.tum-blockchain.com" onClick={onClose}>
               Visit Club Website
             </Link>
-          </Button>
+          </Text>
         </nav>
       </div>
     </div>
@@ -263,23 +269,36 @@ export const Header = React.forwardRef<HeaderElement, HeaderProps>(
               </NextLink>
             </div>
 
+            {/* The bar is fixed, so this is the one call to action that
+                follows the reader through every page, the agenda and the
+                speaker list included. It used to point at the club's website,
+                which is now in the footer instead. */}
             <div className="hidden md:flex items-center gap-3 lg:gap-8">
               <NavDesktop />
-              <Button asChild className="whitespace-nowrap md:px-3 lg:px-4 ">
-                <Link href="https://www.tum-blockchain.com">
-                  Visit Club Website
-                </Link>
-              </Button>
+              <LumaTicketButton
+                id="luma-ticket-btn-header"
+                className="whitespace-nowrap md:px-3 lg:px-4"
+              >
+                Get Your Ticket
+              </LumaTicketButton>
             </div>
 
-            <div className="md:hidden py-2 px-2">
-              <button
-                onClick={() => setIsSidebarOpen(true)}
-                aria-label="Open menu"
-                className="p-2"
+            <div className="flex items-center gap-1 md:hidden">
+              <LumaTicketButton
+                id="luma-ticket-btn-header-mobile"
+                className="whitespace-nowrap !px-3 !py-2 !text-sm"
               >
-                <HamburgerMenuIcon height={24} width={24} />
-              </button>
+                Ticket
+              </LumaTicketButton>
+              <div className="py-2 px-2">
+                <button
+                  onClick={() => setIsSidebarOpen(true)}
+                  aria-label="Open menu"
+                  className="p-2"
+                >
+                  <HamburgerMenuIcon height={24} width={24} />
+                </button>
+              </div>
             </div>
           </div>
         </header>
