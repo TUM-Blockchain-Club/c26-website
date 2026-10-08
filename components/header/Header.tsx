@@ -221,7 +221,11 @@ export const Header = React.forwardRef<HeaderElement, HeaderProps>(
           {...propRest}
           className={classNames(
             className,
-            "fixed z-[9999] w-full py-3 md:py-4 flex justify-center items-center px-4 md:px-8 lg:px-12 xl:px-20",
+            // pr-2 on phones rather than px-4: the burger used to be pulled out
+            // of the row with -mr-2 to sit flush, which made the row eight
+            // pixels wider than its own box on every page. Same place, inside
+            // the box.
+            "fixed z-[9999] w-full py-3 md:py-4 flex justify-center items-center pl-4 pr-2 md:px-8 lg:px-12 xl:px-20",
           )}
           ref={ref}
         >
@@ -268,7 +272,7 @@ export const Header = React.forwardRef<HeaderElement, HeaderProps>(
               </Button>
             </div>
 
-            <div className="md:hidden py-2 px-2 -mr-2">
+            <div className="md:hidden py-2 px-2">
               <button
                 onClick={() => setIsSidebarOpen(true)}
                 aria-label="Open menu"
