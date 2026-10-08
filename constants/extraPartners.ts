@@ -38,6 +38,17 @@ export const extraPartners: StaticCommunityPartner[] = [
     background: "light" as LogoBackground,
   },
   {
+    // Germany's biggest crypto outlet — media partner.
+    name: "BTC-ECHO",
+    src: "/extra-partners26/btc-echo.png",
+    website: "https://www.btc-echo.de",
+    // Their own complete logo: the orange BE mark with the near black
+    // BTC-ECHO wordmark, measured ink luminance 87 of 255, so it belongs on
+    // the white card. Same artwork as the white header version on their site,
+    // same viewBox, only the variant differs. Nothing recoloured.
+    background: "light" as LogoBackground,
+  },
+  {
     // German crypto education and comparison platform — media partner.
     name: "LIGHT UP",
     src: "/extra-partners26/light-up.png",

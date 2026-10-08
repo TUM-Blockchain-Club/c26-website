@@ -73,8 +73,15 @@ const CommunityPartners = async () => {
     : staticCommunityPartners;
 
   // Appended rather than merged into the Strapi list, so they stay on the
-  // page once Strapi starts serving the community ones.
-  const partners: PartnerLogoProps[] = [...community, ...extraPartners];
+  // page once Strapi starts serving the community ones. Once Strapi does
+  // carry one of them, the extra entry would show the same logo a second
+  // time, so match on the name and let the Strapi version win.
+  const key = (name: string) => name.trim().toLowerCase();
+  const alreadyThere = new Set(community.map((partner) => key(partner.name)));
+  const partners: PartnerLogoProps[] = [
+    ...community,
+    ...extraPartners.filter((partner) => !alreadyThere.has(key(partner.name))),
+  ];
 
   if (partners.length === 0) return null;
 
