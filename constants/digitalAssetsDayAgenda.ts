@@ -283,7 +283,7 @@ export const agendaEntries: AgendaEntry[] = [
     duration: 25,
     stage: TURING,
     format: "Keynote",
-    speakers: ["Andrew Zitek"],
+    speakers: ["Andrew Zitek-Estrada"],
   },
   {
     ...TBC,
