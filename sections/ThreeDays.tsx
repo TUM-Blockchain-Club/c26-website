@@ -1,13 +1,9 @@
 import { Text } from "@/components/text";
-import Image from "next/image";
-import DigitalAssetsDayLogo from "@/public/logos/digital-assets-day-logo.png";
 
 type Row = {
   date: string;
   title: string;
   line: string;
-  logo?: typeof DigitalAssetsDayLogo;
-  logoAlt?: string;
 };
 
 const ROWS: Row[] = [
@@ -20,8 +16,6 @@ const ROWS: Row[] = [
     date: "30 Oct",
     title: "Digital Assets Day",
     line: "Curated by Bundesblock: policymakers, regulators, financial institutions and corporates.",
-    logo: DigitalAssetsDayLogo,
-    logoAlt: "Digital Assets Day",
   },
   {
     date: "30–31 Oct",
@@ -32,9 +26,8 @@ const ROWS: Row[] = [
 
 /**
  * The three formats as an editorial schedule table, set like the printed
- * flyer: dates in a left column, formats on hairline-separated rows, the
- * Digital Assets Day mark sitting on its own row. Quiet typography over
- * decoration.
+ * flyer: dates in a left column, formats on hairline-separated rows. Quiet
+ * typography over decoration.
  */
 const ThreeDays = () => {
   return (
@@ -51,7 +44,7 @@ const ThreeDays = () => {
           {ROWS.map((row) => (
             <div
               key={row.title}
-              className="grid grid-cols-1 items-start gap-x-8 gap-y-2 border-b border-white/10 py-7 transition-colors hover:bg-white/[0.03] md:grid-cols-[9rem_1fr_auto] md:py-8"
+              className="grid grid-cols-1 items-start gap-x-8 gap-y-2 border-b border-white/10 py-7 transition-colors hover:bg-white/[0.03] md:grid-cols-[9rem_1fr] md:py-8"
             >
               <Text
                 as="p"
@@ -72,13 +65,6 @@ const ThreeDays = () => {
                   {row.line}
                 </Text>
               </div>
-              {row.logo && (
-                <Image
-                  src={row.logo}
-                  alt={row.logoAlt ?? ""}
-                  className="mt-1 hidden h-7 w-auto md:block"
-                />
-              )}
             </div>
           ))}
         </div>
