@@ -41,8 +41,8 @@ export default function Home() {
               <Hero />
               {/* Order follows the question a visitor asks next: what are
                   the three days and what is new, who backs it, how do I get
-                  in, what was last year like, who else is behind it, and
-                  finally how do I take part myself. */}
+                  in, where is it, who else is behind it, how do I take part
+                  myself — and only then what last year looked like. */}
               <div className={"flex flex-col pb-24 gap-32"}>
                 <ThreeDays />
                 <WhatsNew />
@@ -51,19 +51,20 @@ export default function Home() {
                 <CurrentSponsors />
                 {/* <Manifesto /> */}
                 {/* <Tracks /> */}
-                {/* <Venue /> */}
                 <Tickets />
+                {/* Where to go, right after the ticket ask. */}
+                <Venue />
                 {/* <Grants /> */}
-                {/* Last year, as proof: the aftermovie, the numbers, the
-                    photos and the speakers who were on stage. */}
+                <CommunityPartners />
+                <Sponsors />
+                <GetInvolved />
+                {/* Last year, as proof, and last on the page: the aftermovie,
+                    the numbers, the photos and the speakers who were on stage.
+                    It sells tickets, but this year has to come first. */}
                 <Video />
                 <Statistic />
                 <LastYearGallery />
                 <Speaker />
-                {/* This year's ecosystem first, the history after it. */}
-                <CommunityPartners />
-                <Sponsors />
-                <GetInvolved />
                 {/* <Partners /> */}
               </div>
             </div>
