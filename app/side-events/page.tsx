@@ -17,15 +17,9 @@ export default function SideEvents() {
             }
           >
             <Text as="p" textType="small" className="eyebrow-tbc text-left">
-              Four days, one journey
+              Around the conference
             </Text>
-            <div className="mt-4">
-              <ScheduleOverview />
-            </div>
-            <Text
-              textType={"sub_hero"}
-              className="text-gradient text-left mt-12"
-            >
+            <Text textType={"sub_hero"} className="text-gradient text-left">
               Side Events
             </Text>
             <Text
@@ -38,6 +32,17 @@ export default function SideEvents() {
             </Text>
             <div className="mt-6">
               <SideEventList />
+            </div>
+
+            <Text
+              as="p"
+              textType="small"
+              className="eyebrow-tbc text-left mt-24"
+            >
+              Four days, one journey
+            </Text>
+            <div className="mt-4">
+              <ScheduleOverview />
             </div>
           </div>
         </Container>

@@ -26,6 +26,9 @@ export type SideEvent26 = {
   topics: string[];
   link: string;
   note?: string;
+  /** Square key visual, if the organiser has one. Without it the card draws
+   * its own tile rather than borrowing a picture that is not theirs. */
+  image?: string;
 };
 
 export const sideEvents26: SideEvent26[] = [
