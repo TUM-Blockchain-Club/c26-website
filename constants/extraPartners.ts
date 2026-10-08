@@ -29,6 +29,15 @@ export const extraPartners: StaticCommunityPartner[] = [
     background: "light" as LogoBackground,
   },
   {
+    name: "Finance Loop",
+    src: "/extra-partners26/finance-loop.png",
+    website: "https://financeloop.de",
+    // Dark blue wordmark with a teal ring, supplied on transparent: measured
+    // ink luminance 90 of 255, so it belongs on the white card. Trimmed to the
+    // mark and scaled to 1200px wide like the others, nothing recoloured.
+    background: "light" as LogoBackground,
+  },
+  {
     // German crypto education and comparison platform — media partner.
     name: "LIGHT UP",
     src: "/extra-partners26/light-up.png",
