@@ -461,7 +461,9 @@ export const agendaEntries: AgendaEntry[] = [
     time: "15:00",
     duration: 25,
     stage: TURING,
-    speakers: ["Kasra EdalatNejad"],
+    title: "1inch Aqua: How Shared Liquidity Unlocks Capital Efficiency",
+    format: "Keynote",
+    speakers: ["Vadim Fadeev"],
   },
   {
     ...TBC,
@@ -1100,7 +1102,9 @@ export const agendaEntries: AgendaEntry[] = [
     stage: MAIN,
     track: "General Interest",
     title: "Society 2035 - AI, Digital Assets & our Future Economic Backend",
-    speakers: ["Stephan Lutz", "Dmytro Budorin"],
+    // The export writes "Dmytro Budorin"; his own submission says Dyma, and
+    // the portrait joins on an exact match.
+    speakers: ["Stephan Lutz", "Dyma Budorin"],
     moderator: "Max Muth",
   },
   {

@@ -26,6 +26,7 @@ const Visual = ({ event }: { event: SideEvent26 }) =>
       src={event.image}
       alt={event.title}
       title={event.title}
+      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 360px"
       fill
     />
   ) : (
@@ -51,44 +52,84 @@ const Visual = ({ event }: { event: SideEvent26 }) =>
   );
 
 const SideEventCard = ({ event }: { event: SideEvent26 }) => (
-  <div className="flex flex-col overflow-hidden rounded-none border border-white p-6 duration-500 ease-in-out hover:scale-[102%]">
-    <div className="relative aspect-square w-full overflow-hidden rounded-none">
+  <div className="card-tbc group flex flex-col overflow-hidden transition-transform duration-300 ease-out hover:-translate-y-1">
+    <div className="relative aspect-square w-full overflow-hidden">
       <Visual event={event} />
+      {/* The date sits on the picture so it reads before anything else, and a
+          scrim underneath keeps it legible over whatever the organiser sent. */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/70 to-transparent" />
+      <div className="absolute left-4 top-4 rounded-full border border-white/20 bg-black/60 px-3 py-1 backdrop-blur-sm">
+        <Text as="p" textType="small" className="font-bold tracking-wide">
+          {fmt(event.date, {
+            weekday: "short",
+            day: "numeric",
+            month: "short",
+          })}
+        </Text>
+      </div>
     </div>
 
-    <Text textType="sub_title" as="p" className="mt-6 line-clamp-2">
-      {event.title}
-    </Text>
-    <Text className="mt-2 underline" textType="small" as="p">
-      {fmt(event.date, { weekday: "long", month: "long", day: "numeric" })} |{" "}
-      {event.start} - {event.end} CET
-    </Text>
-    <Text className="mt-2 line-clamp-3 text-gray-400" textType="small" as="p">
-      {event.description}
-    </Text>
-    <Text className="mt-2 text-gray-400" textType="small" as="p">
-      {[event.free ? "Free entry" : null, event.language, event.venue]
-        .filter(Boolean)
-        .join(" · ")}
-    </Text>
-    {event.note && (
-      <Text className="mt-2 text-muted" textType="small" as="p">
-        {event.note}
+    <div className="flex flex-1 flex-col p-6">
+      <Text textType="sub_title" as="p" className="line-clamp-2 font-bold">
+        {event.title}
       </Text>
-    )}
+      <Text className="mt-1 text-muted" textType="small" as="p">
+        {event.start} to {event.end} CET · {event.venue}
+      </Text>
+      <Text
+        className="mt-3 line-clamp-3 text-secondary"
+        textType="small"
+        as="p"
+      >
+        {event.description}
+      </Text>
 
-    <NextLink
-      className="mt-auto"
-      href={event.link}
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      <Button className="mt-4" buttonType="cta">
-        Learn More
-      </Button>
-    </NextLink>
+      {/* Already in the data and never shown: the topic words say at a glance
+          whether the evening is worth the trip. */}
+      {event.topics.length > 0 && (
+        <div className="mt-4 flex flex-wrap gap-2">
+          {event.topics.map((topic) => (
+            <span
+              key={topic}
+              className="rounded-full border border-line px-2.5 py-1 text-xs text-muted"
+            >
+              {topic}
+            </span>
+          ))}
+        </div>
+      )}
+
+      <Text className="mt-4 text-faint" textType="small" as="p">
+        {[event.free ? "Free entry" : "Paid", event.language, event.host]
+          .filter(Boolean)
+          .join(" · ")}
+      </Text>
+      {event.note && (
+        <Text className="mt-2 text-faint" textType="small" as="p">
+          {event.note}
+        </Text>
+      )}
+
+      <NextLink
+        className="mt-auto pt-6"
+        href={event.link}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <Button buttonType="cta" className="w-full sm:w-auto">
+          Register
+        </Button>
+      </NextLink>
+    </div>
   </div>
 );
+
+/** Tailwind needs the whole class name in the source, so these are spelled out. */
+const LAYOUT: Record<number, string> = {
+  1: "max-w-md",
+  2: "sm:grid-cols-2 max-w-4xl",
+  3: "sm:grid-cols-2 lg:grid-cols-3",
+};
 
 export const SideEventList = () => {
   const sorted = [...sideEvents26].sort((a, b) =>
@@ -105,7 +146,11 @@ export const SideEventList = () => {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {/* Fewer events than columns used to leave a third of the row empty, so
+          the track narrows to what there actually is. */}
+      <div
+        className={`grid grid-cols-1 gap-6 ${LAYOUT[Math.min(sorted.length, 3)]}`}
+      >
         {sorted.map((event) => (
           <SideEventCard key={event.id} event={event} />
         ))}
