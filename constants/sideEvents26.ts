@@ -33,6 +33,26 @@ export type SideEvent26 = {
 
 export const sideEvents26: SideEvent26[] = [
   {
+    id: "ethereum-munich-8",
+    title: "Ethereum Munich #8",
+    tagline: "The TBC edition, the evening before the conference",
+    description:
+      "Munich's Ethereum meetup is back as a monthly, with pickleball at PATO alongside the talking.",
+    host: "ETH Munich and TUM Blockchain Club",
+    date: "2026-10-28",
+    start: "18:30",
+    end: "21:30",
+    venue: "PATO, Königinstraße 34, Munich",
+    language: "English",
+    free: true,
+    topics: ["Ethereum", "Meetup", "Pickleball"],
+    link: "https://luma.com/6t40mtlr",
+    note: "Registration needs the host's approval. Bring something you can move in.",
+    // The organisers' own key visual, carrying the club's logo among the
+    // supporters, so the card shows theirs rather than a tile of our making.
+    image: "/side-events26/ethereum-munich-8.png",
+  },
+  {
     id: "crypto-tax-crime-2026",
     title: "Crypto Tax & Crime Konferenz 2026",
     tagline: "Krypto im Blickwinkel von Strafverfolgung, Besteuerung und AML",
