@@ -56,19 +56,19 @@ const VISION = [
 /** The three rooms, in the order they appear in the grid. */
 const STAGES = [
   {
-    name: "Nakamoto",
+    name: "Nakamoto Stage",
     subtitle: "The main stage",
     blurb:
       "Exchanges and DEXs, cloud rails, regulation in code, prediction markets, agent economies, venture capital and Europe's payment infrastructure.",
   },
   {
-    name: "Turing",
+    name: "Turing Stage",
     subtitle: "Research and cryptography",
     blurb:
       "Verifiable science, proving systems, privacy on public chains, cryptanalysis and the maths underneath the infrastructure, presented by the people who wrote the papers.",
   },
   {
-    name: "Hopper",
+    name: "Hopper Stage",
     subtitle: "Building, security and community",
     blurb:
       "Dapp anatomy, market manipulation, key compromise and audits, identity for humans and AI, self-custody, tokenization and the agentic payments stack.",

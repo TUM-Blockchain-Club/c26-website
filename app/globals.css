@@ -257,6 +257,53 @@ body::after {
   }
 }
 
+/* Session dialog (components/agenda/SessionDialog.tsx). The sheet rises from
+   the bottom edge on phones and settles in place on wider screens. Both use
+   the individual translate/scale properties, because `transform` already
+   carries the centring on wider screens. */
+.session-overlay[data-state="open"] {
+  animation: session-fade 0.2s ease-out;
+}
+
+.session-sheet[data-state="open"] {
+  animation:
+    session-fade 0.2s ease-out,
+    session-rise 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (min-width: 640px) {
+  .session-sheet[data-state="open"] {
+    animation:
+      session-fade 0.2s ease-out,
+      session-settle 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+
+@keyframes session-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes session-rise {
+  from {
+    translate: 0 40%;
+  }
+}
+
+@keyframes session-settle {
+  from {
+    scale: 0.97;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .session-overlay[data-state="open"],
+  .session-sheet[data-state="open"] {
+    animation: none;
+  }
+}
+
 .cta-border {
   border-image: linear-gradient(
       135deg,

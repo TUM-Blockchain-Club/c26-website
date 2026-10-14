@@ -19,6 +19,10 @@
  *
  * Both days are still drafts on the organisers' side and will keep changing.
  *
+ * Every talk carries a hand-assigned `id` that is its shareable link,
+ * /agenda/<id>. When updating from a new export, keep each session's id even
+ * if its title, time or stage changed, and give new sessions a new one.
+ *
  * The Digital Assets Day export also lists the closing remarks and the
  * afterparty on all three stages. Those are deliberately left out: they were
  * removed from this agenda once before and should not come back with an
@@ -34,16 +38,25 @@ export type AgendaEventKey = "conference" | "digital-assets-day" | "hackathon";
  */
 export const ROOMS = [
   {
-    room: "Nakamoto",
-    labels: { conference: "Nakamoto", "digital-assets-day": "Main Stage" },
+    room: "Nakamoto Stage",
+    labels: {
+      conference: "Nakamoto Stage",
+      "digital-assets-day": "Main Stage",
+    },
   },
   {
-    room: "Turing",
-    labels: { conference: "Turing", "digital-assets-day": "Executive Forum" },
+    room: "Turing Stage",
+    labels: {
+      conference: "Turing Stage",
+      "digital-assets-day": "Executive Forum",
+    },
   },
   {
-    room: "Hopper",
-    labels: { conference: "Hopper", "digital-assets-day": "Future Stage" },
+    room: "Hopper Stage",
+    labels: {
+      conference: "Hopper Stage",
+      "digital-assets-day": "Future Stage",
+    },
   },
 ] as const;
 
@@ -113,6 +126,11 @@ type Common = { event: AgendaEventKey; day: string };
 export type AgendaEntry =
   | (Common & {
       kind: "talk";
+      /** The session's permanent link, /agenda/<id>. Assigned once and kept
+       * when the exports are re-imported, even if the title, time or stage
+       * changes, because shared links on social media point at it. Never
+       * reuse an id for a different session. */
+      id: string;
       time: string;
       duration: number; // minutes
       stage: string;
@@ -148,9 +166,9 @@ const TBC: Common = { event: "conference", day: "2026-10-29" };
 const DAD: Common = { event: "digital-assets-day", day: "2026-10-30" };
 // The venue has three rooms. Each day labels them its own way, so an entry
 // carries the label of its own day and ROOMS below ties the two together.
-const NAKAMOTO = "Nakamoto";
-const TURING = "Turing";
-const HOPPER = "Hopper";
+const NAKAMOTO = "Nakamoto Stage";
+const TURING = "Turing Stage";
+const HOPPER = "Hopper Stage";
 const MAIN = "Main Stage";
 const FORUM = "Executive Forum";
 const FUTURE = "Future Stage";
@@ -161,16 +179,18 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...TBC,
     kind: "talk",
+    id: "conference-opening",
     time: "09:00",
     duration: 15,
     stage: NAKAMOTO,
-    title: "Opening",
+    title: "TUM Blockchain Conference 2026 Opening",
     format: "Opening",
     speakers: ["Felix Rihacek"],
   },
   {
     ...TBC,
     kind: "talk",
+    id: "cex-and-dex",
     time: "09:20",
     duration: 40,
     stage: NAKAMOTO,
@@ -181,6 +201,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...TBC,
     kind: "talk",
+    id: "future-of-ai-verifiable-science",
     time: "09:20",
     duration: 25,
     stage: TURING,
@@ -190,6 +211,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...TBC,
     kind: "talk",
+    id: "the-anatomy-of-a-dapp",
     time: "09:20",
     duration: 25,
     stage: HOPPER,
@@ -200,6 +222,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...TBC,
     kind: "talk",
+    id: "atomic-composability-evm",
     time: "09:50",
     duration: 25,
     stage: TURING,
@@ -210,6 +233,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...TBC,
     kind: "talk",
+    id: "the-mechanics-of-market-manipulation",
     time: "09:50",
     duration: 25,
     stage: HOPPER,
@@ -219,6 +243,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...TBC,
     kind: "talk",
+    id: "hyperscalers-meet-crypto-rails",
     time: "10:05",
     duration: 40,
     stage: NAKAMOTO,
@@ -230,6 +255,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...TBC,
     kind: "talk",
+    id: "arkworks-pq-merkle-commitments",
     time: "10:20",
     duration: 25,
     stage: TURING,
@@ -239,6 +265,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...TBC,
     kind: "talk",
+    id: "inside-cryptos-race-for-speed",
     time: "10:20",
     duration: 25,
     stage: HOPPER,
@@ -249,6 +276,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...TBC,
     kind: "talk",
+    id: "technical-regulatory-panel",
     time: "10:50",
     duration: 40,
     stage: NAKAMOTO,
@@ -261,6 +289,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...TBC,
     kind: "talk",
+    id: "day1-turing-1050",
     time: "10:50",
     duration: 25,
     stage: TURING,
@@ -269,6 +298,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...TBC,
     kind: "talk",
+    id: "the-infrastructure-vulnerability",
     time: "10:50",
     duration: 25,
     stage: HOPPER,
@@ -280,6 +310,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...TBC,
     kind: "talk",
+    id: "day1-turing-1120",
     time: "11:20",
     duration: 25,
     stage: TURING,
@@ -289,6 +320,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...TBC,
     kind: "talk",
+    id: "identity-humans-and-ai",
     time: "11:20",
     duration: 40,
     stage: HOPPER,
@@ -300,6 +332,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...TBC,
     kind: "talk",
+    id: "how-prediction-markets-actually-resolve",
     time: "11:35",
     duration: 40,
     stage: NAKAMOTO,
@@ -311,6 +344,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...TBC,
     kind: "talk",
+    id: "day1-turing-1150",
     time: "11:50",
     duration: 25,
     stage: TURING,
@@ -320,6 +354,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...TBC,
     kind: "talk",
+    id: "learners-builders-speculators",
     time: "12:05",
     duration: 40,
     stage: HOPPER,
@@ -330,6 +365,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...TBC,
     kind: "talk",
+    id: "agent-economy",
     time: "12:20",
     duration: 25,
     stage: NAKAMOTO,
@@ -339,6 +375,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...TBC,
     kind: "talk",
+    id: "private-on-a-public-blockchain",
     time: "12:20",
     duration: 25,
     stage: TURING,
@@ -373,6 +410,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...TBC,
     kind: "talk",
+    id: "beyond-the-hype-cycle",
     time: "13:30",
     duration: 40,
     stage: NAKAMOTO,
@@ -383,6 +421,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...TBC,
     kind: "talk",
+    id: "plonk-without-random-oracles",
     time: "13:35",
     duration: 25,
     stage: TURING,
@@ -393,6 +432,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...TBC,
     kind: "talk",
+    id: "self-custody-in-2026",
     time: "13:35",
     duration: 25,
     stage: HOPPER,
@@ -404,6 +444,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...TBC,
     kind: "talk",
+    id: "bugs-in-zkp-programs",
     time: "14:05",
     duration: 25,
     stage: TURING,
@@ -414,6 +455,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...TBC,
     kind: "talk",
+    id: "tokenize-everything",
     time: "14:05",
     duration: 40,
     stage: HOPPER,
@@ -424,6 +466,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...TBC,
     kind: "talk",
+    id: "architects-of-tomorrow",
     time: "14:15",
     duration: 40,
     stage: NAKAMOTO,
@@ -435,6 +478,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...TBC,
     kind: "talk",
+    id: "flock",
     time: "14:35",
     duration: 25,
     stage: TURING,
@@ -444,6 +488,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...TBC,
     kind: "talk",
+    id: "sovereign-rails-vs-global-giants",
     time: "14:50",
     duration: 40,
     stage: HOPPER,
@@ -454,6 +499,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...TBC,
     kind: "talk",
+    id: "1inch-aqua",
     time: "15:00",
     duration: 25,
     stage: NAKAMOTO,
@@ -464,6 +510,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...TBC,
     kind: "talk",
+    id: "cryptanalysis-of-witness-encryption",
     time: "15:05",
     duration: 25,
     stage: TURING,
@@ -473,6 +520,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...TBC,
     kind: "talk",
+    id: "the-future-of-privacy-on-solana",
     time: "15:30",
     duration: 30,
     stage: NAKAMOTO,
@@ -483,6 +531,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...TBC,
     kind: "talk",
+    id: "track-me-if-you-can",
     time: "15:35",
     duration: 25,
     stage: TURING,
@@ -492,6 +541,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...TBC,
     kind: "talk",
+    id: "people-use-products",
     time: "15:35",
     duration: 25,
     stage: HOPPER,
@@ -502,6 +552,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...TBC,
     kind: "talk",
+    id: "ai-powered-smart-contract-security",
     time: "16:05",
     duration: 40,
     stage: NAKAMOTO,
@@ -512,6 +563,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...TBC,
     kind: "talk",
+    id: "the-floor-that-keeps-moving",
     time: "16:05",
     duration: 25,
     stage: TURING,
@@ -522,6 +574,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...TBC,
     kind: "talk",
+    id: "dlt-interoperability-open-source",
     time: "16:05",
     duration: 25,
     stage: HOPPER,
@@ -531,6 +584,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...TBC,
     kind: "talk",
+    id: "day1-turing-1635",
     time: "16:35",
     duration: 25,
     stage: TURING,
@@ -540,6 +594,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...TBC,
     kind: "talk",
+    id: "exotic-interest-rate-derivatives",
     time: "16:35",
     duration: 25,
     stage: HOPPER,
@@ -561,6 +616,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "dad-welcome-and-opening",
     time: "08:45",
     duration: 15,
     stage: MAIN,
@@ -576,6 +632,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "opening-session-executive-forum",
     time: "08:50",
     duration: 45,
     stage: FORUM,
@@ -585,6 +642,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "opening-session-future-stage",
     time: "08:50",
     duration: 55,
     stage: FUTURE,
@@ -594,6 +652,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "dad-opening-speech",
     time: "09:00",
     duration: 10,
     stage: MAIN,
@@ -604,6 +663,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "the-state-of-digital-assets-2026",
     time: "09:10",
     duration: 15,
     stage: MAIN,
@@ -614,6 +674,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "a-european-digital-assets-strategy",
     time: "09:25",
     duration: 20,
     stage: MAIN,
@@ -626,6 +687,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "ai-x-blockchain-decision-maker-briefing",
     time: "09:35",
     duration: 40,
     stage: FORUM,
@@ -636,6 +698,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "from-digital-euro-to-stablecoin-rails",
     time: "09:45",
     duration: 15,
     stage: MAIN,
@@ -646,6 +709,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "digital-product-passport",
     time: "10:00",
     duration: 20,
     stage: FUTURE,
@@ -656,6 +720,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "the-new-money-stack",
     time: "10:00",
     duration: 35,
     stage: MAIN,
@@ -672,6 +737,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "value-chain-re-modelling",
     time: "10:15",
     duration: 25,
     stage: FORUM,
@@ -683,6 +749,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "managing-energy-in-the-future",
     time: "10:20",
     duration: 30,
     stage: FUTURE,
@@ -717,6 +784,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "portfolio-construction-digital-assets",
     time: "10:55",
     duration: 15,
     stage: MAIN,
@@ -727,6 +795,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "corporate-treasuries-and-agentic-ai-payments",
     time: "11:00",
     duration: 50,
     stage: FORUM,
@@ -744,6 +813,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "from-erp-to-autonomous-enterprises",
     time: "11:10",
     duration: 20,
     stage: FUTURE,
@@ -753,6 +823,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "capital-markets-2-0",
     time: "11:10",
     duration: 35,
     stage: MAIN,
@@ -764,6 +835,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "tokenization-steel-sector",
     time: "11:30",
     duration: 10,
     stage: FUTURE,
@@ -774,6 +846,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "from-the-cockpit-to-the-blockchain",
     time: "11:40",
     duration: 10,
     stage: FUTURE,
@@ -785,6 +858,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "ai-x-blockchain-agents-data-markets",
     time: "11:45",
     duration: 35,
     stage: MAIN,
@@ -797,6 +871,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "portfolio-construction-and-institutional-allocation",
     time: "11:50",
     duration: 50,
     stage: FORUM,
@@ -813,6 +888,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "the-programmable-company",
     time: "11:50",
     duration: 40,
     stage: FUTURE,
@@ -838,6 +914,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "x402-m2m-payments",
     time: "12:30",
     duration: 20,
     stage: FUTURE,
@@ -863,6 +940,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "tokenization-real-world-influence",
     time: "13:15",
     duration: 20,
     stage: MAIN,
@@ -872,6 +950,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "european-banking-consortia",
     time: "13:25",
     duration: 30,
     stage: FORUM,
@@ -882,6 +961,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "ai-act-trust-design",
     time: "13:25",
     duration: 10,
     stage: FUTURE,
@@ -891,6 +971,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "europes-production-data-layer",
     time: "13:35",
     duration: 20,
     stage: FUTURE,
@@ -900,6 +981,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "what-should-be-tokenized-first",
     time: "13:35",
     duration: 40,
     stage: MAIN,
@@ -916,6 +998,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "the-innovation-challenge",
     time: "13:55",
     duration: 25,
     stage: FORUM,
@@ -926,6 +1009,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "all-ways-lead-to-rome",
     time: "13:55",
     duration: 45,
     stage: FUTURE,
@@ -937,6 +1021,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "european-champions",
     time: "14:15",
     duration: 25,
     stage: MAIN,
@@ -949,6 +1034,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "tokenization-deep-dive",
     time: "14:20",
     duration: 55,
     stage: FORUM,
@@ -964,6 +1050,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "leaders-vs-laggards",
     time: "14:40",
     duration: 45,
     stage: FUTURE,
@@ -975,6 +1062,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "institutional-trust-infrastructure",
     time: "14:40",
     duration: 15,
     stage: MAIN,
@@ -986,6 +1074,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "scaling-institutional-trust",
     time: "14:55",
     duration: 35,
     stage: MAIN,
@@ -1021,6 +1110,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "from-tokenization-to-allocation",
     time: "15:40",
     duration: 20,
     stage: FORUM,
@@ -1031,6 +1121,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "day2-future-stage-1550",
     time: "15:50",
     duration: 10,
     stage: FUTURE,
@@ -1039,6 +1130,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "how-to-collaborate",
     time: "15:50",
     duration: 25,
     stage: MAIN,
@@ -1050,6 +1142,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "bridging-the-crypto-language-gap",
     time: "16:00",
     duration: 20,
     stage: FUTURE,
@@ -1061,6 +1154,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "trust-infrastructure-for-institutions",
     time: "16:05",
     duration: 55,
     stage: FORUM,
@@ -1077,6 +1171,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "digital-public-infrastructure",
     time: "16:15",
     duration: 20,
     stage: MAIN,
@@ -1088,6 +1183,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "crypto-taxation-germany-austria",
     time: "16:20",
     duration: 45,
     stage: FUTURE,
@@ -1100,6 +1196,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "regulation-tax-and-competitiveness",
     time: "16:35",
     duration: 25,
     stage: MAIN,
@@ -1112,6 +1209,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "rewiring-financial-market-infrastructure",
     time: "17:00",
     duration: 35,
     stage: FORUM,
@@ -1124,6 +1222,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "society-2035",
     time: "17:00",
     duration: 35,
     stage: MAIN,
@@ -1137,6 +1236,7 @@ export const agendaEntries: AgendaEntry[] = [
   {
     ...DAD,
     kind: "talk",
+    id: "international-digital-assets-leadership",
     time: "17:35",
     duration: 25,
     stage: MAIN,
@@ -1144,3 +1244,24 @@ export const agendaEntries: AgendaEntry[] = [
     title: "The Race for international Digital Assets Leadership",
   },
 ];
+
+export type AgendaTalk = Extract<AgendaEntry, { kind: "talk" }>;
+
+/** Every talk, in programme order. */
+export const agendaTalks = agendaEntries.filter(
+  (e): e is AgendaTalk => e.kind === "talk",
+);
+
+const TALKS_BY_ID = new Map(agendaTalks.map((t) => [t.id, t]));
+// A duplicated id would make two sessions share one link, so fail the build
+// rather than let the second one silently disappear.
+if (TALKS_BY_ID.size !== agendaTalks.length) {
+  const seen = new Set<string>();
+  const dupes = agendaTalks.filter((t) => seen.size === seen.add(t.id).size);
+  throw new Error(
+    `Duplicate agenda session ids: ${dupes.map((t) => t.id).join(", ")}`,
+  );
+}
+
+export const talkById = (id: string): AgendaTalk | undefined =>
+  TALKS_BY_ID.get(id);

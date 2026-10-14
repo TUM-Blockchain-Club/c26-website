@@ -1,35 +1,13 @@
 import classNames from "classnames";
+import { ChevronRightIcon } from "@radix-ui/react-icons";
 import { Text } from "@/components/text";
 import { AgendaSpeakers } from "@/components/agenda/AgendaSpeakers";
 import {
-  AGENDA_TRACKS,
-  type AgendaEntry,
-  type AgendaEventKey,
-} from "@/constants/digitalAssetsDayAgenda";
-
-const EVENT_BADGES: Record<
-  AgendaEventKey,
-  { label: string; className: string }
-> = {
-  conference: {
-    label: "TUM Blockchain Conference Day",
-    className: "border-tbc-yellow/60 bg-tbc-yellow/10 text-tbc-yellow",
-  },
-  "digital-assets-day": {
-    label: "Digital Assets Day",
-    className: "border-blue-400/60 bg-blue-400/10 text-blue-300",
-  },
-  hackathon: {
-    label: "Hackathon",
-    className: "border-red-500/60 bg-red-500/10 text-red-400",
-  },
-};
-
-/** Most First Conference Day sessions carry no track, so this is only called
- * where one exists. */
-const trackStyle = (name: string) =>
-  AGENDA_TRACKS.find((t) => t.name === name) ??
-  AGENDA_TRACKS[AGENDA_TRACKS.length - 1];
+  SessionTrigger,
+  clickableCard,
+} from "@/components/agenda/SessionDialog";
+import { EVENT_BADGES, trackStyle } from "@/components/agenda/sessionMeta";
+import { type AgendaEntry } from "@/constants/digitalAssetsDayAgenda";
 
 const formatDay = (iso: string) =>
   new Date(iso).toLocaleDateString("en-DE", {
@@ -78,7 +56,8 @@ const EntryRow = ({ entry }: { entry: AgendaEntry }) => {
   return (
     <div
       className={classNames(
-        "flex flex-col gap-3 rounded-lg border border-l-4 bg-white/[0.02] px-5 py-4",
+        "group flex flex-col gap-3 rounded-lg border border-l-4 bg-white/[0.02] px-5 py-4",
+        clickableCard,
         style ? style.accent : "border-l-line-strong",
       )}
     >
@@ -97,21 +76,36 @@ const EntryRow = ({ entry }: { entry: AgendaEntry }) => {
         <span className="rounded-full border border-line px-2.5 py-0.5 text-xs text-secondary">
           {entry.stage}
         </span>
-        {entry.format && (
-          <span className="ml-auto text-xs text-faint">{entry.format}</span>
-        )}
+        <span className="ml-auto flex items-center gap-1 text-xs text-faint">
+          {entry.format}
+          {/* Says the card opens; the whole card is the link. */}
+          <ChevronRightIcon
+            className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:text-white"
+            aria-hidden
+          />
+        </span>
       </div>
 
       <div className="flex flex-col gap-1">
-        {entry.title ? (
-          <Text as="p" textType="paragraph" className="font-bold leading-snug">
-            {entry.title}
-          </Text>
-        ) : (
-          <Text as="p" textType="paragraph" className="text-muted italic">
-            Title to be announced
-          </Text>
-        )}
+        <SessionTrigger id={entry.id}>
+          {entry.title ? (
+            <Text
+              as="span"
+              textType="paragraph"
+              className="block font-bold leading-snug"
+            >
+              {entry.title}
+            </Text>
+          ) : (
+            <Text
+              as="span"
+              textType="paragraph"
+              className="block text-muted italic"
+            >
+              Title to be announced
+            </Text>
+          )}
+        </SessionTrigger>
       </div>
 
       <AgendaSpeakers speakers={entry.speakers} moderator={entry.moderator} />

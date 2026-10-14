@@ -60,7 +60,7 @@ const SpeakerFace = ({ name, size }: { name: string; size: Size }) => {
       title={name}
       aria-label={`${name} on the speakers page`}
       className={classNames(
-        "shrink-0 rounded-full transition-transform duration-200 hover:z-10 hover:scale-110 focus-visible:z-10 focus-visible:scale-110 focus-visible:outline-none",
+        "relative z-10 shrink-0 rounded-full transition-transform duration-200 hover:z-20 hover:scale-110 focus-visible:z-20 focus-visible:scale-110 focus-visible:outline-none",
         BOX[size],
       )}
     >

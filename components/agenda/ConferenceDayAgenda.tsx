@@ -6,9 +6,9 @@ export const ConferenceDayAgenda = () => (
     event="conference"
     accent={{ rule: "border-tbc-yellow/30", title: "text-tbc-yellow" }}
     stages={[
-      { name: "Nakamoto", subtitle: "The main stage" },
-      { name: "Turing", subtitle: "Research and cryptography" },
-      { name: "Hopper", subtitle: "Building, security and community" },
+      { name: "Nakamoto Stage", subtitle: "The main stage" },
+      { name: "Turing Stage", subtitle: "Research and cryptography" },
+      { name: "Hopper Stage", subtitle: "Building, security and community" },
     ]}
     intro={
       <>

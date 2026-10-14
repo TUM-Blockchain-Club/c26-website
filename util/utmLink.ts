@@ -27,3 +27,17 @@ export function buildAttendeeUtmLink(): string {
   url.searchParams.set("utm_source", "attendee");
   return url.toString();
 }
+
+/** A session's own page, for people sharing it from the agenda. The medium
+ * says how it was shared (native share sheet or copied link) and the content
+ * which session, so Plausible and the Luma checkout can attribute it. */
+export function buildSessionShareLink(
+  sessionId: string,
+  medium: string,
+): string {
+  const url = new URL(`/agenda/${sessionId}`, SITE_URL);
+  url.searchParams.set("utm_source", "session_share");
+  url.searchParams.set("utm_medium", medium);
+  url.searchParams.set("utm_content", sessionId);
+  return url.toString();
+}
