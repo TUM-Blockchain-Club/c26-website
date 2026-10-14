@@ -49,6 +49,30 @@ export const extraPartners: StaticCommunityPartner[] = [
     background: "light" as LogoBackground,
   },
   {
+    // Frankfurt's Web3 community association, the Rhine-Main counterpart to
+    // what the club does in Munich.
+    name: "GM, FFM!",
+    src: "/extra-partners26/gm-ffm.png",
+    website: "https://gmffm.de",
+    // Their badge is a solid violet block with the wordmark reversed out, so
+    // the ink reads dark at 94 of 255 and it belongs on the white card. The
+    // file came sitting on white; only that surround is cleared, reached by a
+    // flood fill from the edge so the white wordmark inside stays. Nothing
+    // recoloured.
+    background: "light" as LogoBackground,
+  },
+  {
+    // Events calendar and Telegram bot that lists conferences worldwide —
+    // media partner.
+    name: "AllConfsBot",
+    src: "/extra-partners26/allconfsbot.png",
+    website: "https://allconfsbot.website",
+    // Black wordmark next to the red mascot badge, supplied on transparent:
+    // measured ink luminance 90 of 255, so it belongs on the white card.
+    // Trimmed to the mark and scaled to 1200px wide like the others.
+    background: "light" as LogoBackground,
+  },
+  {
     // German crypto education and comparison platform — media partner.
     name: "LIGHT UP",
     src: "/extra-partners26/light-up.png",
