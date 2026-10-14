@@ -53,6 +53,23 @@ export const sideEvents26: SideEvent26[] = [
     image: "/side-events26/ethereum-munich-8.png",
   },
   {
+    id: "darte-munich-2",
+    title: "DARTE Munich 2.0",
+    tagline: "Closed door, invitation only, no presentations",
+    description:
+      "A Digital Asset Roundtable Experts session on crypto investigations and how to keep evidence court ready.",
+    host: "siedler legal, hosted by PwC",
+    date: "2026-10-29",
+    start: "14:00",
+    end: "18:00",
+    venue: "PwC, Munich",
+    language: "English",
+    free: true,
+    topics: ["Crypto investigations", "Evidence", "Roundtable"],
+    link: "https://siedler.legal/darte",
+    note: "Invitation only, and a discussion rather than a programme. Reach out through the DARTE page if you would like to take part.",
+  },
+  {
     id: "crypto-tax-crime-2026",
     title: "Crypto Tax & Crime Konferenz 2026",
     tagline: "Krypto im Blickwinkel von Strafverfolgung, Besteuerung und AML",
