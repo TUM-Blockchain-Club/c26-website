@@ -61,6 +61,7 @@ const TIER_STYLE: Record<Sponsor26Tier, TierStyle> = {
   },
   premium: { card: "h-32 w-56 md:h-44 md:w-[23rem]", ...RANK_1 },
   standard: { card: "h-28 w-48 md:h-36 md:w-80", ...RANK_2 },
+  bounty: { card: "h-20 w-36 md:h-24 md:w-52", ...RANK_3 },
   travel: { card: "h-20 w-36 md:h-24 md:w-52", ...RANK_3 },
 };
 
