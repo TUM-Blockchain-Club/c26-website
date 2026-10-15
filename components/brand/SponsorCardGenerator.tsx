@@ -14,6 +14,10 @@ import {
   type SponsorTier,
   type CardOrientation,
 } from "@/util/partnerCardVideo";
+import {
+  DAD_TRACKS,
+  type DadTrackName,
+} from "@/constants/digitalAssetsDayAgenda";
 
 type Status = "idle" | "generating" | "ready" | "error";
 type LogoEntry = { file: File; url: string };
@@ -33,10 +37,12 @@ const TIER_SWATCH: Record<SponsorTier, string> = {
   premium: "linear-gradient(135deg, #ffcd78, #7846e6)",
   standard: "linear-gradient(135deg, #bed7ff, #3250aa)",
   travel: "linear-gradient(135deg, #b4f0e1, #1e6e78)",
+  track: "linear-gradient(135deg, #82b4ff, #4285f4)",
 };
 
 export const SponsorCardGenerator = () => {
   const [tier, setTier] = useState<SponsorTier>("platinum");
+  const [dayTrack, setDayTrack] = useState<DadTrackName>(DAD_TRACKS[0].name);
   const [logo, setLogo] = useState<LogoEntry | null>(null);
   const [savingImage, setSavingImage] = useState(false);
   const [orientation, setOrientation] = useState<CardOrientation>("landscape");
@@ -114,7 +120,11 @@ export const SponsorCardGenerator = () => {
     setProgress(0);
     setErrorMsg(null);
 
-    const content = { tier, logoUrls: [logo!.url] };
+    const content = {
+      tier,
+      ...(tier === "track" ? { dayTrack } : {}),
+      logoUrls: [logo!.url],
+    };
 
     try {
       const { blob, extension } = await renderSponsorCardVideo(
@@ -154,7 +164,11 @@ export const SponsorCardGenerator = () => {
     setErrorMsg(null);
     try {
       const blob = await renderSponsorCardStill(
-        { tier, logoUrls: [logo!.url] },
+        {
+          tier,
+          ...(tier === "track" ? { dayTrack } : {}),
+          logoUrls: [logo!.url],
+        },
         orientation,
       );
       downloadBlob(
@@ -217,9 +231,11 @@ export const SponsorCardGenerator = () => {
         <div className={stepClass(1, true)}>
           <StepHeader n={1} title="Sponsor tier" complete />
           <Text textType="small" className="text-muted">
-            Every card announces one sponsor. The conference and the Hackathon
-            have their own tier ladders; each tier brings its own colour and
-            ring, and the card names which of the two it belongs to.
+            Every card announces one sponsor. The conference, the Hackathon and
+            the Digital Assets Day each have their own tiers; every tier brings
+            its own colour and ring, and the card names which of them it belongs
+            to. A Digital Assets Day track sponsor also names the track, in that
+            track's own colour from the agenda.
           </Text>
           <div className="flex flex-col gap-3">
             {SPONSOR_TIER_TRACKS.map((track) => (
@@ -251,6 +267,34 @@ export const SponsorCardGenerator = () => {
               </div>
             ))}
           </div>
+          {tier === "track" && (
+            <div className="flex flex-col gap-1.5">
+              <span className="text-xs uppercase tracking-[0.2em] text-faint">
+                Which track
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {DAD_TRACKS.map((t) => (
+                  <button
+                    key={t.name}
+                    type="button"
+                    onClick={() => setDayTrack(t.name)}
+                    className={`flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm transition-colors ${
+                      dayTrack === t.name
+                        ? "border-line-strong bg-white/10 text-white"
+                        : "border-line text-muted hover:text-white"
+                    }`}
+                  >
+                    <span
+                      className="h-3 w-3 rounded-full"
+                      style={{ background: t.hex }}
+                      aria-hidden
+                    />
+                    {t.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Step 2 — logo */}

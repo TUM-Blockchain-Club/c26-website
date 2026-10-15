@@ -74,36 +74,42 @@ export const roomOfStage = (stage?: string) =>
 export const DAD_TRACKS = [
   {
     name: "Digital Capital Markets",
+    hex: "#4285f4",
     dot: "bg-[#4285f4]",
     accent: "border-[#4285f4]",
     active: "border-[#4285f4] bg-[#4285f4]/15 text-white",
   },
   {
     name: "Stablecoins & Payments",
+    hex: "#f5f52c",
     dot: "bg-[#f5f52c]",
     accent: "border-[#f5f52c]",
     active: "border-[#f5f52c] bg-[#f5f52c]/15 text-white",
   },
   {
     name: "Policy & Regulation",
+    hex: "#ff9447",
     dot: "bg-[#ff9447]",
     accent: "border-[#ff9447]",
     active: "border-[#ff9447] bg-[#ff9447]/15 text-white",
   },
   {
     name: "Tokenization & RWA",
+    hex: "#5ccc7a",
     dot: "bg-[#5ccc7a]",
     accent: "border-[#5ccc7a]",
     active: "border-[#5ccc7a] bg-[#5ccc7a]/15 text-white",
   },
   {
     name: "Institutional Trust Infrastructure",
+    hex: "#a64d79",
     dot: "bg-[#a64d79]",
     accent: "border-[#a64d79]",
     active: "border-[#a64d79] bg-[#a64d79]/15 text-white",
   },
   {
     name: "General Interest",
+    hex: "#d9d9d9",
     dot: "bg-[#d9d9d9]",
     accent: "border-[#d9d9d9]",
     active: "border-[#d9d9d9] bg-[#d9d9d9]/15 text-white",
@@ -865,7 +871,9 @@ export const agendaEntries: AgendaEntry[] = [
     track: "General Interest",
     title:
       "AI x Blockchain Beyond Payments - Agents, Data Markets & Trusted Automation",
-    speakers: ["Jens Strüker", "Andre Liesenfeld", "Phil Isenman"],
+    // The XLS spells him Isenman; Bundesblock's own published agenda has the
+    // second n, and that page is the newer source.
+    speakers: ["Jens Strüker", "Andre Liesenfeld", "Phil Isenmann"],
     moderator: "Sarah Gottwald",
   },
   {

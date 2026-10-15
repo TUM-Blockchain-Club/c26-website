@@ -8,6 +8,8 @@ import { downloadBlob } from "@/util/exportLogo";
 import {
   renderPartnerCardVideo,
   renderPartnerCardStill,
+  PARTNER_CARD_CONFIG,
+  type CardConfig,
   type CardOrientation,
 } from "@/util/partnerCardVideo";
 
@@ -15,7 +17,18 @@ type Status = "idle" | "generating" | "ready" | "error";
 
 const MAX_SIZE = 5 * 1024 * 1024;
 
-export const PartnerCardGenerator = () => {
+/**
+ * One generator, two cards. The association card is the same three steps with
+ * its own eyebrow and palette, so it takes the config rather than a copy of
+ * this file.
+ */
+export const PartnerCardGenerator = ({
+  config = PARTNER_CARD_CONFIG,
+  slug = "partner",
+}: {
+  config?: CardConfig;
+  slug?: string;
+} = {}) => {
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [orgName, setOrgName] = useState("");
@@ -126,6 +139,7 @@ export const PartnerCardGenerator = () => {
         orientation,
         name,
         setProgress,
+        config,
       );
       setVideoBlob(blob);
       setVideoExt(extension);
@@ -145,10 +159,11 @@ export const PartnerCardGenerator = () => {
           previewUrl,
           orientation,
           name,
+          config,
         );
         downloadBlob(
           still,
-          `tbc-conference-26-partner-card-${orientation}.png`,
+          `tbc-conference-26-${slug}-card-${orientation}.png`,
         );
         setNote(
           "Your browser could not record the animation, so we downloaded the still image instead.",
@@ -168,7 +183,7 @@ export const PartnerCardGenerator = () => {
     if (!videoBlob) return;
     downloadBlob(
       videoBlob,
-      `tbc-conference-26-partner-card-${orientation}.${videoExt}`,
+      `tbc-conference-26-${slug}-card-${orientation}.${videoExt}`,
     );
   };
 
@@ -179,8 +194,9 @@ export const PartnerCardGenerator = () => {
         previewUrl,
         orientation,
         orgName.trim(),
+        config,
       );
-      downloadBlob(blob, `tbc-conference-26-partner-card-${orientation}.png`);
+      downloadBlob(blob, `tbc-conference-26-${slug}-card-${orientation}.png`);
     } catch (err) {
       console.error(err);
     }

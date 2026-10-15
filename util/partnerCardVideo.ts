@@ -1,4 +1,8 @@
 import { readCssTokenRgb } from "@/util/cssTokens";
+import {
+  DAD_TRACKS,
+  type DadTrackName,
+} from "@/constants/digitalAssetsDayAgenda";
 
 export type CardOrientation = "landscape" | "portrait";
 
@@ -74,6 +78,25 @@ function paletteStops(p: GradientPalette): GradientStop[] {
 // three-stop palette used for the frame/aurora/job accent elsewhere on the
 // card, so the rotating ring itself reads as several shades of blue rather
 // than one flat tint. Still stays shy of navy, per earlier "too dark" note.
+/**
+ * The association card gets its own, quieter palette. The warm brand ramp
+ * reads as a student conference and the Digital Assets Day blue is taken, so
+ * the federations and industry bodies get a restrained teal into deep
+ * blue-green: institutional without leaving the family.
+ */
+const ASSOCIATION_COLORS: GradientPalette = {
+  yellow: "rgb(168,232,220)",
+  red: "rgb(58,170,166)",
+  purple: "rgb(18,84,102)",
+};
+
+const ASSOCIATION_RING_STOPS: GradientStop[] = [
+  { offset: 0, color: "rgb(200,240,232)" },
+  { offset: 0.32, color: "rgb(96,196,190)" },
+  { offset: 0.64, color: "rgb(28,118,128)" },
+  { offset: 1, color: "rgb(150,222,214)" },
+];
+
 const DAD_RING_STOPS: GradientStop[] = [
   { offset: 0, color: "rgb(205,225,255)" },
   { offset: 0.3, color: "rgb(120,170,255)" },
@@ -94,6 +117,11 @@ export type CardConfig = {
   /** Attendee card for someone joining the Hackathon: same two marks, but the
    * eyebrow and the line under the conference date name the Hackathon. */
   hackathon?: boolean;
+  /** Overrides the brand ramp, for a card that needs to read differently
+   * from the rest without a layout of its own. */
+  palette?: GradientPalette;
+  /** Ring tint to match that palette. Without it the ring stays untinted. */
+  ringStops?: GradientStop[];
 };
 
 export const PARTNER_CARD_CONFIG: CardConfig = {
@@ -105,6 +133,18 @@ export const SPEAKER_CARD_CONFIG: CardConfig = {
   kind: "speaker",
   eyebrow: "SPEAKING AT",
   photo: true,
+};
+
+/**
+ * Associations and federations. Same layout as the community partner card,
+ * its own eyebrow and its own colour, because the audience is the banking and
+ * industry bodies rather than the Web3 communities.
+ */
+export const ASSOCIATION_CARD_CONFIG: CardConfig = {
+  kind: "partner",
+  eyebrow: "ASSOCIATION PARTNER",
+  palette: ASSOCIATION_COLORS,
+  ringStops: ASSOCIATION_RING_STOPS,
 };
 
 /** Generic attendee card: no day split, always the conference brand and logo. */
@@ -648,6 +688,9 @@ function drawCardBackdrop(
   p: number,
   elapsed: number,
   orientation: CardOrientation,
+  /** Overrides the gradient frame with one flat colour — a track sponsor card
+   * outlines itself in the track's own colour. */
+  frameColor?: string,
 ): CanvasGradient {
   // Base
   ctx.fillStyle = "#000000";
@@ -694,7 +737,7 @@ function drawCardBackdrop(
   const frameAlpha = easeOut(phase(p, 0.02, 0.12));
   ctx.save();
   ctx.globalAlpha = frameAlpha;
-  ctx.strokeStyle = gradient;
+  ctx.strokeStyle = frameColor ?? gradient;
   ctx.lineWidth = w * 0.0042;
   const fi = w * 0.024;
   roundRectPath(ctx, fi, fi, w - fi * 2, h - fi * 2, w * 0.022);
@@ -1749,7 +1792,11 @@ async function loadAssets(
     // for every other card.
     confMark: inkMarks ? trimTransparent(confLogo) : confLogo,
     dayMark: inkMarks ? trimTransparent(dadLogo) : dadLogo,
-    ring: isDad ? tintRing(ring, DAD_RING_STOPS) : ring,
+    ring: config.ringStops
+      ? tintRing(ring, config.ringStops)
+      : isDad
+        ? tintRing(ring, DAD_RING_STOPS)
+        : ring,
     partnerLogo,
     // Photos always sit on the glass panel; only logos may get a white chip.
     useLightChip: config.photo ? false : partnerNeedsLightChip(partnerLogo),
@@ -1757,7 +1804,7 @@ async function loadAssets(
     kind: config.kind,
     eyebrow: config.eyebrow,
     hackathon: !!config.hackathon,
-    colors: isDad ? DAD_COLORS : brandColors,
+    colors: config.palette ?? (isDad ? DAD_COLORS : brandColors),
   };
 }
 
@@ -2039,14 +2086,15 @@ export type SponsorTier =
   | "bronze"
   | "premium"
   | "standard"
-  | "travel";
+  | "travel"
+  | "track";
 
 /** The two tracks' tier ladders, highest first — the same split the website
  * uses. Platinum to Bronze sponsor the conference, Premium to Travel the
  * Hackathon; the card names the track so a Premium card is not mistaken for
  * something above Platinum. */
 export const SPONSOR_TIER_TRACKS: {
-  key: "conference" | "hackathon";
+  key: "conference" | "hackathon" | "digital-assets-day";
   label: string;
   tiers: SponsorTier[];
 }[] = [
@@ -2059,6 +2107,11 @@ export const SPONSOR_TIER_TRACKS: {
     key: "hackathon",
     label: "Hackathon",
     tiers: ["premium", "standard", "travel"],
+  },
+  {
+    key: "digital-assets-day",
+    label: "Digital Assets Day",
+    tiers: ["track"],
   },
 ];
 
@@ -2110,6 +2163,9 @@ const TIER_COLORS: Record<SponsorTier, GradientPalette> = {
     red: "rgb(60,190,170)",
     purple: "rgb(30,110,120)",
   },
+  // Digital Assets Day track sponsors carry that day's own blue, the same
+  // range the speaker cards use for it, so the card reads as the day's.
+  track: DAD_COLORS,
 };
 
 export const TIER_LABEL: Record<SponsorTier, string> = {
@@ -2120,19 +2176,26 @@ export const TIER_LABEL: Record<SponsorTier, string> = {
   premium: "PREMIUM SPONSOR",
   standard: "STANDARD SPONSOR",
   travel: "TRAVEL SPONSOR",
+  track: "TRACK SPONSOR",
 };
 
 /** What the card is a sponsorship of — the eyebrow above the tier. */
 const tierEyebrow = (tier: SponsorTier) =>
-  HACKATHON_TIERS.has(tier)
-    ? "BLOCKCHAIN & AI HACKATHON · OCT 30 TO 31"
-    : "TUM BLOCKCHAIN CONFERENCE 26";
+  tier === "track"
+    ? "DIGITAL ASSETS DAY · OCT 30"
+    : HACKATHON_TIERS.has(tier)
+      ? "BLOCKCHAIN & AI HACKATHON · OCT 30 TO 31"
+      : "TUM BLOCKCHAIN CONFERENCE 26";
 
 export type SponsorCardContent = {
   /** Omit for the generic, self-serve external sponsor card: no tier theme,
    * brand colours, headline just reads "OFFICIAL SPONSOR". */
   tier?: SponsorTier;
-  /** The sponsor's logo. One per card; a tiered card announces one sponsor. */
+  /** For a Digital Assets Day track sponsor: which of the day's tracks they
+   * back. The card names it in that track's own colour from the agenda. */
+  dayTrack?: DadTrackName;
+  /** The logos on the card. Usually one. A track card can carry the whole
+   * group, in which case they share the plate row. */
   logoUrls: string[];
 };
 
@@ -2234,6 +2297,150 @@ const sponsorPairWidth = (o: { confW: number; dayW: number }) =>
  * on the card and the whole reads as an official notice rather than a
  * banner. The tier's palette also tints the ring behind everything.
  */
+/**
+ * The logo plates. One sponsor gets the whole area, which is how every tiered
+ * card has always looked. A track card can announce several at once, and then
+ * they share the row: each keeps its own plate, so a dark logo still gets
+ * white behind it and a light one still gets the glass, and they stagger in
+ * one after another rather than all at once.
+ */
+/** "#5ccc7a" plus an alpha, so a track colour can tint a fill or an outline. */
+function hexWithAlpha(hex: string, alpha: number) {
+  const n = parseInt(hex.slice(1), 16);
+  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${alpha})`;
+}
+
+const dayTrackOf = (name?: DadTrackName) =>
+  name ? DAD_TRACKS.find((track) => track.name === name) : undefined;
+
+/**
+ * Names the Digital Assets Day track a sponsor backs, in that track's own
+ * colour and with the dot-and-outline chip the agenda uses for it, so the
+ * card says at a glance which of the day's tracks this is.
+ */
+function drawTrackChip(
+  ctx: CanvasRenderingContext2D,
+  track: { name: string; hex: string },
+  cx: number,
+  cy: number,
+  alpha: number,
+  size: number,
+  maxWidth: number,
+) {
+  if (alpha <= 0) return;
+  const label = track.name.toUpperCase();
+  const spacing = size * 0.26;
+  const dot = size * 0.5;
+  const padX = size * 1.15;
+  const gap = size * 0.72;
+  const chrome = padX * 2 + dot + gap;
+  // drawSpacedText reports the width even while invisible, and shrinks to the
+  // width it is given, so the chip can be sized around the finished text.
+  const textW = drawSpacedText(ctx, label, 0, -9999, {
+    size,
+    spacing,
+    color: track.hex,
+    alpha: 0,
+    weight: 700,
+    font: brandFont(),
+    maxWidth: maxWidth - chrome,
+  });
+  const boxW = chrome + textW;
+  const boxH = size * 2.35;
+  const x = cx - boxW / 2;
+  const y = cy - boxH / 2;
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = hexWithAlpha(track.hex, 0.14);
+  roundRectPath(ctx, x, y, boxW, boxH, boxH / 2);
+  ctx.fill();
+  ctx.lineWidth = Math.max(2, size * 0.09);
+  ctx.strokeStyle = hexWithAlpha(track.hex, 0.8);
+  roundRectPath(ctx, x, y, boxW, boxH, boxH / 2);
+  ctx.stroke();
+  ctx.fillStyle = track.hex;
+  ctx.beginPath();
+  ctx.arc(x + padX + dot / 2, cy, dot / 2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  drawSpacedText(ctx, label, x + padX + dot + gap, cy, {
+    size,
+    spacing,
+    color: track.hex,
+    alpha,
+    weight: 700,
+    font: brandFont(),
+    maxWidth: maxWidth - chrome,
+  });
+}
+
+function drawSponsorPlates(
+  ctx: CanvasRenderingContext2D,
+  logos: SponsorAssets["logos"],
+  area: { x: number; y: number; w: number; h: number },
+  p: number,
+  stacked: boolean,
+) {
+  if (!logos.length) return;
+  if (logos.length === 1) {
+    const inAt = easeOut(phase(p, 0.24, 0.42));
+    drawPartnerChip(
+      ctx,
+      logos[0].img,
+      { ...area, y: area.y + (1 - inAt) * 24 },
+      inAt,
+      logos[0].useLightChip,
+    );
+    return;
+  }
+  const GAP = stacked ? 28 : 32;
+  const n = logos.length;
+  if (stacked) {
+    // The plates share one column. A tall mark like NYALA would shrink to
+    // nothing beside two wide wordmarks if every plate got the same slice, so
+    // give each plate a slice weighted by how tall its logo is, damped by a
+    // square root so no single plate runs away with the column.
+    const avail = area.h - GAP * (n - 1);
+    const weights = logos.map((l) =>
+      Math.sqrt(
+        Math.min(
+          1,
+          Math.max(0.25, l.img.naturalHeight / l.img.naturalWidth || 0.25),
+        ),
+      ),
+    );
+    const total = weights.reduce((sum, x) => sum + x, 0);
+    let y = area.y;
+    logos.forEach((logo, i) => {
+      const inAt = easeOut(phase(p, 0.24 + i * 0.06, 0.42 + i * 0.06));
+      const boxH = (avail * weights[i]) / total;
+      drawPartnerChip(
+        ctx,
+        logo.img,
+        { x: area.x, y: y + (1 - inAt) * 24, w: area.w, h: boxH },
+        inAt,
+        logo.useLightChip,
+      );
+      y += boxH + GAP;
+    });
+    return;
+  }
+  const size = (area.w - GAP * (n - 1)) / n;
+  logos.forEach((logo, i) => {
+    const inAt = easeOut(phase(p, 0.24 + i * 0.06, 0.42 + i * 0.06));
+    const box = { x: area.x + i * (size + GAP), y: area.y, w: size, h: area.h };
+    drawPartnerChip(
+      ctx,
+      logo.img,
+      { ...box, y: box.y + (1 - inAt) * 24 },
+      inAt,
+      logo.useLightChip,
+    );
+  });
+}
+
 function drawSponsorLandscape(
   ctx: CanvasRenderingContext2D,
   { w, h }: { w: number; h: number },
@@ -2284,19 +2491,34 @@ function drawSponsorLandscape(
     maxWidth: w - P * 2,
   });
 
-  // The sponsor's logo on one large plate — the hero of the card. A white
-  // plate for dark ink, the glass one for light ink, decided per logo.
-  const logo = a.logos[0];
-  const plateIn = easeOut(phase(p, 0.24, 0.42));
-  if (logo) {
-    drawPartnerChip(
+  // Which of the day's tracks this sponsors, in that track's colour.
+  const track = dayTrackOf(content.dayTrack);
+  if (track) {
+    drawTrackChip(
       ctx,
-      logo.img,
-      { x: w / 2 - 440, y: 384 + (1 - plateIn) * 24, w: 880, h: 400 },
-      plateIn,
-      logo.useLightChip,
+      track,
+      w / 2,
+      tierY + 88,
+      easeOut(phase(p, 0.18, 0.32)),
+      28,
+      w - P * 2,
     );
   }
+
+  // The sponsor's logo on one large plate — the hero of the card. A white
+  // plate for dark ink, the glass one for light ink, decided per logo.
+  const wide = a.logos.length > 1;
+  const plateY = track ? 470 : 384;
+  const plateH = track ? 350 : 400;
+  drawSponsorPlates(
+    ctx,
+    a.logos,
+    wide
+      ? { x: P, y: plateY, w: w - P * 2, h: plateH }
+      : { x: w / 2 - 440, y: plateY, w: 880, h: plateH },
+    p,
+    false,
+  );
 
   // Footer: a hairline and the date.
   const infoIn = easeOut(phase(p, 0.56, 0.68));
@@ -2471,17 +2693,34 @@ function drawSponsorPortrait(
     maxWidth: w - P * 2,
   });
 
-  const logo = a.logos[0];
-  const plateIn = easeOut(phase(p, 0.24, 0.42));
-  if (logo) {
-    drawPartnerChip(
+  const track = dayTrackOf(content.dayTrack);
+  if (track) {
+    drawTrackChip(
       ctx,
-      logo.img,
-      { x: P, y: 420 + (1 - plateIn) * 24, w: w - P * 2, h: 540 },
-      plateIn,
-      logo.useLightChip,
+      track,
+      w / 2,
+      tierY + 74,
+      easeOut(phase(p, 0.18, 0.32)),
+      21,
+      w - P * 2,
     );
   }
+
+  drawSponsorPlates(
+    ctx,
+    a.logos,
+    // One logo keeps the original block; a stack of them is given the room
+    // down to just above the footer hairline. The track chip, when there is
+    // one, takes its height off the top.
+    {
+      x: P,
+      y: track ? 480 : 420,
+      w: w - P * 2,
+      h: (a.logos.length > 1 ? 660 : 540) - (track ? 60 : 0),
+    },
+    p,
+    true,
+  );
 
   const infoIn = easeOut(phase(p, 0.56, 0.68));
   ctx.save();
@@ -2612,7 +2851,16 @@ function drawSponsorCard(
   orientation: CardOrientation,
   content: SponsorCardContent,
 ) {
-  drawCardBackdrop(ctx, dims, a.ring, a.colors, p, elapsed, orientation);
+  drawCardBackdrop(
+    ctx,
+    dims,
+    a.ring,
+    a.colors,
+    p,
+    elapsed,
+    orientation,
+    dayTrackOf(content.dayTrack)?.hex,
+  );
 
   if (content.tier) {
     const tiered = content as SponsorCardContent & { tier: SponsorTier };
