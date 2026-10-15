@@ -2,8 +2,12 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import { dayLabel, peopleOf, timeRange } from "@/components/agenda/sessionMeta";
-import { agendaTalks, talkById } from "@/constants/digitalAssetsDayAgenda";
-import { roleLine, speakerLinkFor } from "@/util/speakerPortraits";
+import {
+  getAgendaTalks,
+  getSpeakers,
+  getTalkById,
+} from "@/components/service/conference26";
+import { roleLine, speakerLinksFrom, bareName } from "@/util/speakerPortraits";
 
 /**
  * The preview LinkedIn, X, WhatsApp and the rest show for a session's link:
@@ -14,9 +18,12 @@ export const alt = "Session at the TUM Blockchain Conference 26";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-// Rendered at build time, so nothing here reads the filesystem in production.
-export const generateStaticParams = () =>
-  agendaTalks.map((t) => ({ sessionId: t.id }));
+// A literal, because Next reads segment config statically. Keep it in step
+// with the cache lifetime in components/service/conference26.ts.
+export const revalidate = 60;
+
+export const generateStaticParams = async () =>
+  (await getAgendaTalks()).map((t) => ({ sessionId: t.id }));
 
 const ACCENT = {
   conference: {
@@ -43,6 +50,39 @@ const fromRoot = (...path: string[]) =>
 const dataUrl = async (path: string, type: string) =>
   `data:${type};base64,${(await readFile(path)).toString("base64")}`;
 
+/**
+ * A portrait, whether it comes from Strapi or from the copy in `public`.
+ *
+ * Satori cannot load a URL itself, so the bytes have to be inlined either
+ * way. The type comes from the file rather than being assumed: the portraits
+ * are a mix of JPEG, PNG and WebP, and declaring the wrong one leaves the
+ * preview with a blank circle.
+ */
+const MIME: Record<string, string> = {
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  png: "image/png",
+  webp: "image/webp",
+  avif: "image/avif",
+  gif: "image/gif",
+};
+
+const portraitDataUrl = async (photo: string) => {
+  const ext = photo.split("?")[0].split(".").pop()?.toLowerCase() ?? "";
+  const type = MIME[ext] ?? "image/jpeg";
+  if (!photo.startsWith("http"))
+    return dataUrl(fromRoot("public", photo), type);
+  try {
+    const res = await fetch(photo);
+    if (!res.ok) throw new Error(`${res.status}`);
+    const buffer = Buffer.from(await res.arrayBuffer());
+    return `data:${res.headers.get("content-type") ?? type};base64,${buffer.toString("base64")}`;
+  } catch (err) {
+    console.error(`[og] portrait ${photo} could not be loaded:`, err);
+    return undefined;
+  }
+};
+
 const Silhouette = ({ px }: { px: number }) => (
   <div
     style={{
@@ -67,7 +107,7 @@ export default async function Image({
 }: {
   params: Promise<{ sessionId: string }>;
 }) {
-  const talk = talkById((await params).sessionId);
+  const talk = await getTalkById((await params).sessionId);
   if (!talk) return new Response("Not found", { status: 404 });
 
   const accent = ACCENT[talk.event];
@@ -77,16 +117,17 @@ export default async function Image({
     dataUrl(fromRoot("public/logos/c26-wordmark.svg"), "image/svg+xml"),
   ]);
 
+  const byName = new Map(
+    speakerLinksFrom(await getSpeakers()).map((s) => [bareName(s.name), s]),
+  );
   const people = await Promise.all(
     peopleOf(talk).map(async ({ name, moderator }) => {
-      const link = speakerLinkFor(name);
+      const link = byName.get(bareName(name));
       return {
         name,
         moderator,
         role: roleLine(link),
-        photo: link
-          ? await dataUrl(fromRoot("public", link.photo), "image/jpeg")
-          : undefined,
+        photo: link ? await portraitDataUrl(link.photo) : undefined,
       };
     }),
   );

@@ -3,6 +3,18 @@ const nextConfig = {
   generateBuildId: async () => {
     return process.env.VERCEL_DEPLOYMENT_ID || Date.now().toString();
   },
+  images: {
+    // Speaker portraits, side event visuals and partner logos come from
+    // Strapi, so the optimizer has to be allowed to fetch from it. Without
+    // this every picture added through the CMS would 400 instead of render.
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "strapi.rbg.tum-blockchain.com",
+        pathname: "/uploads/**",
+      },
+    ],
+  },
   // basePath: '/c24-website',
   // assetPrefix: '/c24-website',
 };

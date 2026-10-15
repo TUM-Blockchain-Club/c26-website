@@ -61,12 +61,6 @@ const PartnerLogo = ({ name, src, website, background }: PartnerLogoProps) => {
 const CommunityPartners = async () => {
   const fromStrapi = await fetchCommunityPartners();
 
-  // Dropped from whatever Strapi returns. START Munich was added to the
-  // collection on 7 October 2026, but it belongs on the student initiatives
-  // page rather than here. Unpublishing it in Strapi makes this line
-  // unnecessary again.
-  const hidden = new Set(["start munich"]);
-
   const community: PartnerLogoProps[] = fromStrapi.length
     ? fromStrapi
         .filter((partner) => partner.logo?.url)
@@ -83,10 +77,9 @@ const CommunityPartners = async () => {
   // carry one of them, the extra entry would show the same logo a second
   // time, so match on the name and let the Strapi version win.
   const key = (name: string) => name.trim().toLowerCase();
-  const shown = community.filter((partner) => !hidden.has(key(partner.name)));
-  const alreadyThere = new Set(shown.map((partner) => key(partner.name)));
+  const alreadyThere = new Set(community.map((partner) => key(partner.name)));
   const partners: PartnerLogoProps[] = [
-    ...shown,
+    ...community,
     ...extraPartners.filter((partner) => !alreadyThere.has(key(partner.name))),
   ];
 

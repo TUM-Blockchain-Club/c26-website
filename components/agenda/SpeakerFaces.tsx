@@ -1,7 +1,9 @@
+"use client";
+
 import classNames from "classnames";
 import Image from "next/image";
 import Link from "next/link";
-import { speakerLinkFor } from "@/util/speakerPortraits";
+import { useSpeakerLookup } from "@/components/agenda/AgendaData";
 
 /**
  * The row of faces a session shows for its confirmed speakers. Shared by both
@@ -52,7 +54,7 @@ export const SpeakerPlaceholder = ({
  * their role, company and profile link. Only speakers we actually have a card
  * for get a face, so every face has somewhere to go. */
 const SpeakerFace = ({ name, size }: { name: string; size: Size }) => {
-  const speaker = speakerLinkFor(name);
+  const speaker = useSpeakerLookup()(name);
   if (!speaker) return <SpeakerPlaceholder title={name} size={size} />;
   return (
     <Link
@@ -114,12 +116,3 @@ export const SpeakerFaces = ({
     </span>
   );
 };
-
-/** Confirmed speakers, then the moderator, in the order they are credited. */
-export const facesOf = (talk: {
-  speakers?: string[];
-  moderator?: string;
-}): string[] => [
-  ...(talk.speakers ?? []),
-  ...(talk.moderator ? [talk.moderator] : []),
-];

@@ -5,8 +5,8 @@ import {
   Sponsor26,
   Sponsor26Tier,
   SPONSOR26_TRACKS,
-  sponsors26,
 } from "@/constants/sponsors26";
+import { getSponsors } from "@/components/service/conference26";
 
 /**
  * How each tier looks. The ladder has to be readable at a glance, so rank is
@@ -100,6 +100,8 @@ const SponsorLogo = ({
           alt={name}
           fill
           sizes="(max-width: 768px) 208px, 320px"
+          // Logos from Strapi may be SVG, which the optimizer refuses.
+          unoptimized={src.startsWith("http")}
           style={{ objectFit: "contain" }}
         />
       </div>
@@ -110,7 +112,12 @@ const SponsorLogo = ({
 /** This year's sponsors, above the past ones and larger than them. Split by
  * track, because the conference and the Hackathon have their own tier
  * ladders — side by side they would read as one ranking. */
-const CurrentSponsors = () => {
+const CurrentSponsors = async () => {
+  // From Strapi, so a sponsor can be added without a deploy. The tier ladder
+  // itself stays in code: it comes from the sponsorship deck, not from an
+  // editor.
+  const sponsors26 = await getSponsors();
+
   const tracks = SPONSOR26_TRACKS.map((track) => ({
     ...track,
     rows: track.tiers

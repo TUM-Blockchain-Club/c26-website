@@ -1,7 +1,7 @@
 import { StageGridAgenda } from "@/components/agenda/StageGridAgenda";
 
 /** The Digital Assets Day half of the programme, on the day's own page. */
-export const DigitalAssetsDayAgenda = () => (
+export const DigitalAssetsDayAgenda = async () => (
   <StageGridAgenda
     event="digital-assets-day"
     accent={{ rule: "border-blue-400/30", title: "text-blue-200" }}

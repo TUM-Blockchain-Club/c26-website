@@ -2,19 +2,19 @@ import { Container } from "@/components/container";
 import { Speaker as SpeakerComponent } from "@/components/speaker";
 import { Text } from "@/components/text";
 import { SpeakerApplicationForm } from "@/components/brand/SpeakerApplicationForm";
-// import { fetchSpeakers } from "@/components/service/contentStrapi";
 import { pastSpeakers } from "@/constants/PastSpeakers";
-import { speakers26 } from "@/constants/Speakers26";
+import { getSpeakers } from "@/components/service/conference26";
+
+/** Rebuilt in the background once the cached list is older than this, so a
+ * speaker added in Strapi appears without a deploy. */
+// A literal, because Next reads segment config statically. Keep it in step
+// with the cache lifetime in components/service/conference26.ts.
+export const revalidate = 60;
 
 const SpeakersPage = async () => {
-  // const speakers = await fetchSpeakers();
-  // const filteredSpeakers = speakers
-  //   .filter((speaker) => {
-  //     const priority = Number(speaker.priority);
-  //     return !isNaN(priority) && priority >= 0;
-  //   })
-  //   .sort((a, b) => Number(a.priority) - Number(b.priority));
-
+  // This year's speakers come from Strapi, ordered by the priority field,
+  // which is the editorial order. Last year's are a static list.
+  const speakers26 = await getSpeakers();
   const filteredSpeakers = pastSpeakers;
 
   return (
