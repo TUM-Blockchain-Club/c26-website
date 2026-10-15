@@ -49,10 +49,10 @@ const nav: NavGroup[] = [
       { label: "Full Agenda", link: "/agenda" },
       { label: "TUM Blockchain Conference Day", link: "/conference-day" },
       { label: "Digital Assets Day", link: "/digital-assets-day" },
-      { label: "Hackathon", link: HACKATHON_URL },
       { label: "Side Events", link: "/side-events" },
     ],
   },
+  { label: "Hackathon", link: HACKATHON_URL },
   { label: "Speakers", link: "/speakers" },
   {
     label: "Partners",
@@ -115,7 +115,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               </div>
             ) : (
               <Text asChild key={group.label}>
-                <Link href={group.link ?? "/"} onClick={onClose}>
+                <Link
+                  href={group.link ?? "/"}
+                  onClick={onClose}
+                  target={group.link?.startsWith("http") ? "_blank" : undefined}
+                  rel={
+                    group.link?.startsWith("http")
+                      ? "noopener noreferrer"
+                      : undefined
+                  }
+                >
                   {group.label}
                 </Link>
               </Text>
@@ -142,9 +151,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 /** One group in the top bar: a link, or a label that opens its children. */
 function NavItem({ group }: { group: NavGroup }) {
   if (!group.children) {
+    const isExternal = group.link?.startsWith("http");
     return (
       <Text asChild>
-        <Link href={group.link ?? "/"} className="whitespace-nowrap">
+        <Link
+          href={group.link ?? "/"}
+          className="whitespace-nowrap"
+          target={isExternal ? "_blank" : undefined}
+          rel={isExternal ? "noopener noreferrer" : undefined}
+        >
           {group.label}
         </Link>
       </Text>
