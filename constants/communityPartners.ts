@@ -8,26 +8,28 @@ export type StaticCommunityPartner = {
 };
 
 /**
- * Snapshot of the partners published in Strapi, used while the production API
- * token has no read access to the collection yet. Once Strapi answers, its
- * data wins and this list is ignored entirely, so an entry here can never
- * duplicate one from there — see sections/CommunityPartners.tsx.
+ * Snapshot of the partners published in Strapi. This is what the live site
+ * actually renders: the production API token cannot read the collection, so
+ * fetchCommunityPartners returns nothing there and the section falls back to
+ * this list. It was verified by comparing the live page against both sources,
+ * name for name. Locally, where the token works, Strapi wins and this list is
+ * ignored entirely — see sections/CommunityPartners.tsx.
  *
- * Keep it in step with Strapi by hand until that token gets read access: names,
- * websites and logo filenames are copied from the API, the filename being the
- * partner's documentId, which is what the logo cache writes. Anything added in
- * Strapi and not mirrored here stays invisible in production.
+ * So anything added in Strapi and not mirrored here is invisible to visitors,
+ * which is how four partners went missing for a week. Until the token is
+ * fixed in the Vercel project settings, every new partner has to be copied in
+ * here by hand: name and website from the API, the logo cached under
+ * public/community-partners26/ as the partner's documentId, which is the
+ * filename the build's own logo cache writes.
+ *
+ * `background` is measured from the logo's pixels with the same rule as
+ * util/logoTone.ts. The four SVGs carry the value checked when they were
+ * added, because that measurement needs a raster.
+ *
+ * START Munich is published in Strapi but is not a community partner of the
+ * conference, so it is left out here as well as filtered in the section.
  */
 export const staticCommunityPartners: StaticCommunityPartner[] = [
-  {
-    // In Strapi under this name, so it stays put once Strapi answers and this
-    // snapshot is dropped. The logo is the horizontal lockup they sent us,
-    // colours untouched; the white variant Strapi carries is not in the repo.
-    name: "Association for Women in Cryptocurrency (AWIC)",
-    src: "/community-partners26/women-in-crypto.png",
-    website: "https://www.womenincrypto.org",
-    background: "light",
-  },
   {
     name: "Academy Consult",
     src: "/community-partners26/lf5cmstgy5638wv26z0mvrhb.png",
@@ -35,27 +37,27 @@ export const staticCommunityPartners: StaticCommunityPartner[] = [
     background: "light",
   },
   {
+    name: "Association for Women in Cryptocurrency (AWIC)",
+    src: "/community-partners26/women-in-crypto.png",
+    website: "https://www.womenincrypto.org/",
+    background: "light",
+  },
+  {
     name: "Blockchain Learning Foundation",
     src: "/community-partners26/qmreblmbmr1fvwapuc51dhtd.png",
-    website: "https://blockchainlearningfoundation.org",
+    website: "https://blockchainlearningfoundation.org/",
     background: "light",
   },
   {
     name: "Blockchain Student Association EPFL",
     src: "/community-partners26/hexlutkw3o8z264ptts18pcu.png",
-    website: "https://www.bsaepfl.ch",
+    website: "https://www.bsaepfl.ch/",
     background: "dark",
   },
   {
     name: "Bundesverband Alternative Investments e.V.",
     src: "/community-partners26/bp5i0f3op3unuo2fkug324kx.jpe",
-    website: "https://www.bvai.de",
-    background: "light",
-  },
-  {
-    name: "ODTÜ Blockchain",
-    src: "/community-partners26/amh2n13lmtfelx8rc245gdj3.png",
-    website: "https://www.odtublockchain.com",
+    website: "https://www.bvai.de/",
     background: "light",
   },
   {
@@ -71,15 +73,50 @@ export const staticCommunityPartners: StaticCommunityPartner[] = [
     background: "light",
   },
   {
+    name: "DLT Talents Alumni",
+    src: "/community-partners26/xxvb9yi7yglt7ztz9xfmee3g.png",
+    background: "dark",
+  },
+  {
+    name: "Digital Euro Association",
+    src: "/community-partners26/arkwj5k6iuav78nqruciwe93.png",
+    website: "https://digital-euro-association.de/",
+    background: "dark",
+  },
+  {
     name: "ETH Blockchain Club",
     src: "/community-partners26/dynia0jqonfg3v3c1xbtz7ia.png",
     website: "https://eth-blockchain.org",
     background: "dark",
   },
   {
+    name: "Finance Loop",
+    src: "/community-partners26/plq2r5fhbcv16mci0nghp7ii.png",
+    website: "https://www.finance-loop.net/",
+    background: "light",
+  },
+  {
+    name: "ODTÜ Blockchain",
+    src: "/community-partners26/amh2n13lmtfelx8rc245gdj3.png",
+    website: "https://www.odtublockchain.com/",
+    background: "light",
+  },
+  {
     name: "TU Design",
     src: "/community-partners26/mwevkteym6s73akk2m2gsoev.svg",
     background: "dark",
+  },
+  {
+    name: "TU Investment Club e.V.",
+    src: "/community-partners26/m931q4uk161v5pzl6288992c.jpg",
+    website: "https://www.tuinvest.de/",
+    background: "dark",
+  },
+  {
+    name: "WIW3CH",
+    src: "/community-partners26/qewbdd5zdr494ue1laxh1udw.png",
+    website: "https://www.wiw3ch.com/",
+    background: "light",
   },
   {
     name: "center for software engineering excellence",
