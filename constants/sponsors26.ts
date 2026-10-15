@@ -14,6 +14,7 @@ export type Sponsor26Tier =
   | "partner"
   | "premium"
   | "standard"
+  | "bounty"
   | "travel";
 
 export type Sponsor26 = {
@@ -58,6 +59,9 @@ export const SPONSOR26_TRACKS: Sponsor26Track[] = [
     tiers: [
       { key: "premium", label: "Premium" },
       { key: "standard", label: "Standard" },
+      // Funds a challenge and its prize money rather than the event itself,
+      // so it sits below the two paid tiers rather than inside them.
+      { key: "bounty", label: "Bounty" },
       { key: "travel", label: "Travel" },
     ],
   },
