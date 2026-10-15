@@ -2086,6 +2086,7 @@ export type SponsorTier =
   | "bronze"
   | "premium"
   | "standard"
+  | "bounty"
   | "travel"
   | "track";
 
@@ -2106,7 +2107,7 @@ export const SPONSOR_TIER_TRACKS: {
   {
     key: "hackathon",
     label: "Hackathon",
-    tiers: ["premium", "standard", "travel"],
+    tiers: ["premium", "standard", "bounty", "travel"],
   },
   {
     key: "digital-assets-day",
@@ -2119,7 +2120,12 @@ export const SPONSOR_TIERS: SponsorTier[] = SPONSOR_TIER_TRACKS.flatMap(
   (track) => track.tiers,
 );
 
-const HACKATHON_TIERS = new Set<SponsorTier>(["premium", "standard", "travel"]);
+const HACKATHON_TIERS = new Set<SponsorTier>([
+  "premium",
+  "standard",
+  "bounty",
+  "travel",
+]);
 
 const TIER_COLORS: Record<SponsorTier, GradientPalette> = {
   // Bright, icy white-to-blue — reads as the premium metal.
@@ -2158,6 +2164,13 @@ const TIER_COLORS: Record<SponsorTier, GradientPalette> = {
     red: "rgb(90,140,230)",
     purple: "rgb(50,80,170)",
   },
+  // Warm amber, the colour of a prize, and far enough from the blue of
+  // Standard and the teal of Travel to be told apart at a glance.
+  bounty: {
+    yellow: "rgb(255,226,160)",
+    red: "rgb(240,170,60)",
+    purple: "rgb(180,105,20)",
+  },
   travel: {
     yellow: "rgb(180,240,225)",
     red: "rgb(60,190,170)",
@@ -2175,6 +2188,7 @@ export const TIER_LABEL: Record<SponsorTier, string> = {
   bronze: "BRONZE SPONSOR",
   premium: "PREMIUM SPONSOR",
   standard: "STANDARD SPONSOR",
+  bounty: "BOUNTY SPONSOR",
   travel: "TRAVEL SPONSOR",
   track: "TRACK SPONSOR",
 };
