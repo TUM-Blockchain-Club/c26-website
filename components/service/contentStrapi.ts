@@ -3,6 +3,7 @@ import fs from "fs";
 import fsPromises from "fs/promises";
 import path from "path";
 import { detectLogoBackground, LogoBackground } from "@/util/logoTone";
+import { REVALIDATE, TAGS } from "@/components/service/conference26";
 
 //  {
 //     title: "AI, Privacy & DePin in Web3",
@@ -413,14 +414,19 @@ export const fetchCommunityPartners = async (): Promise<CommunityPartner[]> => {
     let page = 1;
 
     do {
-      const res = await axios.get(
+      // Plain fetch rather than axios, so the answer lands in Next's data
+      // cache under a tag and Strapi's webhook can refresh it through
+      // /api/revalidate the moment a partner is published.
+      const res = await fetch(
         `https://strapi.rbg.tum-blockchain.com/api/${COMMUNITY_PARTNER_ENDPOINT}?sort=name:asc&pagination[page]=${page}&pagination[pageSize]=50&populate=logo`,
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
+          next: { revalidate: REVALIDATE, tags: [TAGS.partners] },
         },
-      );
+      ).then(async (r) => {
+        if (!r.ok) throw new Error(`Strapi answered ${r.status}`);
+        return { data: await r.json() };
+      });
 
       const pageData: CommunityPartner[] = res.data.data;
 

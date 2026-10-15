@@ -2,7 +2,8 @@ import { Button } from "@/components/button";
 import Image from "next/image";
 import NextLink from "next/link";
 import { Text } from "@/components/text";
-import { sideEvents26, type SideEvent26 } from "@/constants/sideEvents26";
+import { type SideEvent26 } from "@/constants/sideEvents26";
+import { getSideEvents } from "@/components/service/conference26";
 
 /**
  * The side events, in the card shape last year's page used: a square visual on
@@ -131,8 +132,11 @@ const LAYOUT: Record<number, string> = {
   3: "sm:grid-cols-2 lg:grid-cols-3",
 };
 
-export const SideEventList = () => {
-  const sorted = [...sideEvents26].sort((a, b) =>
+export const SideEventList = async () => {
+  // From Strapi, so an event can be added without a deploy; falls back to the
+  // list in the repo when Strapi is unreachable.
+  const events = await getSideEvents();
+  const sorted = [...events].sort((a, b) =>
     `${a.date}${a.start}`.localeCompare(`${b.date}${b.start}`),
   );
 

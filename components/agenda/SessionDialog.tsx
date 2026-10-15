@@ -23,7 +23,8 @@ import {
   timeRange,
   trackStyle,
 } from "@/components/agenda/sessionMeta";
-import { talkById, type AgendaTalk } from "@/constants/digitalAssetsDayAgenda";
+import { type AgendaTalk } from "@/constants/digitalAssetsDayAgenda";
+import { useHasTalk, useTalkById } from "@/components/agenda/AgendaData";
 
 /**
  * Opens a session of the agenda in a dialog that holds everything about it
@@ -41,12 +42,16 @@ const SessionDialogContext = createContext<((id: string) => void) | null>(null);
 
 const PATH_PATTERN = /^\/agenda\/([^/]+)\/?$/;
 
-const idInUrl = (mode: UrlMode) => {
-  const id =
+/** The session the current URL points at, if it is one we have. The id is
+ * returned decoded, which is how every other caller spells it. */
+const idInUrl = (mode: UrlMode, hasTalk: (id: string) => boolean) => {
+  const raw =
     mode === "path"
       ? window.location.pathname.match(PATH_PATTERN)?.[1]
       : new URLSearchParams(window.location.search).get("session");
-  return id && talkById(decodeURIComponent(id)) ? id : undefined;
+  if (!raw) return undefined;
+  const id = decodeURIComponent(raw);
+  return hasTalk(id) ? id : undefined;
 };
 
 const urlWith = (mode: UrlMode, id: string | undefined) => {
@@ -68,6 +73,7 @@ export const SessionDialogProvider = ({
   initialSessionId?: string;
 }) => {
   const [openId, setOpenId] = useState(initialSessionId);
+  const hasTalk = useHasTalk();
   // Whether the open dialog added its own history entry. Closing it then
   // steps back, so the back button afterwards leaves the page as expected
   // instead of reopening the session.
@@ -75,7 +81,7 @@ export const SessionDialogProvider = ({
 
   useEffect(() => {
     const sync = () => {
-      const id = idInUrl(urlMode);
+      const id = idInUrl(urlMode, hasTalk);
       if (!id) pushed.current = false;
       setOpenId(id);
     };
@@ -83,6 +89,9 @@ export const SessionDialogProvider = ({
     if (urlMode === "query") sync();
     window.addEventListener("popstate", sync);
     return () => window.removeEventListener("popstate", sync);
+    // hasTalk is derived from the programme, which does not change while the
+    // page is open.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [urlMode]);
 
   const open = useCallback(
@@ -105,7 +114,7 @@ export const SessionDialogProvider = ({
     }
   }, [urlMode]);
 
-  const talk = openId ? talkById(openId) : undefined;
+  const talk = useTalkById(openId);
 
   return (
     <SessionDialogContext.Provider value={open}>

@@ -9,6 +9,12 @@ import { DigitalAssetsDayAgenda } from "@/components/agenda/DigitalAssetsDayAgen
 import { BundesblockContactForm } from "@/components/brand/BundesblockContactForm";
 import DigitalAssetsDayLogoWhite from "@/public/logos/digital-assets-day-logo-white.png";
 
+/** The day's agenda is read from Strapi, so the page is rebuilt in the
+ * background once its cached copy is older than this. */
+// A literal, because Next reads segment config statically. Keep it in step
+// with the cache lifetime in components/service/conference26.ts.
+export const revalidate = 60;
+
 export const metadata: Metadata = {
   title: "Digital Assets Day · TUM Blockchain Conference 26",
   description:

@@ -88,3 +88,14 @@ export const isShareable = (talk: AgendaTalk) =>
   !!talk.title || peopleOf(talk).length > 0;
 
 export const sessionPath = (id: string) => `/agenda/${id}`;
+
+/** The names a session shows faces for: its confirmed speakers, then the
+ * moderator. Lives here rather than beside the faces because the stage grid
+ * renders on the server and the faces do not. */
+export const facesOf = (talk: {
+  speakers?: string[];
+  moderator?: string;
+}): string[] => [
+  ...(talk.speakers ?? []),
+  ...(talk.moderator ? [talk.moderator] : []),
+];

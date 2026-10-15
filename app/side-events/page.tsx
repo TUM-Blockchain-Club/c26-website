@@ -3,9 +3,12 @@ import { SideEventList } from "@/components/event/SideEventList";
 import { Text } from "@/components/text";
 import ScheduleOverview from "@/components/schedule/ScheduleOverview";
 
-// Side events come from constants/sideEvents26.ts, not from Strapi: the page
-// used to fetch them and then render a placeholder instead, and the production
-// token has no read access to that collection anyway.
+/** Rebuilt in the background once the cached list is older than this, so an
+ * event added in Strapi appears without a deploy. */
+// A literal, because Next reads segment config statically. Keep it in step
+// with the cache lifetime in components/service/conference26.ts.
+export const revalidate = 60;
+
 export default function SideEvents() {
   return (
     <div className={"overflow-x-hidden"}>

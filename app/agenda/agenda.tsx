@@ -1,26 +1,19 @@
 "use client";
 
-import { Session as SessionComponent } from "@/components/session";
 import { Text } from "@/components/text";
 import { Toggle } from "@/components/toggle";
-// import { Session, Stages, Tracks } from "@/model/session";
-import * as Separator from "@radix-ui/react-separator";
 import classNames from "classnames";
 import React, { useState } from "react";
-import { Session, Speaker } from "@/components/service/contentStrapi_static";
 import AgendaFeed from "@/components/agenda/AgendaFeed";
+import { useAgendaEntries } from "@/components/agenda/AgendaData";
 import { SessionDialogProvider } from "@/components/agenda/SessionDialog";
 import {
-  agendaEntries,
   ROOMS,
   roomOfStage,
   DAD_TRACKS,
-  CONFERENCE_TRACKS,
   type AgendaTrackName,
 } from "@/constants/digitalAssetsDayAgenda";
 type AgendaProps = {
-  sessions: Session[];
-  speakers: Speaker[];
   /** Set on a session's own page, /agenda/<id>, to open it on load. */
   initialSessionId?: string;
 };
@@ -66,11 +59,11 @@ const TRACK_GROUPS = [
   },
 ].filter((g) => g.tracks.length > 0);
 
-export const Agenda: React.FC<AgendaProps> = ({
-  sessions,
-  speakers,
-  initialSessionId,
-}) => {
+export const Agenda: React.FC<AgendaProps> = ({ initialSessionId }) => {
+  // The programme comes from Strapi, fetched by the page and handed down
+  // through AgendaDataProvider, so the filters below work on whatever is
+  // published right now.
+  const agendaEntries = useAgendaEntries();
   const [titleFilter, setTitleFilter] = useState<string>("");
   const [eventFilter, setEventFilter] = useState<EventKey>();
   const [roomFilter, setRoomFilter] = useState<string>();
@@ -133,70 +126,6 @@ export const Agenda: React.FC<AgendaProps> = ({
     setRoomFilter(undefined);
     setTrackFilter(undefined);
   };
-
-  let filteredSessions = null;
-
-  if (sessions) {
-    filteredSessions = sessions.filter((item) => {
-      const matchesEvent = !eventFilter || (item as any).event === eventFilter;
-
-      const q = titleFilter.trim().toLowerCase();
-
-      const speakerTextParts: string[] = [];
-      const rawSpeakers = (item as any).speakers;
-      if (rawSpeakers && typeof rawSpeakers === "object") {
-        speakerTextParts.push(
-          ...Object.keys(rawSpeakers).map((x) => String(x)),
-          ...Object.values(rawSpeakers).map((x) => String(x)),
-        );
-      }
-
-      const searchableChunks = [
-        item.title,
-        (item as any).subtitle,
-        (item as any).description,
-        (item as any).abstract,
-        (item as any).summary,
-        item.track,
-        item.room,
-        ...(Array.isArray((item as any).tags) ? (item as any).tags : []),
-        ...(Array.isArray((item as any).keywords)
-          ? (item as any).keywords
-          : []),
-        ...speakerTextParts,
-      ]
-        .filter(Boolean)
-        .map((x) => String(x).toLowerCase());
-
-      const haystack = searchableChunks.join(" | ");
-
-      const matchesTitle = !q || haystack.includes(q);
-
-      return matchesEvent && matchesTitle;
-    });
-
-    filteredSessions.sort((a, b) => {
-      const ta = new Date(a.startTime).getTime();
-      const tb = new Date(b.startTime).getTime();
-
-      if (ta !== tb) {
-        // If they're close in time, apply stage priority
-        if (Math.abs(ta - tb) <= SAME_TIME_WINDOW_MS) {
-          const pa = STAGE_PRIORITY[a.room] ?? 99;
-          const pb = STAGE_PRIORITY[b.room] ?? 99;
-          if (pa !== pb) return pa - pb;
-        }
-        return ta - tb;
-      }
-
-      const pa = STAGE_PRIORITY[a.room] ?? 99;
-      const pb = STAGE_PRIORITY[b.room] ?? 99;
-      if (pa !== pb) return pa - pb;
-
-      if (a.room !== b.room) return a.room.localeCompare(b.room);
-      return a.title.localeCompare(b.title);
-    });
-  }
 
   return (
     <SessionDialogProvider urlMode="path" initialSessionId={initialSessionId}>
@@ -383,107 +312,44 @@ export const Agenda: React.FC<AgendaProps> = ({
         </div>
         <div id="sessions" className="flex w-full flex-col gap-y-4">
           <div className="flex w-full flex-col items-center md:items-start">
-            {filteredSessions?.map((item, index) => {
-              // --- Warnings if Strapi data is missing ---
-              if (!item.title) {
-                console.warn(
-                  `⚠️ Session at index ${index} is missing a title`,
-                  item,
-                );
-              }
-              if (!item.startTime || !item.endTime) {
-                console.warn(
-                  `⚠️ Session "${item.title ?? "?"}" has no start or end time`,
-                  item,
-                );
-              }
-              if (!item.room) {
-                console.warn(
-                  `⚠️ Session "${item.title ?? "?"}" has no room assigned`,
-                  item,
-                );
-              }
-              if (!item.track) {
-                console.warn(
-                  `⚠️ Session "${item.title ?? "?"}" has no track assigned`,
-                  item,
-                );
-              }
-              if (!item.speakers || Object.keys(item.speakers).length === 0) {
-                console.warn(
-                  `⚠️ Session "${item.title ?? "?"}" has no speakers`,
-                  item,
-                );
-              }
-              // -----------------------------------------
-
-              return (
-                <React.Fragment key={index}>
-                  {
-                    // Divider between days
-                    index > 0 &&
-                      new Date(
-                        filteredSessions[index - 1].startTime,
-                      ).getDate() < new Date(item.startTime).getDate() && (
-                        <Separator.Root
-                          attr-text={new Date(
-                            item.startTime,
-                          ).toLocaleDateString("en-DE", {
-                            weekday: "long",
-                            timeZone: "Europe/Berlin",
-                          })}
-                          className={classNames(
-                            "h-px my-16 bg-gradient-tbc w-full text-center overflow-visible",
-                            "after:bg-black after:px-4 after:relative after:-top-[0.75em]",
-                            "after:content-[attr(attr-text)]",
-                          )}
-                        />
-                      )
-                  }
-                  <SessionComponent session={item} speakers={speakers} />
-                </React.Fragment>
-              );
-            })}
-
             {visibleTalksCount > 0 && <AgendaFeed entries={visibleEntries} />}
 
-            {sessions.length === 0 &&
-              (visibleTalksCount > 0 ? (
-                !eventFilter &&
-                !feedHasOwnFilters && (
-                  <div className="card-tbc-soft mt-8 flex w-full flex-col items-center gap-2 px-6 py-10 text-center">
-                    <Text as="p" textType="lgsmall" className="font-bold">
-                      More to come
-                    </Text>
-                    <Text
-                      as="p"
-                      textType="small"
-                      className="text-secondary max-w-md"
-                    >
-                      The Hackathon programme is in the making and will be
-                      published right here. Stay tuned!
-                    </Text>
-                  </div>
-                )
-              ) : feedHasOwnFilters ? (
-                <Text className="text-gray-500">
-                  There is no session with that filter :(
-                </Text>
-              ) : (
-                <div className="card-tbc-soft flex w-full flex-col items-center gap-3 px-6 py-16 text-center">
-                  <Text as="p" textType="sub_title" className="font-bold">
-                    This programme is in the making
+            {visibleTalksCount > 0 ? (
+              !eventFilter &&
+              !feedHasOwnFilters && (
+                <div className="card-tbc-soft mt-8 flex w-full flex-col items-center gap-2 px-6 py-10 text-center">
+                  <Text as="p" textType="lgsmall" className="font-bold">
+                    More to come
                   </Text>
                   <Text
                     as="p"
-                    textType="paragraph"
+                    textType="small"
                     className="text-secondary max-w-md"
                   >
-                    We are putting it together and will publish every session
-                    right here. Stay tuned!
+                    The Hackathon programme is in the making and will be
+                    published right here. Stay tuned!
                   </Text>
                 </div>
-              ))}
+              )
+            ) : feedHasOwnFilters ? (
+              <Text className="text-gray-500">
+                There is no session with that filter :(
+              </Text>
+            ) : (
+              <div className="card-tbc-soft flex w-full flex-col items-center gap-3 px-6 py-16 text-center">
+                <Text as="p" textType="sub_title" className="font-bold">
+                  This programme is in the making
+                </Text>
+                <Text
+                  as="p"
+                  textType="paragraph"
+                  className="text-secondary max-w-md"
+                >
+                  We are putting it together and will publish every session
+                  right here. Stay tuned!
+                </Text>
+              </div>
+            )}
           </div>
         </div>
       </div>

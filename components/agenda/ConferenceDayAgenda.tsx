@@ -1,7 +1,7 @@
 import { StageGridAgenda } from "@/components/agenda/StageGridAgenda";
 
 /** The First Conference Day half of the programme, on the day's own page. */
-export const ConferenceDayAgenda = () => (
+export const ConferenceDayAgenda = async () => (
   <StageGridAgenda
     event="conference"
     accent={{ rule: "border-tbc-yellow/30", title: "text-tbc-yellow" }}

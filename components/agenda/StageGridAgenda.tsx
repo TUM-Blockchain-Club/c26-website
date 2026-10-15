@@ -1,19 +1,24 @@
 import classNames from "classnames";
 import { Text } from "@/components/text";
-import { SpeakerFaces, facesOf } from "@/components/agenda/SpeakerFaces";
+import { SpeakerFaces } from "@/components/agenda/SpeakerFaces";
 import { AgendaSpeakers } from "@/components/agenda/AgendaSpeakers";
 import {
   SessionDialogProvider,
   SessionTrigger,
   clickableCard,
 } from "@/components/agenda/SessionDialog";
-import { rangeLabel } from "@/components/agenda/sessionMeta";
+import { facesOf, rangeLabel } from "@/components/agenda/sessionMeta";
 import {
   AGENDA_TRACKS,
-  agendaEntries,
   type AgendaEntry,
   type AgendaEventKey,
 } from "@/constants/digitalAssetsDayAgenda";
+import { AgendaDataProvider } from "@/components/agenda/AgendaData";
+import {
+  getAgendaEntries,
+  getSpeakers,
+} from "@/components/service/conference26";
+import { speakerLinksFrom } from "@/util/speakerPortraits";
 
 /**
  * One conference day as a time-aligned grid of parallel stages, falling back
@@ -91,8 +96,8 @@ const minHeightFor = (title: string | undefined, names?: string) => {
  * but segments holding a session too short to be legible are stretched until
  * it fits. Built once per day, from every session boundary of that day.
  */
-const buildDay = (event: AgendaEventKey) => {
-  const mine = agendaEntries.filter((e) => e.event === event);
+const buildDay = (entries: AgendaEntry[], event: AgendaEventKey) => {
+  const mine = entries.filter((e) => e.event === event);
   const talks = mine.filter((e): e is Talk => e.kind === "talk");
   const breaks = mine.filter((e): e is Break => e.kind === "break");
 
@@ -169,15 +174,8 @@ const buildDay = (event: AgendaEventKey) => {
   return { talks, breaks, height: y, at, boxFor };
 };
 
+/** The time scale and the sessions of one day, as buildDay returns them. */
 type Day = ReturnType<typeof buildDay>;
-const DAYS = new Map<AgendaEventKey, Day>();
-const dayFor = (event: AgendaEventKey) => {
-  const cached = DAYS.get(event);
-  if (cached) return cached;
-  const built = buildDay(event);
-  DAYS.set(event, built);
-  return built;
-};
 
 export type StageSpec = { name: string; subtitle: string };
 export type GridAccent = {
@@ -288,7 +286,7 @@ const StageColumn = ({ stage, day }: { stage: string; day: Day }) => (
   </div>
 );
 
-export const StageGridAgenda = ({
+export const StageGridAgenda = async ({
   event,
   stages,
   accent,
@@ -299,7 +297,14 @@ export const StageGridAgenda = ({
   accent: GridAccent;
   intro: React.ReactNode;
 }) => {
-  const day = dayFor(event);
+  // The published programme and the speakers behind the faces, both from
+  // Strapi. The grid is laid out here on the server; the dialog and the
+  // portraits read the same data through the provider below.
+  const [entries, speakers] = await Promise.all([
+    getAgendaEntries(),
+    getSpeakers(),
+  ]);
+  const day = buildDay(entries, event);
   const sorted = [...day.talks, ...day.breaks].sort(
     (a, b) => toMin(a.time) - toMin(b.time),
   );
@@ -309,119 +314,134 @@ export const StageGridAgenda = ({
   );
 
   return (
-    <SessionDialogProvider urlMode="query">
-      <div className="flex flex-col gap-6">
-        <Text
-          as="p"
-          textType="paragraph"
-          className="max-w-3xl leading-relaxed text-secondary"
-        >
-          {intro}
-        </Text>
+    <AgendaDataProvider
+      data={{ entries, speakers: speakerLinksFrom(speakers) }}
+    >
+      <SessionDialogProvider urlMode="query">
+        <div className="flex flex-col gap-6">
+          <Text
+            as="p"
+            textType="paragraph"
+            className="max-w-3xl leading-relaxed text-secondary"
+          >
+            {intro}
+          </Text>
 
-        {/* Desktop: time-aligned grid, one column per stage */}
-        <div
-          className="hidden overflow-x-auto pb-2 lg:grid lg:gap-x-4 lg:gap-y-4"
-          style={{
-            gridTemplateColumns: `3rem repeat(${stages.length}, minmax(0, 1fr))`,
-          }}
-        >
-          <div />
-          {stages.map((s) => (
-            <StageHeader
-              key={s.name}
-              name={s.name}
-              subtitle={s.subtitle}
-              accent={accent}
-            />
-          ))}
+          {/* Desktop: time-aligned grid, one column per stage */}
+          <div
+            className="hidden overflow-x-auto pb-2 lg:grid lg:gap-x-4 lg:gap-y-4"
+            style={{
+              gridTemplateColumns: `3rem repeat(${stages.length}, minmax(0, 1fr))`,
+            }}
+          >
+            <div />
+            {stages.map((s) => (
+              <StageHeader
+                key={s.name}
+                name={s.name}
+                subtitle={s.subtitle}
+                accent={accent}
+              />
+            ))}
 
-          {/* Time gutter */}
-          <div className="relative" style={{ height: day.height }}>
-            {HOURS.map((h) => (
-              <div
-                key={h}
-                className="absolute right-1 -translate-y-1/2"
-                style={{ top: day.at(h * 60) }}
-              >
-                <Text as="span" textType="small" className="text-faint">
-                  {h}:00
-                </Text>
-              </div>
+            {/* Time gutter */}
+            <div className="relative" style={{ height: day.height }}>
+              {HOURS.map((h) => (
+                <div
+                  key={h}
+                  className="absolute right-1 -translate-y-1/2"
+                  style={{ top: day.at(h * 60) }}
+                >
+                  <Text as="span" textType="small" className="text-faint">
+                    {h}:00
+                  </Text>
+                </div>
+              ))}
+            </div>
+
+            {stages.map((s) => (
+              <StageColumn key={s.name} stage={s.name} day={day} />
             ))}
           </div>
 
-          {stages.map((s) => (
-            <StageColumn key={s.name} stage={s.name} day={day} />
-          ))}
-        </div>
-
-        {/* Mobile: one chronological list, each entry stating its stage */}
-        <div className="flex flex-col gap-2.5 lg:hidden">
-          {sorted.map((e, i) =>
-            e.kind === "break" ? (
-              <div
-                key={i}
-                className="flex flex-wrap items-center gap-x-3 rounded-lg border border-dashed border-line-subtle/60 px-4 py-2.5"
-              >
-                <Text as="p" textType="small" className="font-bold text-faint">
-                  {rangeLabel(e.time, e.duration)}
-                </Text>
-                <Text as="p" textType="small" className="text-faint">
-                  {e.label} · {e.stage}
-                </Text>
-              </div>
-            ) : (
-              <div
-                key={i}
-                className={classNames(
-                  "flex flex-col gap-1 rounded-lg border border-l-4 bg-black px-4 py-3",
-                  clickableCard,
-                  trackStyle(e.track).accent,
-                )}
-              >
-                <Text as="p" textType="small" className="font-bold text-white">
-                  {rangeLabel(e.time, e.duration)} · {e.stage}
-                </Text>
-                <SessionTrigger id={e.id}>
+          {/* Mobile: one chronological list, each entry stating its stage */}
+          <div className="flex flex-col gap-2.5 lg:hidden">
+            {sorted.map((e, i) =>
+              e.kind === "break" ? (
+                <div
+                  key={i}
+                  className="flex flex-wrap items-center gap-x-3 rounded-lg border border-dashed border-line-subtle/60 px-4 py-2.5"
+                >
                   <Text
-                    as="span"
-                    textType="paragraph"
-                    className="block font-bold"
+                    as="p"
+                    textType="small"
+                    className="font-bold text-faint"
                   >
-                    {e.title ?? "Title to be announced"}
+                    {rangeLabel(e.time, e.duration)}
                   </Text>
-                </SessionTrigger>
-                {namesOf(e) && (
-                  <div className="mt-2">
-                    <AgendaSpeakers
-                      speakers={e.speakers}
-                      moderator={e.moderator}
-                    />
-                  </div>
-                )}
-              </div>
-            ),
+                  <Text as="p" textType="small" className="text-faint">
+                    {e.label} · {e.stage}
+                  </Text>
+                </div>
+              ) : (
+                <div
+                  key={i}
+                  className={classNames(
+                    "flex flex-col gap-1 rounded-lg border border-l-4 bg-black px-4 py-3",
+                    clickableCard,
+                    trackStyle(e.track).accent,
+                  )}
+                >
+                  <Text
+                    as="p"
+                    textType="small"
+                    className="font-bold text-white"
+                  >
+                    {rangeLabel(e.time, e.duration)} · {e.stage}
+                  </Text>
+                  <SessionTrigger id={e.id}>
+                    <Text
+                      as="span"
+                      textType="paragraph"
+                      className="block font-bold"
+                    >
+                      {e.title ?? "Title to be announced"}
+                    </Text>
+                  </SessionTrigger>
+                  {namesOf(e) && (
+                    <div className="mt-2">
+                      <AgendaSpeakers
+                        speakers={e.speakers}
+                        moderator={e.moderator}
+                      />
+                    </div>
+                  )}
+                </div>
+              ),
+            )}
+          </div>
+
+          {used.length > 0 && (
+            <div className="flex flex-wrap gap-x-5 gap-y-2 pt-1">
+              {used.map((track) => (
+                <span key={track.name} className="flex items-center gap-2">
+                  <span
+                    className={classNames(
+                      "h-2.5 w-2.5 rounded-full",
+                      track.dot,
+                    )}
+                    aria-hidden
+                  />
+                  <Text as="span" textType="small" className="text-secondary">
+                    {track.name}
+                  </Text>
+                </span>
+              ))}
+            </div>
           )}
         </div>
-
-        {used.length > 0 && (
-          <div className="flex flex-wrap gap-x-5 gap-y-2 pt-1">
-            {used.map((track) => (
-              <span key={track.name} className="flex items-center gap-2">
-                <span
-                  className={classNames("h-2.5 w-2.5 rounded-full", track.dot)}
-                  aria-hidden
-                />
-                <Text as="span" textType="small" className="text-secondary">
-                  {track.name}
-                </Text>
-              </span>
-            ))}
-          </div>
-        )}
-      </div>
-    </SessionDialogProvider>
+      </SessionDialogProvider>
+    </AgendaDataProvider>
   );
 };
 

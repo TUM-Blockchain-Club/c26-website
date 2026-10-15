@@ -1,8 +1,11 @@
+"use client";
+
 import classNames from "classnames";
 import Image from "next/image";
 import Link from "next/link";
 import { Text } from "@/components/text";
-import { speakerLinkFor, roleLine } from "@/util/speakerPortraits";
+import { roleLine } from "@/util/speakerPortraits";
+import { useSpeakerLookup } from "@/components/agenda/AgendaData";
 
 /**
  * The speaker block under a session, in the shape last year's agenda used: a
@@ -59,7 +62,7 @@ const Person = ({
   moderator?: boolean;
   size: Size;
 }) => {
-  const speaker = speakerLinkFor(name);
+  const speaker = useSpeakerLookup()(name);
   const role = roleLine(speaker);
   const compact = size === "compact";
   const credit =

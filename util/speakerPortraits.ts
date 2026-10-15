@@ -12,7 +12,7 @@ import { speakers26 } from "@/constants/Speakers26";
  * plain name, and elsewhere the other way round. Everything else has to match
  * exactly, so a near-miss stays a silhouette instead of showing a stranger.
  */
-const bareName = (name: string) =>
+export const bareName = (name: string) =>
   name
     // Bundesblock's exports have shipped a narrow no-break space between first
     // and last name, which matches nothing; fold every kind of whitespace, and
@@ -20,6 +20,12 @@ const bareName = (name: string) =>
     .normalize("NFC")
     .replace(/\s+/g, " ")
     .replace(/^(?:(?:Prof\.|Dr\.(?:-Ing\.)?)\s+)+/, "")
+    // The two sources also disagree about accents: the agenda writes "André
+    // Liesenfeld" where he submitted "Andre", and "Pavel Hubacek" where he
+    // submitted "Hubáček". Comparing without them costs nothing here, since
+    // no two speakers differ by an accent alone.
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
     .trim()
     .toLowerCase();
 
@@ -34,6 +40,35 @@ export type SpeakerLink = {
   position?: string;
   company?: string;
 };
+
+/**
+ * The same projection for a speaker list that came from Strapi rather than
+ * from the file below, so the live agenda and the compiled fallback describe a
+ * speaker identically. Anyone without a photo is left out: the agenda shows a
+ * silhouette for them either way, and a link to an empty card would be worse.
+ */
+export const speakerLinksFrom = (
+  speakers: {
+    name: string;
+    documentId: string;
+    position?: string;
+    company_name?: string;
+    profile_photo?: { url: string } | null;
+  }[],
+): SpeakerLink[] =>
+  speakers.flatMap((s) =>
+    s.profile_photo?.url
+      ? [
+          {
+            name: s.name,
+            photo: s.profile_photo.url,
+            anchor: s.documentId,
+            position: s.position,
+            company: s.company_name,
+          },
+        ]
+      : [],
+  );
 
 const BY_NAME = new Map<string, SpeakerLink>(
   speakers26.flatMap((s) =>

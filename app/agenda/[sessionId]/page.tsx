@@ -8,7 +8,7 @@ import {
   timeRange,
   sessionPath,
 } from "@/components/agenda/sessionMeta";
-import { agendaTalks, talkById } from "@/constants/digitalAssetsDayAgenda";
+import { getAgendaTalks, getTalkById } from "@/components/service/conference26";
 
 /**
  * A session's own page: the agenda with that session's dialog open. It is
@@ -17,13 +17,19 @@ import { agendaTalks, talkById } from "@/constants/digitalAssetsDayAgenda";
  */
 type Props = { params: Promise<{ sessionId: string }> };
 
-export const dynamicParams = false;
+// A literal, because Next reads segment config statically. Keep it in step
+// with the cache lifetime in components/service/conference26.ts.
+export const revalidate = 60;
 
-export const generateStaticParams = () =>
-  agendaTalks.map((t) => ({ sessionId: t.id }));
+// A session added in Strapi after the last build is rendered on first request
+// rather than 404ing until someone deploys.
+export const dynamicParams = true;
+
+export const generateStaticParams = async () =>
+  (await getAgendaTalks()).map((t) => ({ sessionId: t.id }));
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const talk = talkById((await params).sessionId);
+  const talk = await getTalkById((await params).sessionId);
   if (!talk) return {};
 
   const title = `${talk.title ?? "Session"} · TUM Blockchain Conference 26`;
@@ -63,6 +69,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function SessionPage({ params }: Props) {
   const { sessionId } = await params;
-  if (!talkById(sessionId)) notFound();
+  if (!(await getTalkById(sessionId))) notFound();
   return <AgendaPageBody initialSessionId={sessionId} />;
 }

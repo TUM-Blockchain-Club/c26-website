@@ -7,6 +7,12 @@ import { Link } from "@/components/link";
 import { LumaTicketButton } from "@/components/luma-ticket-button";
 import { ConferenceDayAgenda } from "@/components/agenda/ConferenceDayAgenda";
 
+/** The day's agenda is read from Strapi, so the page is rebuilt in the
+ * background once its cached copy is older than this. */
+// A literal, because Next reads segment config statically. Keep it in step
+// with the cache lifetime in components/service/conference26.ts.
+export const revalidate = 60;
+
 export const metadata: Metadata = {
   title: "TUM Blockchain Conference Day · TUM Blockchain Conference 26",
   description:
