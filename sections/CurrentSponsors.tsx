@@ -7,6 +7,7 @@ import {
   SPONSOR26_TRACKS,
 } from "@/constants/sponsors26";
 import { getSponsors } from "@/components/service/conference26";
+import { DAD_TRACKS } from "@/constants/digitalAssetsDayAgenda";
 
 /**
  * How each tier looks. The ladder has to be readable at a glance, so rank is
@@ -62,6 +63,13 @@ const TIER_STYLE: Record<Sponsor26Tier, TierStyle> = {
   premium: { card: "h-32 w-56 md:h-44 md:w-[23rem]", ...RANK_1 },
   standard: { card: "h-28 w-48 md:h-36 md:w-80", ...RANK_2 },
   bounty: { card: "h-20 w-36 md:h-24 md:w-52", ...RANK_3 },
+  // No rank, so no halo: the row label carries the track's own colour.
+  track: {
+    card: "h-24 w-44 md:h-28 md:w-64",
+    halo: "",
+    label: "text-xs",
+    tone: "text-secondary",
+  },
   travel: { card: "h-20 w-36 md:h-24 md:w-52", ...RANK_3 },
 };
 
@@ -110,6 +118,76 @@ const SponsorLogo = ({
   );
 };
 
+type TierRow = {
+  key: Sponsor26Tier;
+  label: string;
+  muted?: boolean;
+  sponsors: Sponsor26[];
+};
+
+const GroupHeader = ({ label }: { label: string }) => (
+  <div className="flex w-full max-w-3xl items-center gap-4">
+    <span className="h-px flex-1 bg-line" />
+    <Text as="p" textType="sub_title" className="font-bold">
+      {label}
+    </Text>
+    <span className="h-px flex-1 bg-line" />
+  </div>
+);
+
+/** One of the two tier ladders: a row per tier, ranked by card size and tone. */
+const TierGroup = ({ label, rows }: { label: string; rows: TierRow[] }) => (
+  <div className="flex w-full flex-col items-center gap-10 md:gap-12">
+    <GroupHeader label={label} />
+    {rows.map((row) => (
+      <div key={row.key} className="flex flex-col items-center gap-4">
+        <p
+          className={`font-semibold uppercase tracking-[0.28em] ${TIER_STYLE[row.key].label} ${TIER_STYLE[row.key].tone}`}
+        >
+          {row.label}
+        </p>
+        <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6">
+          {row.sponsors.map((sponsor) => (
+            <SponsorLogo key={sponsor.src} {...sponsor} muted={row.muted} />
+          ))}
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
+/** The Digital Assets Day sells focus tracks instead of ranks, so each row is
+ * named after its track and carries that track's colour from the agenda. */
+const TrackGroup = ({
+  rows,
+}: {
+  rows: { key: string; label: string; hex: string; sponsors: Sponsor26[] }[];
+}) => (
+  <div className="flex w-full flex-col items-center gap-10 md:gap-12">
+    <GroupHeader label="Digital Assets Day" />
+    {rows.map((row) => (
+      <div key={row.key} className="flex flex-col items-center gap-4">
+        <p
+          className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.28em]"
+          style={{ color: row.hex }}
+        >
+          <span
+            className="inline-block h-2 w-2 rounded-full"
+            style={{ backgroundColor: row.hex }}
+            aria-hidden
+          />
+          {row.label}
+        </p>
+        <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6">
+          {row.sponsors.map((sponsor) => (
+            <SponsorLogo key={sponsor.name} {...sponsor} />
+          ))}
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
 /** This year's sponsors, above the past ones and larger than them. Split by
  * track, because the conference and the Hackathon have their own tier
  * ladders — side by side they would read as one ranking. */
@@ -118,6 +196,18 @@ const CurrentSponsors = async () => {
   // itself stays in code: it comes from the sponsorship deck, not from an
   // editor.
   const sponsors26 = await getSponsors();
+
+  // The Digital Assets Day sells its focus tracks rather than a tier ladder,
+  // so that group is built from the tracks the agenda knows, one row each, and
+  // only the tracks that actually have a sponsor show up.
+  const trackRows = DAD_TRACKS.map((t) => ({
+    key: t.name,
+    label: t.name,
+    hex: t.hex,
+    sponsors: sponsors26.filter(
+      (s) => s.tier === "track" && s.dayTrack === t.name,
+    ),
+  })).filter((row) => row.sponsors.length > 0);
 
   const tracks = SPONSOR26_TRACKS.map((track) => ({
     ...track,
@@ -129,7 +219,7 @@ const CurrentSponsors = async () => {
       .filter((row) => row.sponsors.length > 0),
   })).filter((track) => track.rows.length > 0);
 
-  if (tracks.length === 0) return null;
+  if (tracks.length === 0 && trackRows.length === 0) return null;
 
   return (
     <section
@@ -152,39 +242,19 @@ const CurrentSponsors = async () => {
       </Text>
 
       <div className="mt-10 flex w-full flex-col items-center gap-12 md:gap-16">
-        {tracks.map((track) => (
-          <div
-            key={track.key}
-            className="flex w-full flex-col items-center gap-10 md:gap-12"
-          >
-            <div className="flex w-full max-w-3xl items-center gap-4">
-              <span className="h-px flex-1 bg-line" />
-              <Text as="p" textType="sub_title" className="font-bold">
-                {track.label}
-              </Text>
-              <span className="h-px flex-1 bg-line" />
-            </div>
+        {tracks
+          .filter((track) => track.key === "conference")
+          .map((track) => (
+            <TierGroup key={track.key} label={track.label} rows={track.rows} />
+          ))}
 
-            {track.rows.map((row) => (
-              <div key={row.key} className="flex flex-col items-center gap-4">
-                <p
-                  className={`font-semibold uppercase tracking-[0.28em] ${TIER_STYLE[row.key].label} ${TIER_STYLE[row.key].tone}`}
-                >
-                  {row.label}
-                </p>
-                <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6">
-                  {row.sponsors.map((sponsor) => (
-                    <SponsorLogo
-                      key={sponsor.src}
-                      {...sponsor}
-                      muted={row.muted}
-                    />
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        ))}
+        {trackRows.length > 0 && <TrackGroup rows={trackRows} />}
+
+        {tracks
+          .filter((track) => track.key === "hackathon")
+          .map((track) => (
+            <TierGroup key={track.key} label={track.label} rows={track.rows} />
+          ))}
       </div>
     </section>
   );
