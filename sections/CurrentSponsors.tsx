@@ -136,7 +136,16 @@ const GroupHeader = ({ label }: { label: string }) => (
 );
 
 /** One of the two tier ladders: a row per tier, ranked by card size and tone. */
-const TierGroup = ({ label, rows }: { label: string; rows: TierRow[] }) => (
+const TierGroup = ({
+  label,
+  rows,
+  trackRows = [],
+}: {
+  label: string;
+  rows: TierRow[];
+  /** Appended under the ladder, for the Digital Assets Day's track sponsors. */
+  trackRows?: TrackRow[];
+}) => (
   <div className="flex w-full flex-col items-center gap-10 md:gap-12">
     <GroupHeader label={label} />
     {rows.map((row) => (
@@ -153,18 +162,23 @@ const TierGroup = ({ label, rows }: { label: string; rows: TierRow[] }) => (
         </div>
       </div>
     ))}
+    <TrackRows rows={trackRows} />
   </div>
 );
 
+type TrackRow = {
+  key: string;
+  label: string;
+  hex: string;
+  sponsors: Sponsor26[];
+};
+
 /** The Digital Assets Day sells focus tracks instead of ranks, so each row is
- * named after its track and carries that track's colour from the agenda. */
-const TrackGroup = ({
-  rows,
-}: {
-  rows: { key: string; label: string; hex: string; sponsors: Sponsor26[] }[];
-}) => (
-  <div className="flex w-full flex-col items-center gap-10 md:gap-12">
-    <GroupHeader label="Digital Assets Day" />
+ * named after its track and carries that track's colour from the agenda. They
+ * sit at the foot of the Conference ladder, because the day is part of the
+ * conference and because there are only ever a handful of them. */
+const TrackRows = ({ rows }: { rows: TrackRow[] }) => (
+  <>
     {rows.map((row) => (
       <div key={row.key} className="flex flex-col items-center gap-4">
         <p
@@ -185,7 +199,7 @@ const TrackGroup = ({
         </div>
       </div>
     ))}
-  </div>
+  </>
 );
 
 /** This year's sponsors, above the past ones and larger than them. Split by
@@ -245,10 +259,13 @@ const CurrentSponsors = async () => {
         {tracks
           .filter((track) => track.key === "conference")
           .map((track) => (
-            <TierGroup key={track.key} label={track.label} rows={track.rows} />
+            <TierGroup
+              key={track.key}
+              label={track.label}
+              rows={track.rows}
+              trackRows={trackRows}
+            />
           ))}
-
-        {trackRows.length > 0 && <TrackGroup rows={trackRows} />}
 
         {tracks
           .filter((track) => track.key === "hackathon")
