@@ -391,6 +391,9 @@ type StrapiSponsor = {
   name: string;
   tier: Sponsor26Tier | null;
   website: string | null;
+  /** Only meaningful for the "track" tier: the Digital Assets Day track they
+   * back, spelled as the agenda spells it. */
+  dayTrack: string | null;
   logo?: { url: string } | null;
 };
 
@@ -432,6 +435,7 @@ export const getSponsors = async (): Promise<Sponsor26[]> => {
         tier: s.tier as Sponsor26Tier,
         src,
         website: s.website ?? "",
+        ...(s.dayTrack ? { dayTrack: s.dayTrack } : {}),
         background: await sponsorBackground(src),
       };
     }),

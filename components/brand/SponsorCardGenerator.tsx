@@ -36,6 +36,7 @@ const TIER_SWATCH: Record<SponsorTier, string> = {
   bronze: "linear-gradient(135deg, #e4aa78, #7a4828)",
   premium: "linear-gradient(135deg, #ffcd78, #7846e6)",
   standard: "linear-gradient(135deg, #bed7ff, #3250aa)",
+  bounty: "linear-gradient(135deg, #ffe2a0, #b46914)",
   travel: "linear-gradient(135deg, #b4f0e1, #1e6e78)",
   track: "linear-gradient(135deg, #82b4ff, #4285f4)",
 };

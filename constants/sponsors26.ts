@@ -15,13 +15,19 @@ export type Sponsor26Tier =
   | "premium"
   | "standard"
   | "bounty"
-  | "travel";
+  | "travel"
+  // Backs one focus track of the Digital Assets Day rather than the event,
+  // so it carries the track's name and colour instead of a rank.
+  | "track";
 
 export type Sponsor26 = {
   name: string;
   tier: Sponsor26Tier;
   src: string;
   website: string;
+  /** Only for the "track" tier: which focus track of the Digital Assets Day
+   * they back. Its name and colour come from the agenda. */
+  dayTrack?: string;
   /** Which card the logo needs — see util/logoTone.ts. All four are dark ink
    * on a transparent canvas, so they all sit on the white card. */
   background: LogoBackground;
