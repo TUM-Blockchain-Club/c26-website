@@ -178,8 +178,9 @@ const SessionDialogContent = ({ talk }: { talk: AgendaTalk }) => {
     <Dialog.Portal>
       <Dialog.Overlay className="session-overlay fixed inset-0 z-[10000] bg-black/75 backdrop-blur-sm" />
       <Dialog.Content
-        // Sessions carry no abstract; the title names the dialog on its own.
-        aria-describedby={undefined}
+        // Most sessions carry no abstract; those without one are named by
+        // their title alone. With one, Dialog.Description below wires it up.
+        {...(talk.description ? {} : { "aria-describedby": undefined })}
         // Focus the sheet itself rather than its first button, so opening it
         // with a tap does not light up the close button's focus ring.
         onOpenAutoFocus={(e) => {
@@ -279,6 +280,19 @@ const SessionDialogContent = ({ talk }: { talk: AgendaTalk }) => {
             {talk.title ?? "Title to be announced"}
           </h2>
         </Dialog.Title>
+
+        {/* Plain text from Strapi; line breaks typed in the admin are kept. */}
+        {talk.description && (
+          <Dialog.Description asChild>
+            <Text
+              as="p"
+              textType="paragraph"
+              className="mt-3 whitespace-pre-line leading-relaxed text-secondary sm:mt-4"
+            >
+              {talk.description}
+            </Text>
+          </Dialog.Description>
+        )}
 
         <div className="mt-5 sm:mt-7">
           <AgendaSpeakers

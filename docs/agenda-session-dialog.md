@@ -2,10 +2,19 @@
 
 Every talk in the agenda opens a dialog with everything about the session on
 one screen: day, start and end time, stage (set large, with a pin), track,
-title, speakers (large ringed portraits with name, role and company) and,
-where the session is worth sharing, share buttons. Sessions carry no
-abstracts, and the dialog and the preview image leave out the session length;
-the stage grid on the day pages still shows it.
+title, the abstract where there is one, speakers (large ringed portraits with
+name, role and company) and, where the session is worth sharing, share
+buttons. The dialog and the preview image leave out the session length; the
+stage grid on the day pages still shows it.
+
+## Abstracts
+
+The abstract is the `description` field of the session in Strapi
+(`agenda-26s`). It renders as plain text under the title, keeping any line
+breaks typed in the admin, and serves as the dialog's accessible description.
+An empty or whitespace-only field renders nothing, which is the case for every
+panel. The fallback list in `constants/` carries no abstracts, so they only
+appear while the agenda is read from Strapi.
 
 ## Links
 

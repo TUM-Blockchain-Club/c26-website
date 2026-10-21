@@ -144,6 +144,9 @@ export type AgendaEntry =
        * which is most of the First Conference Day. */
       track?: AgendaTrackName;
       title?: string; // missing = to be announced
+      /** The abstract, as plain text. Only Strapi carries one; panels have
+       * none, and a session without it shows nothing in its place. */
+      description?: string;
       format?: string;
       /** Only speakers Bundesblock marks as confirmed in the internal agenda;
        * contacted or uncontacted names stay off the site. Missing = none

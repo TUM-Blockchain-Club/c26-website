@@ -31,6 +31,8 @@ The fields that matter:
   on the conference day, Main Stage, Executive Forum and Future Stage on the
   Digital Assets Day. They are the same three rooms.
 - **type** `Break` turns the entry into a break rather than a session.
+- **description** is the session's abstract, shown as plain text under the
+  title in its dialog. Leave it empty where there is none, as for the panels.
 - **speakers** is the relation: pick people from the speaker list and their
   portrait, role and company come along.
 - **speakerNames** is the older free-text field, `{"speaker_1": "…"}`, kept for

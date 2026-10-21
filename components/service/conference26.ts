@@ -194,6 +194,8 @@ type StrapiSession = {
   /** Which of the three parts the session belongs to, chosen in the admin. */
   event: AgendaEventKey | null;
   title: string | null;
+  /** The abstract, plain text. Empty for most sessions, panels included. */
+  description?: string | null;
   type: string | null;
   startTime: string;
   endTime: string;
@@ -244,6 +246,10 @@ const toEntry = (s: StrapiSession): AgendaEntry | null => {
     (Date.parse(s.endTime) - Date.parse(s.startTime)) / 60000,
   );
   const common = { event: s.event ?? eventOfDay(day), day };
+  // A field cleared in the admin comes back as "" or whitespace rather than
+  // null, and should render as no abstract at all.
+  const description =
+    typeof s.description === "string" ? s.description.trim() : "";
 
   if (s.type === "Break") {
     return {
@@ -293,6 +299,7 @@ const toEntry = (s: StrapiSession): AgendaEntry | null => {
     stage: s.room,
     ...(s.track ? { track: s.track as AgendaTrackName } : {}),
     ...(s.title ? { title: s.title } : {}),
+    ...(description ? { description } : {}),
     ...(s.type ? { format: s.type } : {}),
     ...(speakers.length ? { speakers } : {}),
     ...(moderator ? { moderator } : {}),
