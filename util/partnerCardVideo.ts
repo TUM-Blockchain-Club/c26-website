@@ -105,6 +105,9 @@ export type CardConfig = {
   ringStops?: GradientStop[];
   /** Partner cards only: give the logo chip all the room the layout has. */
   bigLogo?: boolean;
+  /** Partner cards only: show the Digital Assets Day mark at a size that
+   * reads as part of the lockup rather than a footnote. */
+  bigDayMark?: boolean;
 };
 
 export const PARTNER_CARD_CONFIG: CardConfig = {
@@ -128,6 +131,9 @@ export const ASSOCIATION_CARD_CONFIG: CardConfig = {
   kind: "partner",
   eyebrow: "ASSOCIATION PARTNER",
   bigLogo: true,
+  // The banks and industry bodies are here for the Digital Assets Day, so
+  // its mark gets real weight next to the conference wordmark.
+  bigDayMark: true,
 };
 
 /** Generic attendee card: no day split, always the conference brand and logo. */
@@ -184,6 +190,7 @@ type Assets = {
   eyebrow: string;
   hackathon: boolean;
   bigLogo: boolean;
+  bigDayMark: boolean;
   colors: GradientPalette;
 };
 
@@ -877,6 +884,13 @@ function drawLandscape(
   // × divider
   drawDivider(ctx, w * 0.5, cy, 155, gradient, easeOut(phase(p, 0.32, 0.42)));
 
+  // Right column. With a big Digital Assets Day mark the conference wordmark
+  // moves up and gives a little height, so the two stack as one lockup
+  // centred on the card's middle line.
+  const right = a.bigDayMark
+    ? { confY: cy - 215, confH: 270, dayY: cy + 82, dayW: 500, dayH: 140 }
+    : { confY: cy - 170, confH: 290, dayY: cy + 150, dayW: 340, dayH: 70 };
+
   // Conference logo (right)
   const confIn = easeOut(phase(p, 0.38, 0.5));
   if (confIn > 0) {
@@ -884,9 +898,9 @@ function drawLandscape(
     ctx.globalAlpha = confIn;
     drawContain(ctx, a.confLogo, {
       x: w * 0.58 + (1 - confIn) * 36,
-      y: cy - 170,
+      y: right.confY,
       w: w * 0.34,
-      h: 290,
+      h: right.confH,
     });
     ctx.restore();
   }
@@ -898,10 +912,10 @@ function drawLandscape(
     ctx.save();
     ctx.globalAlpha = dayIn;
     drawContain(ctx, a.dayMark, {
-      x: w * 0.58 + w * 0.17 - 170,
-      y: cy + 150,
-      w: 340,
-      h: 70,
+      x: w * 0.58 + w * 0.17 - right.dayW / 2,
+      y: right.dayY,
+      w: right.dayW,
+      h: right.dayH,
     });
     ctx.restore();
   }
@@ -1012,14 +1026,19 @@ function drawPortrait(
   );
 
   const confIn = easeOut(phase(p, 0.38, 0.5));
+  // A big Digital Assets Day mark takes its height from the conference
+  // wordmark above it; the block as a whole keeps its footprint.
+  const stack = a.bigDayMark
+    ? { confY: 60, confH: 145, dayY: 222, dayW: 520, dayH: 112 }
+    : { confY: 66, confH: 190 - tight, dayY: 296 - tight, dayW: 360, dayH: 74 };
   if (confIn > 0) {
     ctx.save();
     ctx.globalAlpha = confIn;
     drawContain(ctx, a.confLogo, {
       x: P,
-      y: dividerY + 66 + (1 - confIn) * 24,
+      y: dividerY + stack.confY + (1 - confIn) * 24,
       w: w - P * 2,
-      h: 190 - tight,
+      h: stack.confH,
     });
     ctx.restore();
   }
@@ -1031,10 +1050,10 @@ function drawPortrait(
     ctx.save();
     ctx.globalAlpha = dayIn;
     drawContain(ctx, a.dayMark, {
-      x: w / 2 - 180,
-      y: dividerY + 296 - tight,
-      w: 360,
-      h: 74,
+      x: w / 2 - stack.dayW / 2,
+      y: dividerY + stack.dayY,
+      w: stack.dayW,
+      h: stack.dayH,
     });
     ctx.restore();
   }
@@ -1852,6 +1871,7 @@ async function loadAssets(
     eyebrow: config.eyebrow,
     hackathon: !!config.hackathon,
     bigLogo: !!config.bigLogo,
+    bigDayMark: !!config.bigDayMark,
     colors: config.palette ?? (isDad ? DAD_COLORS : brandColors),
   };
 }

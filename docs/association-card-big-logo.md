@@ -15,3 +15,11 @@ logo as large as the layout allows.
   block underneath is set 30px tighter to make room.
 - The community partner card is unchanged: everything above is gated on
   `bigLogo`.
+
+## Bigger Digital Assets Day mark
+
+`ASSOCIATION_CARD_CONFIG` also sets `bigDayMark: true`. The Digital Assets Day
+mark then grows from a 70px-high box to 140px (landscape) or 112px
+(portrait); the conference wordmark above it gives up a little height so the
+two read as one centred lockup and the block keeps its footprint. The
+community partner card keeps the small mark.
