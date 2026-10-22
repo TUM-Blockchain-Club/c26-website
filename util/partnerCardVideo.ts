@@ -78,25 +78,6 @@ function paletteStops(p: GradientPalette): GradientStop[] {
 // three-stop palette used for the frame/aurora/job accent elsewhere on the
 // card, so the rotating ring itself reads as several shades of blue rather
 // than one flat tint. Still stays shy of navy, per earlier "too dark" note.
-/**
- * The association card gets its own, quieter palette. The warm brand ramp
- * reads as a student conference and the Digital Assets Day blue is taken, so
- * the federations and industry bodies get a restrained teal into deep
- * blue-green: institutional without leaving the family.
- */
-const ASSOCIATION_COLORS: GradientPalette = {
-  yellow: "rgb(168,232,220)",
-  red: "rgb(58,170,166)",
-  purple: "rgb(18,84,102)",
-};
-
-const ASSOCIATION_RING_STOPS: GradientStop[] = [
-  { offset: 0, color: "rgb(200,240,232)" },
-  { offset: 0.32, color: "rgb(96,196,190)" },
-  { offset: 0.64, color: "rgb(28,118,128)" },
-  { offset: 1, color: "rgb(150,222,214)" },
-];
-
 const DAD_RING_STOPS: GradientStop[] = [
   { offset: 0, color: "rgb(205,225,255)" },
   { offset: 0.3, color: "rgb(120,170,255)" },
@@ -122,6 +103,8 @@ export type CardConfig = {
   palette?: GradientPalette;
   /** Ring tint to match that palette. Without it the ring stays untinted. */
   ringStops?: GradientStop[];
+  /** Partner cards only: give the logo chip all the room the layout has. */
+  bigLogo?: boolean;
 };
 
 export const PARTNER_CARD_CONFIG: CardConfig = {
@@ -136,15 +119,15 @@ export const SPEAKER_CARD_CONFIG: CardConfig = {
 };
 
 /**
- * Associations and federations. Same layout as the community partner card,
- * its own eyebrow and its own colour, because the audience is the banking and
- * industry bodies rather than the Web3 communities.
+ * Associations and federations. Same layout and conference colours as the
+ * community partner card, with its own eyebrow and the partner's logo drawn
+ * as large as the layout allows, so every detail of an association's mark
+ * stays legible.
  */
 export const ASSOCIATION_CARD_CONFIG: CardConfig = {
   kind: "partner",
   eyebrow: "ASSOCIATION PARTNER",
-  palette: ASSOCIATION_COLORS,
-  ringStops: ASSOCIATION_RING_STOPS,
+  bigLogo: true,
 };
 
 /** Generic attendee card: no day split, always the conference brand and logo. */
@@ -200,6 +183,7 @@ type Assets = {
   kind: CardConfig["kind"];
   eyebrow: string;
   hackathon: boolean;
+  bigLogo: boolean;
   colors: GradientPalette;
 };
 
@@ -604,6 +588,8 @@ function drawPartnerChip(
   box: { x: number; y: number; w: number; h: number },
   alpha: number,
   useLightChip: boolean,
+  /** Inner padding in px; defaults to 17% of the chip's shorter side. */
+  padding?: number,
 ) {
   if (alpha <= 0) return;
   ctx.save();
@@ -627,7 +613,7 @@ function drawPartnerChip(
     roundRectPath(ctx, box.x, box.y, box.w, box.h, r);
     ctx.stroke();
   }
-  const pad = Math.min(box.w, box.h) * 0.17;
+  const pad = padding ?? Math.min(box.w, box.h) * 0.17;
   drawContain(ctx, logo, {
     x: box.x + pad,
     y: box.y + pad,
@@ -787,6 +773,42 @@ function drawCard(
   }
 }
 
+/** Padding inside the big-logo chip: just enough to keep the logo off the
+ * rounded corners, so the mark itself gets the rest of the room. */
+const BIG_LOGO_PAD = 36;
+
+/**
+ * Height of a big-logo chip: tall enough for the logo at the full chip width,
+ * never taller than the layout allows, so a wide wordmark gets a slim chip
+ * instead of a tall white box with the mark lost in the middle.
+ */
+function bigChipHeight(
+  logo: HTMLImageElement,
+  chipW: number,
+  maxH: number,
+  minH: number,
+) {
+  const iw = logo.naturalWidth || logo.width || 1;
+  const ih = logo.naturalHeight || logo.height || 1;
+  const fitH = ((chipW - BIG_LOGO_PAD * 2) * ih) / iw + BIG_LOGO_PAD * 2;
+  return Math.max(minH, Math.min(maxH, fitH));
+}
+
+/** Whether drawOrgName will break this name over two lines. */
+function orgNameWraps(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  size: number,
+  maxWidth: number,
+) {
+  if (!text || text.trim().split(/\s+/).length < 2) return false;
+  ctx.save();
+  setFont(ctx, 800, size, brandFont());
+  const wraps = ctx.measureText(text).width > maxWidth;
+  ctx.restore();
+  return wraps;
+}
+
 function drawLandscape(
   ctx: CanvasRenderingContext2D,
   { w, h }: { w: number; h: number },
@@ -819,21 +841,37 @@ function drawLandscape(
 
   const cy = h * 0.52;
 
-  // Partner logo (left)
+  // Partner logo (left). The big-logo card runs the chip right up to the
+  // divider, sizes its height to the logo and keeps the padding minimal; the
+  // name follows directly under it.
+  let chip = { y: cy - 180, w: 530, h: 350, nameY: cy + 245 };
+  if (a.bigLogo) {
+    const cw = w * 0.5 - P - 90;
+    const ch = bigChipHeight(a.partnerLogo, cw, 390, 240);
+    const top = cy - 35 - ch / 2;
+    const twoLines = orgNameWraps(ctx, partnerName, 62, cw);
+    chip = {
+      y: top,
+      w: cw,
+      h: ch,
+      nameY: Math.min(top + ch + (twoLines ? 85 : 70), cy + 245),
+    };
+  }
   const chipIn = easeOut(phase(p, 0.14, 0.3));
   drawPartnerChip(
     ctx,
     a.partnerLogo,
-    { x: P - (1 - chipIn) * 36, y: cy - 180, w: 530, h: 350 },
+    { x: P - (1 - chipIn) * 36, y: chip.y, w: chip.w, h: chip.h },
     chipIn,
     a.useLightChip,
+    a.bigLogo ? BIG_LOGO_PAD : undefined,
   );
 
   // Partner organisation name under the chip
-  drawOrgName(ctx, partnerName, P, cy + 245, {
+  drawOrgName(ctx, partnerName, P, chip.nameY, {
     size: 62,
     alpha: easeOut(phase(p, 0.26, 0.38)),
-    maxWidth: 530,
+    maxWidth: chip.w,
   });
 
   // × divider
@@ -934,9 +972,17 @@ function drawPortrait(
     maxWidth: w - P * 2,
   });
 
+  // The big-logo card sizes the chip to the logo, up to a height that still
+  // leaves room for a two-line name, and wins the rest back by setting the
+  // conference block underneath a little tighter.
   const chipW = w - P * 2;
-  const chipH = 290;
   const chipY = h * 0.155;
+  const twoLines = a.bigLogo && orgNameWraps(ctx, partnerName, 54, chipW);
+  const chipH = a.bigLogo
+    ? bigChipHeight(a.partnerLogo, chipW, twoLines ? 290 : 320, 220)
+    : 290;
+  const nameY = chipY + chipH + (twoLines ? 80 : 64);
+  const tight = a.bigLogo ? 30 : 0;
 
   const chipIn = easeOut(phase(p, 0.14, 0.3));
   drawPartnerChip(
@@ -945,16 +991,17 @@ function drawPortrait(
     { x: P, y: chipY - (1 - chipIn) * 24, w: chipW, h: chipH },
     chipIn,
     a.useLightChip,
+    a.bigLogo ? BIG_LOGO_PAD : undefined,
   );
 
-  drawOrgName(ctx, partnerName, w / 2, chipY + chipH + 64, {
+  drawOrgName(ctx, partnerName, w / 2, nameY, {
     size: 54,
     alpha: easeOut(phase(p, 0.26, 0.38)),
     align: "center",
     maxWidth: chipW,
   });
 
-  const dividerY = chipY + chipH + 168;
+  const dividerY = nameY + (twoLines ? 135 : 104);
   drawDivider(
     ctx,
     w / 2,
@@ -972,7 +1019,7 @@ function drawPortrait(
       x: P,
       y: dividerY + 66 + (1 - confIn) * 24,
       w: w - P * 2,
-      h: 190,
+      h: 190 - tight,
     });
     ctx.restore();
   }
@@ -985,14 +1032,14 @@ function drawPortrait(
     ctx.globalAlpha = dayIn;
     drawContain(ctx, a.dayMark, {
       x: w / 2 - 180,
-      y: dividerY + 296,
+      y: dividerY + 296 - tight,
       w: 360,
       h: 74,
     });
     ctx.restore();
   }
 
-  drawSpacedText(ctx, ORGANISED_BY, w / 2, dividerY + 404, {
+  drawSpacedText(ctx, ORGANISED_BY, w / 2, dividerY + 404 - tight, {
     size: 25,
     spacing: 5,
     color: "rgba(255,255,255,0.6)",
@@ -1804,6 +1851,7 @@ async function loadAssets(
     kind: config.kind,
     eyebrow: config.eyebrow,
     hackathon: !!config.hackathon,
+    bigLogo: !!config.bigLogo,
     colors: config.palette ?? (isDad ? DAD_COLORS : brandColors),
   };
 }
