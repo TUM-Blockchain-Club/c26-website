@@ -108,6 +108,9 @@ export type CardConfig = {
   /** Partner cards only: show the Digital Assets Day mark at a size that
    * reads as part of the lockup rather than a footnote. */
   bigDayMark?: boolean;
+  /** Use the conference wordmark without its "+ Hackathon" line, for cards
+   * whose audience is not there for the Hackathon. */
+  withoutHackathon?: boolean;
 };
 
 export const PARTNER_CARD_CONFIG: CardConfig = {
@@ -132,8 +135,10 @@ export const ASSOCIATION_CARD_CONFIG: CardConfig = {
   eyebrow: "ASSOCIATION PARTNER",
   bigLogo: true,
   // The banks and industry bodies are here for the Digital Assets Day, so
-  // its mark gets real weight next to the conference wordmark.
+  // its mark gets real weight next to the conference wordmark, and the
+  // wordmark drops its "+ Hackathon" line.
   bigDayMark: true,
+  withoutHackathon: true,
 };
 
 /** Generic attendee card: no day split, always the conference brand and logo. */
@@ -183,6 +188,9 @@ type Assets = {
   dayMark: Mark;
   ring: HTMLImageElement | HTMLCanvasElement;
   partnerLogo: HTMLImageElement;
+  /** The partner logo as drawn in the chip: trimmed to its ink on the
+   * big-logo card, so it fills the chip; the untouched file otherwise. */
+  partnerMark: Mark;
   useLightChip: boolean;
   /** Whether the uploaded image has real transparency (a cut-out subject). */
   photoHasAlpha: boolean;
@@ -209,6 +217,47 @@ function loadImage(src: string): Promise<HTMLImageElement> {
  * logo's opaque pixels: dark ink would vanish on the dark card, so it gets a
  * white chip; light ink reads fine on a subtle glass panel.
  */
+/**
+ * Whether a logo was supplied on an opaque white canvas: most of its border
+ * is solid near-white. Such a file belongs on the white chip, where its
+ * canvas disappears, rather than as a white slab on the glass panel.
+ */
+function hasWhiteCanvas(img: HTMLImageElement): boolean {
+  const s = 64;
+  const c = document.createElement("canvas");
+  c.width = s;
+  c.height = s;
+  const cx = c.getContext("2d");
+  if (!cx) return false;
+  cx.drawImage(img, 0, 0, s, s);
+  let white = 0;
+  let total = 0;
+  try {
+    const data = cx.getImageData(0, 0, s, s).data;
+    for (let i = 0; i < s; i++) {
+      for (const [x, y] of [
+        [i, 0],
+        [i, s - 1],
+        [0, i],
+        [s - 1, i],
+      ]) {
+        const o = (y * s + x) * 4;
+        total++;
+        if (
+          data[o + 3] > 240 &&
+          data[o] > 240 &&
+          data[o + 1] > 240 &&
+          data[o + 2] > 240
+        )
+          white++;
+      }
+    }
+  } catch {
+    return false;
+  }
+  return white / total > 0.8;
+}
+
 function partnerNeedsLightChip(img: HTMLImageElement): boolean {
   const s = 48;
   const c = document.createElement("canvas");
@@ -291,7 +340,7 @@ type Mark = HTMLImageElement | HTMLCanvasElement;
  * empty space) renders smaller and floats higher than the marks beside it.
  * Returns the image untouched if the pixels can't be read.
  */
-function trimTransparent(img: HTMLImageElement): Mark {
+function trimTransparent(img: HTMLImageElement, trimWhite = false): Mark {
   const w = img.naturalWidth || img.width;
   const h = img.naturalHeight || img.height;
   if (!w || !h) return img;
@@ -313,7 +362,12 @@ function trimTransparent(img: HTMLImageElement): Mark {
   let bottom = -1;
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
-      if (data[(y * w + x) * 4 + 3] < 8) continue;
+      const i = (y * w + x) * 4;
+      if (data[i + 3] < 8) continue;
+      // On the white chip a near-white margin is as empty as a transparent
+      // one, so a logo supplied on a white canvas is trimmed to its ink too.
+      if (trimWhite && data[i] > 244 && data[i + 1] > 244 && data[i + 2] > 244)
+        continue;
       if (x < left) left = x;
       if (x > right) right = x;
       if (y < top) top = y;
@@ -591,7 +645,7 @@ function drawDotGrid(
 
 function drawPartnerChip(
   ctx: CanvasRenderingContext2D,
-  logo: HTMLImageElement,
+  logo: Mark,
   box: { x: number; y: number; w: number; h: number },
   alpha: number,
   useLightChip: boolean,
@@ -782,21 +836,16 @@ function drawCard(
 
 /** Padding inside the big-logo chip: just enough to keep the logo off the
  * rounded corners, so the mark itself gets the rest of the room. */
-const BIG_LOGO_PAD = 36;
+const BIG_LOGO_PAD = 30;
 
 /**
  * Height of a big-logo chip: tall enough for the logo at the full chip width,
  * never taller than the layout allows, so a wide wordmark gets a slim chip
  * instead of a tall white box with the mark lost in the middle.
  */
-function bigChipHeight(
-  logo: HTMLImageElement,
-  chipW: number,
-  maxH: number,
-  minH: number,
-) {
-  const iw = logo.naturalWidth || logo.width || 1;
-  const ih = logo.naturalHeight || logo.height || 1;
+function bigChipHeight(logo: Mark, chipW: number, maxH: number, minH: number) {
+  const iw = ("naturalWidth" in logo ? logo.naturalWidth : logo.width) || 1;
+  const ih = ("naturalHeight" in logo ? logo.naturalHeight : logo.height) || 1;
   const fitH = ((chipW - BIG_LOGO_PAD * 2) * ih) / iw + BIG_LOGO_PAD * 2;
   return Math.max(minH, Math.min(maxH, fitH));
 }
@@ -846,28 +895,31 @@ function drawLandscape(
     maxWidth: w - P * 2,
   });
 
-  const cy = h * 0.52;
+  // The big-logo card sits higher, so both logos get more of the card.
+  const cy = a.bigLogo ? h * 0.47 : h * 0.52;
+  const nameSize = a.bigLogo ? 50 : 62;
 
   // Partner logo (left). The big-logo card runs the chip right up to the
   // divider, sizes its height to the logo and keeps the padding minimal; the
-  // name follows directly under it.
+  // name follows directly under it, a size smaller so a long name such as
+  // "Nordic Blockchain Association" stays clear of the date line.
   let chip = { y: cy - 180, w: 530, h: 350, nameY: cy + 245 };
   if (a.bigLogo) {
     const cw = w * 0.5 - P - 90;
-    const ch = bigChipHeight(a.partnerLogo, cw, 390, 240);
-    const top = cy - 35 - ch / 2;
-    const twoLines = orgNameWraps(ctx, partnerName, 62, cw);
+    const ch = bigChipHeight(a.partnerMark, cw, 390, 220);
+    const top = cy - 30 - ch / 2;
+    const twoLines = orgNameWraps(ctx, partnerName, nameSize, cw);
     chip = {
       y: top,
       w: cw,
       h: ch,
-      nameY: Math.min(top + ch + (twoLines ? 85 : 70), cy + 245),
+      nameY: top + ch + (twoLines ? 78 : 62),
     };
   }
   const chipIn = easeOut(phase(p, 0.14, 0.3));
   drawPartnerChip(
     ctx,
-    a.partnerLogo,
+    a.partnerMark,
     { x: P - (1 - chipIn) * 36, y: chip.y, w: chip.w, h: chip.h },
     chipIn,
     a.useLightChip,
@@ -876,7 +928,7 @@ function drawLandscape(
 
   // Partner organisation name under the chip
   drawOrgName(ctx, partnerName, P, chip.nameY, {
-    size: 62,
+    size: nameSize,
     alpha: easeOut(phase(p, 0.26, 0.38)),
     maxWidth: chip.w,
   });
@@ -887,9 +939,24 @@ function drawLandscape(
   // Right column. With a big Digital Assets Day mark the conference wordmark
   // moves up and gives a little height, so the two stack as one lockup
   // centred on the card's middle line.
+  // The wordmark stays a little larger than the Digital Assets Day mark.
   const right = a.bigDayMark
-    ? { confY: cy - 215, confH: 270, dayY: cy + 82, dayW: 500, dayH: 140 }
-    : { confY: cy - 170, confH: 290, dayY: cy + 150, dayW: 340, dayH: 70 };
+    ? {
+        confY: cy - 245,
+        confH: 250,
+        dayY: cy + 45,
+        dayW: 560,
+        dayH: 175,
+        byY: cy + 270,
+      }
+    : {
+        confY: cy - 170,
+        confH: 290,
+        dayY: cy + 150,
+        dayW: 340,
+        dayH: 70,
+        byY: cy + 258,
+      };
 
   // Conference logo (right)
   const confIn = easeOut(phase(p, 0.38, 0.5));
@@ -920,7 +987,7 @@ function drawLandscape(
     ctx.restore();
   }
 
-  drawSpacedText(ctx, ORGANISED_BY, w * 0.58, cy + 258, {
+  drawSpacedText(ctx, ORGANISED_BY, w * 0.58, right.byY, {
     size: 27,
     spacing: 6,
     color: "rgba(255,255,255,0.6)",
@@ -936,6 +1003,8 @@ function drawLandscape(
   ctx.fillRect(P, h - 196, (w - P * 2) * infoIn, 2);
   ctx.restore();
 
+  // The big-logo card sets the date a size smaller and lighter, so it reads
+  // as a footer rather than competing with the organisation's name.
   const by = h - 132 + (1 - infoIn) * 16;
   drawSpacedText(
     ctx,
@@ -943,12 +1012,12 @@ function drawLandscape(
     w / 2,
     by,
     {
-      size: 40,
+      size: a.bigLogo ? 32 : 40,
       spacing: 5,
       color: "rgba(255,255,255,0.95)",
       alpha: infoIn,
       align: "center",
-      weight: 700,
+      weight: a.bigLogo ? 500 : 700,
       font: brandFont(),
       maxWidth: w - P * 2,
     },
@@ -990,18 +1059,24 @@ function drawPortrait(
   // leaves room for a two-line name, and wins the rest back by setting the
   // conference block underneath a little tighter.
   const chipW = w - P * 2;
-  const chipY = h * 0.155;
-  const twoLines = a.bigLogo && orgNameWraps(ctx, partnerName, 54, chipW);
+  const chipY = a.bigLogo ? h * 0.13 : h * 0.155;
+  const nameSize = a.bigLogo ? 46 : 54;
+  const twoLines = a.bigLogo && orgNameWraps(ctx, partnerName, nameSize, chipW);
+  // The tallest chip that still leaves the conference block, and its
+  // "organised by" line, clear of the footer separator.
+  const nameGap = a.bigLogo ? (twoLines ? 72 : 60) : 64;
+  const dividerGap = a.bigLogo ? (twoLines ? 118 : 96) : twoLines ? 135 : 104;
+  const roomH = h - 236 - 52 - 432 - dividerGap - nameGap - chipY;
   const chipH = a.bigLogo
-    ? bigChipHeight(a.partnerLogo, chipW, twoLines ? 290 : 320, 220)
+    ? bigChipHeight(a.partnerMark, chipW, Math.min(320, roomH), 200)
     : 290;
-  const nameY = chipY + chipH + (twoLines ? 80 : 64);
+  const nameY = chipY + chipH + nameGap;
   const tight = a.bigLogo ? 30 : 0;
 
   const chipIn = easeOut(phase(p, 0.14, 0.3));
   drawPartnerChip(
     ctx,
-    a.partnerLogo,
+    a.partnerMark,
     { x: P, y: chipY - (1 - chipIn) * 24, w: chipW, h: chipH },
     chipIn,
     a.useLightChip,
@@ -1009,13 +1084,13 @@ function drawPortrait(
   );
 
   drawOrgName(ctx, partnerName, w / 2, nameY, {
-    size: 54,
+    size: nameSize,
     alpha: easeOut(phase(p, 0.26, 0.38)),
     align: "center",
     maxWidth: chipW,
   });
 
-  const dividerY = nameY + (twoLines ? 135 : 104);
+  const dividerY = nameY + dividerGap;
   drawDivider(
     ctx,
     w / 2,
@@ -1029,8 +1104,15 @@ function drawPortrait(
   // A big Digital Assets Day mark takes its height from the conference
   // wordmark above it; the block as a whole keeps its footprint.
   const stack = a.bigDayMark
-    ? { confY: 60, confH: 145, dayY: 222, dayW: 520, dayH: 112 }
-    : { confY: 66, confH: 190 - tight, dayY: 296 - tight, dayW: 360, dayH: 74 };
+    ? { confY: 55, confH: 180, dayY: 255, dayW: 600, dayH: 135, byY: 432 }
+    : {
+        confY: 66,
+        confH: 190 - tight,
+        dayY: 296 - tight,
+        dayW: 360,
+        dayH: 74,
+        byY: 404 - tight,
+      };
   if (confIn > 0) {
     ctx.save();
     ctx.globalAlpha = confIn;
@@ -1058,7 +1140,7 @@ function drawPortrait(
     ctx.restore();
   }
 
-  drawSpacedText(ctx, ORGANISED_BY, w / 2, dividerY + 404 - tight, {
+  drawSpacedText(ctx, ORGANISED_BY, w / 2, dividerY + stack.byY, {
     size: 25,
     spacing: 5,
     color: "rgba(255,255,255,0.6)",
@@ -1076,23 +1158,25 @@ function drawPortrait(
   ctx.restore();
 
   const by = h - 188 + (1 - infoIn) * 16;
+  const infoSize = a.bigLogo ? 27 : 32;
+  const infoWeight = a.bigLogo ? 500 : 700;
   drawSpacedText(ctx, CONFERENCE_LOCATION, w / 2, by, {
-    size: 32,
+    size: infoSize,
     spacing: 3,
     color: "rgba(255,255,255,0.95)",
     alpha: infoIn,
     align: "center",
-    weight: 700,
+    weight: infoWeight,
     font: brandFont(),
     maxWidth: w - P * 2,
   });
-  drawSpacedText(ctx, CONFERENCE_DATE, w / 2, by + 56, {
-    size: 32,
+  drawSpacedText(ctx, CONFERENCE_DATE, w / 2, by + (a.bigLogo ? 52 : 56), {
+    size: infoSize,
     spacing: 3,
     color: "rgba(255,255,255,0.95)",
     alpha: infoIn,
     align: "center",
-    weight: 700,
+    weight: infoWeight,
     font: brandFont(),
     maxWidth: w - P * 2,
   });
@@ -1836,11 +1920,21 @@ async function loadAssets(
   day: SpeakerDay = "day1",
 ): Promise<Assets> {
   const [confLogo, dadLogo, ring, partnerLogo] = await Promise.all([
-    loadImage("/logos/c26-wordmark.svg"),
+    loadImage(
+      config.withoutHackathon
+        ? "/logos/c26-wordmark-no-hackathon.svg"
+        : "/logos/c26-wordmark.svg",
+    ),
     loadImage("/logos/digital-assets-day-logo.png"),
     loadImage("/hero/mask-group-1.png"),
     loadImage(partnerLogoUrl),
   ]);
+  // The big-logo card also puts a logo supplied on a white canvas on the
+  // white chip, where that canvas is trimmed away and the logo fills it.
+  const useLightChip = config.photo
+    ? false
+    : (config.bigLogo && hasWhiteCanvas(partnerLogo)) ||
+      partnerNeedsLightChip(partnerLogo);
   const brandColors = brandColorsPalette();
   // Only the speaker card has a per-day theme; attendees always see the
   // conference brand, regardless of what `day` defaults to.
@@ -1864,8 +1958,11 @@ async function loadAssets(
         ? tintRing(ring, DAD_RING_STOPS)
         : ring,
     partnerLogo,
+    partnerMark: config.bigLogo
+      ? trimTransparent(partnerLogo, useLightChip)
+      : partnerLogo,
     // Photos always sit on the glass panel; only logos may get a white chip.
-    useLightChip: config.photo ? false : partnerNeedsLightChip(partnerLogo),
+    useLightChip,
     photoHasAlpha: config.photo ? detectHasAlpha(partnerLogo) : false,
     kind: config.kind,
     eyebrow: config.eyebrow,
