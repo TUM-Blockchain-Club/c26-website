@@ -979,7 +979,7 @@ function drawLandscape(
   // The wordmark stays a little larger than the Digital Assets Day mark.
   // On the association card the two read as one lockup: the wordmark,
   // "including" in small type, then the Digital Assets Day mark at the full
-  // width of the column. "Organised by" moves down into the footer.
+  // width of the column. The landscape card leaves "organised by" out.
   const right = a.bigDayMark
     ? {
         confY: cy - 262,
@@ -1046,29 +1046,17 @@ function drawLandscape(
     });
   }
 
-  // Bottom bar: separator + info. The association card lifts it a little
-  // to make room for "organised by" underneath.
-  const lift = a.bigDayMark ? 24 : 0;
+  // Bottom bar: separator + info
   const infoIn = easeOut(phase(p, 0.5, 0.6));
   ctx.save();
   ctx.globalAlpha = infoIn * 0.18;
   ctx.fillStyle = "#ffffff";
-  ctx.fillRect(P, h - 196 - lift, (w - P * 2) * infoIn, 2);
+  ctx.fillRect(P, h - 196, (w - P * 2) * infoIn, 2);
   ctx.restore();
 
   // The big-logo card sets the date a size smaller and lighter, so it reads
   // as a footer rather than competing with the organisation's name.
-  const by = h - 132 - lift + (1 - infoIn) * 16;
-  if (a.bigDayMark) {
-    drawSpacedText(ctx, ORGANISED_BY, w / 2, by + 52, {
-      size: 21,
-      spacing: 5,
-      color: "rgba(255,255,255,0.55)",
-      alpha: infoIn,
-      align: "center",
-      maxWidth: w - P * 2,
-    });
-  }
+  const by = h - 132 + (1 - infoIn) * 16;
   drawSpacedText(
     ctx,
     `${CONFERENCE_DATE}  ·  ${CONFERENCE_LOCATION}`,
