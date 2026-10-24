@@ -49,3 +49,21 @@ From the partner team's annotated PDF:
 
 The colours are unchanged, and none of this touches the community partner
 card.
+
+## Draft 2, 24 October
+
+From `Association_Partners_Optimization_Draft2.pptx`:
+
+- The organisation name stays on one line, scaled to the chip width
+  (`drawFittedText`), instead of wrapping onto two.
+- The right column is one lockup: the wordmark, "INCLUDING" in small spaced
+  type, then the Digital Assets Day mark at the full width of the column.
+- "Organised by TUM Blockchain Club" moves out of the lockup to the very
+  bottom, under the date line (landscape) or the URL (portrait); the footer
+  is lifted a little to make room.
+- `hasWhiteCanvas` also recognises opaque, mostly white logos whose ink runs
+  to the file's edge (the Nordic Blockchain Association JPG), and the
+  big-logo chip is solid white so such a canvas shows no edge.
+
+All of it is gated on `bigDayMark`, so the community partner card is
+unchanged.

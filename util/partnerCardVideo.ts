@@ -21,6 +21,7 @@ const CONFERENCE_DATE = "OCTOBER 29 TO 31, 2026";
 const CONFERENCE_LOCATION = "MUNICH · HOUSE OF COMMUNICATION";
 const CONFERENCE_URL = "conference26.tum-blockchain.com";
 const ORGANISED_BY = "ORGANISED BY TUM BLOCKCHAIN CLUB";
+const INCLUDING = "INCLUDING";
 
 export type SpeakerDay = "day1" | "day2";
 
@@ -255,7 +256,28 @@ function hasWhiteCanvas(img: HTMLImageElement): boolean {
   } catch {
     return false;
   }
-  return white / total > 0.8;
+  if (white / total > 0.8) return true;
+  // A logo whose ink runs to the edge of its file can still sit on an
+  // opaque, mostly white canvas: judge that by the whole image instead.
+  try {
+    const data = cx.getImageData(0, 0, s, s).data;
+    let opaque = 0;
+    let light = 0;
+    for (let i = 0; i < data.length; i += 4) {
+      if (data[i + 3] > 240) opaque++;
+      if (
+        data[i + 3] > 240 &&
+        data[i] > 235 &&
+        data[i + 1] > 235 &&
+        data[i + 2] > 235
+      )
+        light++;
+    }
+    const n = data.length / 4;
+    return opaque / n > 0.98 && light / n > 0.55;
+  } catch {
+    return false;
+  }
 }
 
 function partnerNeedsLightChip(img: HTMLImageElement): boolean {
@@ -661,7 +683,10 @@ function drawPartnerChip(
     ctx.shadowColor = "rgba(0,0,0,0.45)";
     ctx.shadowBlur = 40;
     ctx.shadowOffsetY = 12;
-    ctx.fillStyle = "rgba(255,255,255,0.97)";
+    // The big-logo chip (given a padding) is solid white, so a logo supplied
+    // on a white canvas blends into it without a visible edge.
+    ctx.fillStyle =
+      padding !== undefined ? "#ffffff" : "rgba(255,255,255,0.97)";
     roundRectPath(ctx, box.x, box.y, box.w, box.h, r);
     ctx.fill();
     ctx.restore();
@@ -908,12 +933,14 @@ function drawLandscape(
     const cw = w * 0.5 - P - 90;
     const ch = bigChipHeight(a.partnerMark, cw, 390, 220);
     const top = cy - 30 - ch / 2;
-    const twoLines = orgNameWraps(ctx, partnerName, nameSize, cw);
+    // The association card keeps the name on one line, fitted to the chip.
+    const twoLines =
+      !a.bigDayMark && orgNameWraps(ctx, partnerName, nameSize, cw);
     chip = {
       y: top,
       w: cw,
       h: ch,
-      nameY: top + ch + (twoLines ? 78 : 62),
+      nameY: top + ch + (twoLines ? 78 : a.bigDayMark ? 56 : 62),
     };
   }
   const chipIn = easeOut(phase(p, 0.14, 0.3));
@@ -927,11 +954,21 @@ function drawLandscape(
   );
 
   // Partner organisation name under the chip
-  drawOrgName(ctx, partnerName, P, chip.nameY, {
-    size: nameSize,
-    alpha: easeOut(phase(p, 0.26, 0.38)),
-    maxWidth: chip.w,
-  });
+  if (a.bigDayMark) {
+    drawFittedText(ctx, partnerName, P, chip.nameY, {
+      size: nameSize,
+      color: "#ffffff",
+      alpha: easeOut(phase(p, 0.26, 0.38)),
+      weight: 800,
+      maxWidth: chip.w,
+    });
+  } else {
+    drawOrgName(ctx, partnerName, P, chip.nameY, {
+      size: nameSize,
+      alpha: easeOut(phase(p, 0.26, 0.38)),
+      maxWidth: chip.w,
+    });
+  }
 
   // × divider
   drawDivider(ctx, w * 0.5, cy, 155, gradient, easeOut(phase(p, 0.32, 0.42)));
@@ -940,14 +977,17 @@ function drawLandscape(
   // moves up and gives a little height, so the two stack as one lockup
   // centred on the card's middle line.
   // The wordmark stays a little larger than the Digital Assets Day mark.
+  // On the association card the two read as one lockup: the wordmark,
+  // "including" in small type, then the Digital Assets Day mark at the full
+  // width of the column. "Organised by" moves down into the footer.
   const right = a.bigDayMark
     ? {
-        confY: cy - 245,
-        confH: 250,
-        dayY: cy + 45,
-        dayW: 560,
-        dayH: 175,
-        byY: cy + 270,
+        confY: cy - 262,
+        confH: 225,
+        dayY: cy + 48,
+        dayW: w * 0.34,
+        dayH: 190,
+        byY: 0,
       }
     : {
         confY: cy - 170,
@@ -987,25 +1027,48 @@ function drawLandscape(
     ctx.restore();
   }
 
-  drawSpacedText(ctx, ORGANISED_BY, w * 0.58, right.byY, {
-    size: 27,
-    spacing: 6,
-    color: "rgba(255,255,255,0.6)",
-    alpha: easeOut(phase(p, 0.46, 0.55)),
-    maxWidth: w * 0.34,
-  });
+  if (a.bigDayMark) {
+    drawSpacedText(ctx, INCLUDING, w * 0.58 + w * 0.17, cy + 12, {
+      size: 24,
+      spacing: 8,
+      color: "rgba(255,255,255,0.7)",
+      alpha: easeOut(phase(p, 0.42, 0.52)),
+      align: "center",
+      maxWidth: w * 0.34,
+    });
+  } else {
+    drawSpacedText(ctx, ORGANISED_BY, w * 0.58, right.byY, {
+      size: 27,
+      spacing: 6,
+      color: "rgba(255,255,255,0.6)",
+      alpha: easeOut(phase(p, 0.46, 0.55)),
+      maxWidth: w * 0.34,
+    });
+  }
 
-  // Bottom bar: separator + info
+  // Bottom bar: separator + info. The association card lifts it a little
+  // to make room for "organised by" underneath.
+  const lift = a.bigDayMark ? 24 : 0;
   const infoIn = easeOut(phase(p, 0.5, 0.6));
   ctx.save();
   ctx.globalAlpha = infoIn * 0.18;
   ctx.fillStyle = "#ffffff";
-  ctx.fillRect(P, h - 196, (w - P * 2) * infoIn, 2);
+  ctx.fillRect(P, h - 196 - lift, (w - P * 2) * infoIn, 2);
   ctx.restore();
 
   // The big-logo card sets the date a size smaller and lighter, so it reads
   // as a footer rather than competing with the organisation's name.
-  const by = h - 132 + (1 - infoIn) * 16;
+  const by = h - 132 - lift + (1 - infoIn) * 16;
+  if (a.bigDayMark) {
+    drawSpacedText(ctx, ORGANISED_BY, w / 2, by + 52, {
+      size: 21,
+      spacing: 5,
+      color: "rgba(255,255,255,0.55)",
+      alpha: infoIn,
+      align: "center",
+      maxWidth: w - P * 2,
+    });
+  }
   drawSpacedText(
     ctx,
     `${CONFERENCE_DATE}  ·  ${CONFERENCE_LOCATION}`,
@@ -1061,12 +1124,18 @@ function drawPortrait(
   const chipW = w - P * 2;
   const chipY = a.bigLogo ? h * 0.13 : h * 0.155;
   const nameSize = a.bigLogo ? 46 : 54;
-  const twoLines = a.bigLogo && orgNameWraps(ctx, partnerName, nameSize, chipW);
+  // The association card keeps the name on one line, fitted to the chip.
+  const twoLines =
+    a.bigLogo &&
+    !a.bigDayMark &&
+    orgNameWraps(ctx, partnerName, nameSize, chipW);
   // The tallest chip that still leaves the conference block, and its
   // "organised by" line, clear of the footer separator.
   const nameGap = a.bigLogo ? (twoLines ? 72 : 60) : 64;
   const dividerGap = a.bigLogo ? (twoLines ? 118 : 96) : twoLines ? 135 : 104;
-  const roomH = h - 236 - 52 - 432 - dividerGap - nameGap - chipY;
+  const roomH = a.bigDayMark
+    ? h - 262 - 30 - 440 - dividerGap - nameGap - chipY
+    : h - 236 - 52 - 432 - dividerGap - nameGap - chipY;
   const chipH = a.bigLogo
     ? bigChipHeight(a.partnerMark, chipW, Math.min(320, roomH), 200)
     : 290;
@@ -1083,12 +1152,23 @@ function drawPortrait(
     a.bigLogo ? BIG_LOGO_PAD : undefined,
   );
 
-  drawOrgName(ctx, partnerName, w / 2, nameY, {
-    size: nameSize,
-    alpha: easeOut(phase(p, 0.26, 0.38)),
-    align: "center",
-    maxWidth: chipW,
-  });
+  if (a.bigDayMark) {
+    drawFittedText(ctx, partnerName, w / 2, nameY, {
+      size: nameSize,
+      color: "#ffffff",
+      alpha: easeOut(phase(p, 0.26, 0.38)),
+      align: "center",
+      weight: 800,
+      maxWidth: chipW,
+    });
+  } else {
+    drawOrgName(ctx, partnerName, w / 2, nameY, {
+      size: nameSize,
+      alpha: easeOut(phase(p, 0.26, 0.38)),
+      align: "center",
+      maxWidth: chipW,
+    });
+  }
 
   const dividerY = nameY + dividerGap;
   drawDivider(
@@ -1104,7 +1184,7 @@ function drawPortrait(
   // A big Digital Assets Day mark takes its height from the conference
   // wordmark above it; the block as a whole keeps its footprint.
   const stack = a.bigDayMark
-    ? { confY: 55, confH: 180, dayY: 255, dayW: 600, dayH: 135, byY: 432 }
+    ? { confY: 44, confH: 170, dayY: 292, dayW: w - P * 2, dayH: 152, byY: 0 }
     : {
         confY: 66,
         confH: 190 - tight,
@@ -1140,24 +1220,37 @@ function drawPortrait(
     ctx.restore();
   }
 
-  drawSpacedText(ctx, ORGANISED_BY, w / 2, dividerY + stack.byY, {
-    size: 25,
-    spacing: 5,
-    color: "rgba(255,255,255,0.6)",
-    alpha: easeOut(phase(p, 0.46, 0.55)),
-    align: "center",
-    maxWidth: w - P * 2,
-  });
+  if (a.bigDayMark) {
+    drawSpacedText(ctx, INCLUDING, w / 2, dividerY + 260, {
+      size: 22,
+      spacing: 7,
+      color: "rgba(255,255,255,0.7)",
+      alpha: easeOut(phase(p, 0.42, 0.52)),
+      align: "center",
+      maxWidth: w - P * 2,
+    });
+  } else {
+    drawSpacedText(ctx, ORGANISED_BY, w / 2, dividerY + stack.byY, {
+      size: 25,
+      spacing: 5,
+      color: "rgba(255,255,255,0.6)",
+      alpha: easeOut(phase(p, 0.46, 0.55)),
+      align: "center",
+      maxWidth: w - P * 2,
+    });
+  }
 
+  // The association card lifts the footer to fit "organised by" at the end.
+  const lift = a.bigDayMark ? 26 : 0;
   const infoIn = easeOut(phase(p, 0.5, 0.6));
   ctx.save();
   ctx.globalAlpha = infoIn * 0.16;
   ctx.fillStyle = "#ffffff";
   const sepW = (w - P * 2) * infoIn;
-  ctx.fillRect(w / 2 - sepW / 2, h - 236, sepW, 2);
+  ctx.fillRect(w / 2 - sepW / 2, h - 236 - lift, sepW, 2);
   ctx.restore();
 
-  const by = h - 188 + (1 - infoIn) * 16;
+  const by = h - 188 - lift + (1 - infoIn) * 16;
   const infoSize = a.bigLogo ? 27 : 32;
   const infoWeight = a.bigLogo ? 500 : 700;
   drawSpacedText(ctx, CONFERENCE_LOCATION, w / 2, by, {
@@ -1188,6 +1281,16 @@ function drawPortrait(
     align: "center",
     maxWidth: w - P * 2,
   });
+  if (a.bigDayMark) {
+    drawSpacedText(ctx, ORGANISED_BY, w / 2, by + 154, {
+      size: 20,
+      spacing: 4,
+      color: "rgba(255,255,255,0.5)",
+      alpha: infoIn,
+      align: "center",
+      maxWidth: w - P * 2,
+    });
+  }
 }
 
 /** Cover-fills an opaque photo into a rounded rect. */
