@@ -1122,7 +1122,7 @@ function drawPortrait(
   const nameGap = a.bigLogo ? (twoLines ? 72 : 60) : 64;
   const dividerGap = a.bigLogo ? (twoLines ? 118 : 96) : twoLines ? 135 : 104;
   const roomH = a.bigDayMark
-    ? h - 262 - 30 - 440 - dividerGap - nameGap - chipY
+    ? h - 200 - 34 - 440 - dividerGap - nameGap - chipY
     : h - 236 - 52 - 432 - dividerGap - nameGap - chipY;
   const chipH = a.bigLogo
     ? bigChipHeight(a.partnerMark, chipW, Math.min(320, roomH), 200)
@@ -1228,8 +1228,8 @@ function drawPortrait(
     });
   }
 
-  // The association card lifts the footer to fit "organised by" at the end.
-  const lift = a.bigDayMark ? 26 : 0;
+  // The association card's footer is just venue and date, so it sits lower.
+  const lift = a.bigDayMark ? -36 : 0;
   const infoIn = easeOut(phase(p, 0.5, 0.6));
   ctx.save();
   ctx.globalAlpha = infoIn * 0.16;
@@ -1261,19 +1261,12 @@ function drawPortrait(
     font: brandFont(),
     maxWidth: w - P * 2,
   });
-  drawSpacedText(ctx, CONFERENCE_URL, w / 2, by + 108, {
-    size: 26,
-    spacing: 2,
-    color: "rgba(255,255,255,0.55)",
-    alpha: infoIn,
-    align: "center",
-    maxWidth: w - P * 2,
-  });
-  if (a.bigDayMark) {
-    drawSpacedText(ctx, ORGANISED_BY, w / 2, by + 154, {
-      size: 20,
-      spacing: 4,
-      color: "rgba(255,255,255,0.5)",
+  // The association card leaves out the URL and "organised by".
+  if (!a.bigDayMark) {
+    drawSpacedText(ctx, CONFERENCE_URL, w / 2, by + 108, {
+      size: 26,
+      spacing: 2,
+      color: "rgba(255,255,255,0.55)",
       alpha: infoIn,
       align: "center",
       maxWidth: w - P * 2,
