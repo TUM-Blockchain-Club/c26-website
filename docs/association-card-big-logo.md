@@ -23,3 +23,29 @@ mark then grows from a 70px-high box to 140px (landscape) or 112px
 (portrait); the conference wordmark above it gives up a little height so the
 two read as one centred lockup and the block keeps its footprint. The
 community partner card keeps the small mark.
+
+## Feedback round, 23 October
+
+From the partner team's annotated PDF:
+
+- The conference wordmark on the association card drops "+ Hackathon"
+  (`withoutHackathon`, file `public/logos/c26-wordmark-no-hackathon.svg`,
+  the same artwork minus those paths, viewBox trimmed to the ink). It stays
+  slightly larger than the Digital Assets Day mark.
+- The Digital Assets Day mark is larger again (560×175 in landscape,
+  600×135 in portrait) so "Digital Assets Day" and "Bundesblock" read on a
+  phone.
+- Both logos sit higher: the landscape centre line moves from 52% to 47%,
+  the portrait chip from 15.5% to 13%.
+- The partner logo is trimmed to its ink before it goes in the chip
+  (`partnerMark`), and a logo supplied on an opaque white canvas
+  (`hasWhiteCanvas`) goes on the white chip with that canvas trimmed away, so
+  it fills the box instead of floating small in the middle.
+- The organisation name is a size smaller (50 landscape, 46 portrait) and the
+  date line underneath is smaller and lighter (weight 500), so a long name
+  such as "Nordic Blockchain Association" stays distinct from it.
+- Portrait caps the chip height by the room left above the footer, so a
+  square logo cannot push "Organised by" into the separator.
+
+The colours are unchanged, and none of this touches the community partner
+card.
