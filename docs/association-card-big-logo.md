@@ -58,9 +58,9 @@ From `Association_Partners_Optimization_Draft2.pptx`:
   (`drawFittedText`), instead of wrapping onto two.
 - The right column is one lockup: the wordmark, "INCLUDING" in small spaced
   type, then the Digital Assets Day mark at the full width of the column.
-- "Organised by TUM Blockchain Club" moves out of the lockup: to the very
-  bottom under the URL in portrait (footer lifted a little to make room),
-  and out entirely in landscape, which shows only the date line.
+- "Organised by TUM Blockchain Club" and the website URL are left out of
+  the association card in both orientations; the footer shows only venue
+  and date (portrait sits it a little lower).
 - `hasWhiteCanvas` also recognises opaque, mostly white logos whose ink runs
   to the file's edge (the Nordic Blockchain Association JPG), and the
   big-logo chip is solid white so such a canvas shows no edge.
