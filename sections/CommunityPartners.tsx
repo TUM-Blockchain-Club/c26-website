@@ -53,7 +53,8 @@ const PartnerLogo = ({ name, src, website, background }: PartnerLogoProps) => {
 };
 
 /**
- * This year's Community Partners. Strapi is the source of truth; the
+ * This year's community, media and association partners, in one section.
+ * Strapi is the source of truth; the
  * committed snapshot in constants/communityPartners.ts stands in whenever it
  * answers with nothing, which it did for a while when the production token
  * had no read access. Renders nothing if both are empty.
@@ -94,15 +95,15 @@ const CommunityPartners = async () => {
         Standing with us
       </Text>
       <Text textType={"sub_hero"} className="text-gradient text-center">
-        Community &amp; Media Partners
+        Community, Media &amp; Association Partners
       </Text>
       <Text
         as="p"
         textType="small"
         className="text-secondary max-w-2xl text-center mt-2"
       >
-        The communities and outlets supporting the TUM Blockchain Conference 26
-        and helping spread the word. More are announced regularly.
+        The communities, outlets and associations supporting the TUM Blockchain
+        Conference 26 and helping spread the word. More are announced regularly.
       </Text>
 
       <div className="mt-8 flex flex-wrap items-center justify-center gap-4 md:gap-6">
