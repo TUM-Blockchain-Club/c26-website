@@ -22,7 +22,9 @@ export type StageRoom = (typeof STAGE_ROOMS)[number];
 
 export type StagePerson = {
   name: string;
-  role?: string;
+  /** Job title and company, kept apart so the company can stand out. */
+  position?: string;
+  company?: string;
   photo?: string;
   moderator: boolean;
 };
@@ -141,13 +143,11 @@ export const getStageSlots = async (room: StageRoom): Promise<StageSlot[]> => {
       ...((e as { timeTba?: boolean }).timeTba ? { timeTba: true } : {}),
       people: peopleOf(e).map(({ name, moderator }) => {
         const link = links.get(bareName(name));
-        const role = link
-          ? [link.position, link.company].filter(Boolean).join(", ")
-          : undefined;
         return {
           name,
           moderator,
-          ...(role ? { role } : {}),
+          ...(link?.position ? { position: link.position } : {}),
+          ...(link?.company ? { company: link.company } : {}),
           ...(link?.photo ? { photo: link.photo } : {}),
         };
       }),
