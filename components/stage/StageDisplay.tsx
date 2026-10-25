@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { StagePerson, StageSlot } from "@/components/stage/stageData";
 import { playIntroSting } from "@/components/stage/introSound";
-import { DeckPage } from "@/components/stage/DeckPage";
+import { DeckPage, RemotePage, openRemote } from "@/components/stage/DeckPage";
 import {
   listDecks,
   onDecksChanged,
@@ -101,7 +101,19 @@ const munich = (ms: number) => {
 };
 
 type CueKind = "upnext" | "intro" | "onstage" | "deck" | "thanks" | "break";
-type Cue = { kind: CueKind; slot: StageSlot; key: string; page?: number };
+/** Where a slide cue comes from: the studio PDF on this computer, or a
+ * file uploaded on the session in Strapi. */
+type DeckRef =
+  | { from: "local"; page: number }
+  | { from: "strapi"; src: string; kind: "pdf" | "image"; page: number };
+type Cue = {
+  kind: CueKind;
+  slot: StageSlot;
+  key: string;
+  page?: number;
+  deck?: DeckRef;
+  pages?: number;
+};
 
 const CUE_LABEL: Record<CueKind, string> = {
   upnext: "Up next",
@@ -113,19 +125,42 @@ const CUE_LABEL: Record<CueKind, string> = {
 };
 
 /** The day as a run of cues, in programme order. */
-const buildCues = (slots: StageSlot[], decks: Map<string, DeckMeta>): Cue[] =>
+const buildCues = (
+  slots: StageSlot[],
+  decks: Map<string, DeckMeta>,
+  pdfPages: Map<string, number>,
+): Cue[] =>
   slots.flatMap((slot): Cue[] => {
     if (slot.kind === "break")
       return [{ kind: "break", slot, key: `${slot.id}:break` }];
-    const pages = decks.get(slot.id)?.pages ?? 0;
+    // A PDF uploaded in the studio on this computer wins; otherwise the
+    // files uploaded on the session in Strapi, in their order.
+    const local = decks.get(slot.id)?.pages ?? 0;
+    const refs: DeckRef[] = local
+      ? Array.from({ length: local }, (_, i) => ({
+          from: "local" as const,
+          page: i + 1,
+        }))
+      : (slot.slides ?? []).flatMap((f): DeckRef[] =>
+          f.kind === "image"
+            ? [{ from: "strapi", src: f.src, kind: "image", page: 1 }]
+            : Array.from({ length: pdfPages.get(f.src) ?? 0 }, (_, i) => ({
+                from: "strapi" as const,
+                src: f.src,
+                kind: "pdf" as const,
+                page: i + 1,
+              })),
+        );
     return [
       { kind: "upnext", slot, key: `${slot.id}:upnext` },
       { kind: "intro", slot, key: `${slot.id}:intro` },
       { kind: "onstage", slot, key: `${slot.id}:onstage` },
-      ...Array.from({ length: pages }, (_, i) => ({
+      ...refs.map((deck, i) => ({
         kind: "deck" as const,
         slot,
         page: i + 1,
+        pages: refs.length,
+        deck,
         key: `${slot.id}:deck:${i + 1}`,
       })),
       { kind: "thanks", slot, key: `${slot.id}:thanks` },
@@ -272,7 +307,32 @@ export const StageDisplay = ({
       saved.day ? slots.filter((sl) => dayOf(sl.start) === saved.day) : slots,
     [slots, saved.day],
   );
-  const cues = useMemo(() => buildCues(daySlots, decks), [daySlots, decks]);
+  // Page counts of the Strapi PDFs for the chosen day, read once each.
+  const [pdfPages, setPdfPages] = useState<Map<string, number>>(new Map());
+  useEffect(() => {
+    let cancelled = false;
+    const srcs = [
+      ...new Set(
+        daySlots.flatMap((sl) =>
+          (sl.slides ?? []).filter((f) => f.kind === "pdf").map((f) => f.src),
+        ),
+      ),
+    ];
+    void Promise.all(
+      srcs.map(
+        async (src) => [src, (await openRemote(src))?.numPages ?? 0] as const,
+      ),
+    ).then((pairs) => {
+      if (!cancelled) setPdfPages(new Map(pairs));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [daySlots]);
+  const cues = useMemo(
+    () => buildCues(daySlots, decks, pdfPages),
+    [daySlots, decks, pdfPages],
+  );
   const [introRun, setIntroRun] = useState(0);
   const startedRef = useRef(false);
   const [panel, setPanel] = useState(false);
@@ -514,7 +574,7 @@ export const StageDisplay = ({
 
   return (
     <div
-      className="stg-root"
+      className={`stg-root ${introActive ? "is-intro" : ""}`}
       data-brand={event}
       onMouseMove={showPanel}
       style={
@@ -586,12 +646,20 @@ export const StageDisplay = ({
         )}
       </main>
 
-      {cue?.kind === "deck" && cue.page && (
+      {cue?.kind === "deck" && cue.deck?.from === "local" && (
         <DeckPage
           key={`${cue.slot.id}-${decks.get(cue.slot.id)?.updatedAt}`}
           sessionId={cue.slot.id}
-          page={cue.page}
+          page={cue.deck.page}
           version={decks.get(cue.slot.id)?.updatedAt ?? 0}
+        />
+      )}
+      {cue?.kind === "deck" && cue.deck?.from === "strapi" && (
+        <RemotePage
+          key={cue.key}
+          src={cue.deck.src}
+          kind={cue.deck.kind}
+          page={cue.deck.page}
         />
       )}
 
@@ -666,8 +734,7 @@ export const StageDisplay = ({
       <div className={`stg-panel ${panel ? "is-open" : ""}`}>
         <span className="stg-panel-state">
           {cue ? CUE_LABEL[cue.kind] : "End"}
-          {cue?.kind === "deck" &&
-            ` ${cue.page} of ${decks.get(cue.slot.id)?.pages ?? "?"}`}
+          {cue?.kind === "deck" && ` ${cue.page} of ${cue.pages ?? "?"}`}
           {nextCue && <span>Next {CUE_LABEL[nextCue.kind]}</span>}
           {saved.pause && <span>Pause</span>}
           <span>Sound {soundOn ? "on" : "off"}</span>
@@ -738,17 +805,31 @@ const Backdrop = ({ dad }: { dad: boolean }) => (
   <div className="stg-bg" aria-hidden>
     {/* The conference ring shape, filled in one colour family: blues on the
         Digital Assets Day, golds on the conference day. */}
-    {dad ? (
-      <div className="stg-ring stg-ring-dad" />
-    ) : (
-      // The conference ring as designed: yellow, red and purple.
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
-        src="/hero/mask-group-1.png"
-        alt=""
-        className="stg-ring stg-ring-conf"
-      />
-    )}
+    {/* During the intro this ring moves to the middle, grows and softens,
+        then returns. Only transform and opacity change, so it runs on the
+        graphics card; the soft copy is blurred once, not per frame. */}
+    <div className={`stg-ring ${dad ? "is-dad" : ""}`}>
+      <div className="stg-ring-spin">
+        {dad ? (
+          <>
+            <div className="stg-ring-art" />
+            <div className="stg-ring-art stg-ring-soft" />
+          </>
+        ) : (
+          <>
+            {/* The conference ring as designed: yellow, red and purple. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/hero/mask-group-1.png" alt="" className="stg-ring-art" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/hero/mask-group-1.png"
+              alt=""
+              className="stg-ring-art stg-ring-soft"
+            />
+          </>
+        )}
+      </div>
+    </div>
     <svg
       className="stg-orbits"
       viewBox="0 0 1920 1080"
@@ -1111,22 +1192,6 @@ const Intro = ({
   const solo = people.length === 1;
   return (
     <div className="stg-intro" aria-live="polite">
-      {/* The conference ring, in 2D: it opens out of a point of light,
-          a highlight runs once around it, and it breathes out at the end. */}
-      <div className={`stg-intro-ring2d ${dad ? "is-dad" : ""}`} aria-hidden>
-        {dad ? (
-          <div className="stg-intro-ring2d-shape" />
-        ) : (
-          // The original conference ring, softly blurred.
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src="/hero/mask-group-1.png"
-            alt=""
-            className="stg-intro-ring2d-shape is-img"
-          />
-        )}
-        <div className="stg-intro-ring2d-sweep" />
-      </div>
       {slot.trackSponsors && slot.trackSponsors.length > 0 && (
         <div className="stg-intro-track">
           <TrackLine slot={slot} />
@@ -1143,7 +1208,7 @@ const Intro = ({
             {people.slice(0, 6).map((p, i) => (
               <figure
                 key={p.name}
-                style={{ animationDelay: `${2.6 + i * 0.1}s` }}
+                style={{ animationDelay: `${3.15 + i * 0.1}s` }}
               >
                 <Portrait p={p} />
                 <figcaption>
@@ -1177,11 +1242,22 @@ const CSS = `
 .stg-root{--u:min(1vw,1.7778vh);--bg:#0a090c;--ink:#f5f3f7;--mute:rgba(245,243,247,.58);--line:rgba(245,243,247,.14);position:fixed;inset:0;z-index:20000;background:var(--bg);color:var(--ink);overflow:hidden;cursor:none;font-feature-settings:"tnum" 1,"ss01" 1}
 .stg-root:hover{cursor:default}
 .stg-bg{position:absolute;inset:0;pointer-events:none}
-.stg-ring{position:absolute;right:calc(var(--u)*-34);top:calc(50% - var(--u)*60);width:calc(var(--u)*120);opacity:.2;filter:saturate(.75);animation:stg-spin 240s linear infinite;mix-blend-mode:screen}
+.stg-ring{position:absolute;right:calc(var(--u)*-34);top:calc(50% - var(--u)*60);width:calc(var(--u)*120);aspect-ratio:3264/4096;transform-origin:51.1% 46.58%;opacity:.32;will-change:transform,opacity;transition:translate 1.4s cubic-bezier(.65,0,.25,1),scale 1.4s cubic-bezier(.65,0,.25,1),opacity 1.4s ease}
+.stg-ring-spin{position:absolute;inset:0;transform-origin:51.1% 46.58%;will-change:transform;animation:stg-spin 240s linear infinite}
+.stg-ring-art{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;mix-blend-mode:screen;filter:saturate(.9)}
+.stg-ring.is-dad{opacity:.24}
+.stg-ring.is-dad .stg-ring-art{mix-blend-mode:normal;filter:none;background:conic-gradient(from 200deg,#cfe0ff,#6f9dff,#2b45d8,#9cc2ff,#cfe0ff);-webkit-mask:url(/hero/mask-group-1.png) center/contain no-repeat;mask:url(/hero/mask-group-1.png) center/contain no-repeat}
+.stg-ring-soft{filter:blur(calc(var(--u)*1.1)) saturate(.9);opacity:0;transition:opacity 1.6s ease}
+.stg-ring.is-dad .stg-ring-soft{filter:blur(calc(var(--u)*1.1))}
+/* intro: the ring comes to the middle of the screen, grows and softens */
+.stg-root.is-intro .stg-ring{translate:calc(var(--u)*24.68 - 50vw) calc(var(--u)*-10.15);scale:1.4;opacity:.42}
+.stg-root.is-intro .stg-ring.is-dad{opacity:.34}
+.stg-root.is-intro .stg-ring-soft{opacity:1;transition-delay:.5s}
+.stg-root.is-intro .stg-ring-art:not(.stg-ring-soft){opacity:0;transition:opacity 1.6s ease .5s}
+.stg-ring-art:not(.stg-ring-soft){transition:opacity 1.2s ease}
+.stg-top,.stg-main,.stg-frame,.stg-orbits{transition:opacity .6s ease}
+.stg-root.is-intro .stg-top,.stg-root.is-intro .stg-main,.stg-root.is-intro .stg-frame,.stg-root.is-intro .stg-orbits{opacity:0}
 .stg-orbits{position:absolute;inset:0;width:100%;height:100%}
-.stg-ring-dad{aspect-ratio:3264/4096;-webkit-mask:url(/hero/mask-group-1.png) center/contain no-repeat;mask:url(/hero/mask-group-1.png) center/contain no-repeat;mix-blend-mode:normal;filter:none}
-.stg-ring-conf{opacity:.32;mix-blend-mode:screen;filter:saturate(.9)}
-.stg-ring-dad{background:conic-gradient(from 200deg,#cfe0ff,#6f9dff,#2b45d8,#9cc2ff,#cfe0ff);opacity:.24}
 .stg-root[data-brand="digital-assets-day"]{--bg:#050913;--line:rgba(160,190,255,.16);--mute:rgba(214,226,255,.62)}
 .stg-root[data-brand="digital-assets-day"] .stg-frame i{border-color:rgba(150,185,255,.45)}
 .stg-orbits circle{fill:none;vector-effect:non-scaling-stroke}
@@ -1219,7 +1295,7 @@ const CSS = `
 .stg-track-plate{display:flex;align-items:center;justify-content:center;height:calc(var(--u)*3.4);padding:0 calc(var(--u)*1);border-radius:calc(var(--u)*.4)}
 .stg-track-plate.is-light{background:#fff}
 .stg-track-plate img{display:block;max-height:calc(var(--u)*2.7);max-width:calc(var(--u)*11);width:auto;height:auto}
-.stg-intro-track{position:absolute;left:0;right:0;bottom:calc(var(--u)*5);display:flex;justify-content:center;z-index:2;animation:stg-rise .9s cubic-bezier(.2,.7,.1,1) 3.6s both}
+.stg-intro-track{position:absolute;left:0;right:0;bottom:calc(var(--u)*5);display:flex;justify-content:center;z-index:2;animation:stg-rise .9s cubic-bezier(.2,.7,.1,1) 4s both}
 .stg-where{display:flex;align-items:center;gap:calc(var(--u)*1.4);white-space:nowrap}
 .stg-stage{letter-spacing:.22em;text-transform:uppercase;font-size:calc(var(--u)*1);color:var(--mute)}
 .stg-sep{width:1px;height:calc(var(--u)*1.6);background:var(--line)}
@@ -1311,22 +1387,11 @@ const CSS = `
 .stg-start-go{align-self:flex-start;background:var(--acc);color:#0a090c;font-weight:800;font-size:calc(var(--u)*1.3);padding:calc(var(--u)*1.1) calc(var(--u)*2.2);border:0}
 
 /* intro */
-.stg-intro{position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;background:var(--bg);animation:stg-intro-out .8s ease-in ${INTRO_MS - 800}ms forwards}
+.stg-intro{position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;animation:stg-intro-out .8s ease-in ${INTRO_MS - 800}ms forwards}
 @keyframes stg-intro-out{to{opacity:0}}
-.stg-intro-ring2d{position:absolute;width:calc(var(--u)*160);aspect-ratio:3264/4096;left:calc(50% - var(--u)*160*.511);top:calc(50% - var(--u)*160*1.2549*.4658);transform-origin:51.1% 46.58%;pointer-events:none;animation:stg-r2-out 1.1s cubic-bezier(.6,0,.4,1) ${INTRO_MS - 1300}ms forwards}
-.stg-intro-ring2d > .is-img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:none!important;filter:blur(calc(var(--u)*.9));-webkit-mask:url(/hero/mask-group-1.png) center/contain no-repeat;mask:url(/hero/mask-group-1.png) center/contain no-repeat}
-.stg-intro-ring2d > div{position:absolute;inset:0;-webkit-mask:url(/hero/mask-group-1.png) center/contain no-repeat;mask:url(/hero/mask-group-1.png) center/contain no-repeat}
-.stg-intro-ring2d-shape{background:conic-gradient(from 200deg,#ffc110,#f44336 33%,#6f3de2 66%,#ffc110);opacity:0;transform-origin:51.1% 46.58%;animation:stg-r2-in .9s ease-out .05s forwards,stg-r2-sway 9s ease-in-out .05s infinite alternate}
-.stg-intro-ring2d.is-dad .stg-intro-ring2d-shape{background:conic-gradient(from 210deg,#dfe9ff,#7aa4ff,#2b45d8,#a9c6ff,#dfe9ff)}
-.stg-intro-ring2d-sweep{transform-origin:51.1% 46.58%;background:conic-gradient(from var(--sweep),transparent 0deg,rgba(255,255,255,0) 300deg,rgba(255,255,255,.55) 345deg,rgba(255,255,255,0) 360deg);opacity:0;mix-blend-mode:screen;animation:stg-r2-sweep 2.4s cubic-bezier(.45,0,.2,1) 1.1s forwards}
-@property --sweep{syntax:"<angle>";inherits:false;initial-value:0deg}
-@keyframes stg-r2-in{to{opacity:.36}}
-@keyframes stg-r2-sway{from{rotate:-2.5deg}to{rotate:2.5deg}}
-@keyframes stg-r2-sweep{0%{opacity:0;--sweep:-40deg}15%{opacity:1}85%{opacity:1}100%{opacity:0;--sweep:320deg}}
-@keyframes stg-r2-out{to{opacity:0;transform:scale(1.12)}}
 .stg-intro-content{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;gap:calc(var(--u)*1.6);padding:0 calc(var(--u)*12);max-width:calc(var(--u)*90);animation:stg-intro-content-out .9s cubic-bezier(.6,0,.4,1) ${INTRO_MS - 1600}ms forwards}
-@keyframes stg-intro-content-out{to{opacity:0;transform:scale(1.12);filter:blur(4px)}}
-.stg-intro-eyebrow{letter-spacing:.32em;text-transform:uppercase;font-size:calc(var(--u)*.95);color:rgba(255,255,255,.75);animation:stg-rise .8s cubic-bezier(.2,.7,.1,1) 2.45s both}
+@keyframes stg-intro-content-out{to{opacity:0;transform:scale(1.06)}}
+.stg-intro-eyebrow{letter-spacing:.32em;text-transform:uppercase;font-size:calc(var(--u)*.95);color:rgba(255,255,255,.75);animation:stg-rise .8s cubic-bezier(.2,.7,.1,1) 3s both}
 .stg-intro-eyebrow b{font-weight:400;color:var(--acc);margin:0 .6em}
 .stg-intro-faces{display:flex;gap:calc(var(--u)*1.2);justify-content:center}
 .stg-intro-faces figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*.6);animation:stg-rise .9s cubic-bezier(.2,.8,.2,1) both}
@@ -1336,24 +1401,25 @@ const CSS = `
 .stg-intro-faces .stg-tag{align-self:center;margin:0}
 .stg-intro-cap{font-size:calc(var(--u)*1.05);font-weight:600;color:rgba(255,255,255,.85);max-width:calc(var(--u)*10);line-height:1.2}
 .stg-intro-mask{display:block;overflow:hidden;padding-bottom:.08em}
-.stg-intro-name{display:block;font-weight:800;font-size:calc(var(--u)*5.2);line-height:1.04;letter-spacing:-.025em;color:#fff;text-wrap:balance;transform:translateY(110%);animation:stg-up 1s cubic-bezier(.2,.8,.1,1) 2.95s forwards}
+.stg-intro-name{display:block;font-weight:800;font-size:calc(var(--u)*5.2);line-height:1.04;letter-spacing:-.025em;color:#fff;text-wrap:balance;transform:translateY(110%);animation:stg-up 1s cubic-bezier(.2,.8,.1,1) 3.45s forwards}
 @keyframes stg-up{to{transform:none}}
 .stg-intro-mark{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;perspective:calc(var(--u)*90);pointer-events:none;z-index:1}
-.stg-intro-mark-out{position:relative;transform-style:preserve-3d;animation:stg-mark-out .55s cubic-bezier(.55,0,.35,1) 2.1s forwards}
-.stg-intro-mark-in{position:relative;width:calc(var(--u)*30);transform-style:preserve-3d;animation:stg-mark-in 2.1s cubic-bezier(.3,.55,.15,1) .15s both}
+.stg-intro-mark-out{position:relative;transform-style:preserve-3d;animation:stg-mark-out .55s cubic-bezier(.55,0,.35,1) 2.65s forwards}
+.stg-intro-mark-in{position:relative;width:calc(var(--u)*30);transform-style:preserve-3d;animation:stg-mark-in 1.7s cubic-bezier(.3,.55,.15,1) .95s both}
 .stg-intro-mark-in.is-dad{width:calc(var(--u)*38)}
 .stg-intro-mark-in img{display:block;width:100%;height:auto}
-.stg-intro-shine{position:absolute;inset:0;-webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;background:linear-gradient(100deg,transparent 40%,rgba(255,255,255,.9) 50%,transparent 60%);background-size:300% 100%;background-position:120% 0;mix-blend-mode:screen;animation:stg-shine 1.1s cubic-bezier(.45,0,.25,1) 1.05s forwards}
-.stg-intro-mark-floor{position:absolute;left:8%;right:8%;top:calc(100% + var(--u)*2.2);height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.5),transparent);transform:scaleX(0);animation:stg-floor 1.2s cubic-bezier(.2,.7,.1,1) .9s forwards}
-@keyframes stg-mark-in{0%{opacity:0;transform:translateZ(calc(var(--u)*-60)) translateY(calc(var(--u)*6)) rotateX(72deg);filter:blur(12px)}55%{opacity:1;filter:blur(0)}100%{opacity:1;transform:translateZ(0) translateY(0) rotateX(10deg) rotateY(-4deg)}}
-@keyframes stg-mark-out{to{opacity:0;transform:translateZ(calc(var(--u)*40));filter:blur(10px)}}
+.stg-intro-shine{position:absolute;inset:0;-webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;background:linear-gradient(100deg,transparent 40%,rgba(255,255,255,.9) 50%,transparent 60%);background-size:300% 100%;background-position:120% 0;mix-blend-mode:screen;animation:stg-shine 1.1s cubic-bezier(.45,0,.25,1) 1.6s forwards}
+.stg-intro-mark-floor{position:absolute;left:8%;right:8%;top:calc(100% + var(--u)*2.2);height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.5),transparent);transform:scaleX(0);animation:stg-floor 1.2s cubic-bezier(.2,.7,.1,1) 1.4s forwards}
+@keyframes stg-mark-in{0%{opacity:0;transform:translateZ(calc(var(--u)*-60)) translateY(calc(var(--u)*6)) rotateX(72deg)}55%{opacity:1}100%{opacity:1;transform:translateZ(0) translateY(0) rotateX(10deg) rotateY(-4deg)}}
+@keyframes stg-mark-out{to{opacity:0;transform:translateZ(calc(var(--u)*40))}}
 @keyframes stg-shine{to{background-position:-20% 0}}
 @keyframes stg-floor{to{transform:scaleX(1)}}
-.stg-intro-title{font-size:calc(var(--u)*1.15);letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.7);max-width:calc(var(--u)*72);line-height:1.5;text-wrap:balance;animation:stg-rise 1s cubic-bezier(.2,.7,.1,1) 3.45s both}
+.stg-intro-title{font-size:calc(var(--u)*1.15);letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.7);max-width:calc(var(--u)*72);line-height:1.5;text-wrap:balance;animation:stg-rise 1s cubic-bezier(.2,.7,.1,1) 3.9s both}
 @keyframes stg-rise{from{opacity:0;transform:translateY(calc(var(--u)*1))}to{opacity:1;transform:none}}
 
 .stg-deck{position:absolute;inset:0;z-index:4;background:#000;display:flex;align-items:center;justify-content:center}
 .stg-deck canvas{display:block}
+.stg-deck-img{display:block;max-width:100%;max-height:100%;object-fit:contain}
 .stg-deck-error{font-size:calc(var(--u)*1.6);color:rgba(255,255,255,.7)}
 
 .stg-panel{position:absolute;left:50%;bottom:calc(var(--u)*1.6);transform:translate(-50%,calc(var(--u)*6));opacity:0;transition:all .3s ease;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;padding:10px 12px;border-radius:12px;background:rgba(18,17,22,.94);border:1px solid rgba(255,255,255,.14);z-index:10;max-width:94vw}

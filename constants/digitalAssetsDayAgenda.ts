@@ -153,6 +153,8 @@ export type AgendaEntry =
        * confirmed yet, which renders "Speaker to be announced". */
       speakers?: string[];
       moderator?: string;
+      /** Slides uploaded on the session in Strapi, in their order. */
+      slides?: { src: string; mime: string; name: string }[];
     })
   | (Common & {
       // Breaks come straight from the published agenda rather than being

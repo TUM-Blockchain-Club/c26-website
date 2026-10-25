@@ -17,16 +17,18 @@ moves one cue:
 
 Up next → Intro → On stage → Slides 1…n → Thank you → next session
 
-- **Intro**: the day's mark tilts in in 3D, then the conference ring (the
-  original artwork, softly blurred, or its shape in blue on the Digital
-  Assets Day) frames the speakers and the title, centred on the ring's own
-  middle so it fills all four corners while it sways. About 8 seconds, then
-  "On stage" by itself. Optional sound sting (`introSound.ts`, synthesised,
+- **Intro**: the ring that is already in the background moves to the middle,
+  grows and softens, the day's mark tilts in, then the speakers and the
+  title; at the end the ring goes back to its place. About 8 seconds, then
+  "On stage" by itself. Only transform and opacity animate (the soft ring is
+  a second, pre-blurred copy faded in), so it stays smooth on a laptop. Optional sound sting (`introSound.ts`, synthesised,
   off by default).
 - **On stage** shows every speaker and the moderator with photo and role.
   It is also the fallback while a talk has no slides.
-- **Slides** are the speaker's PDF, uploaded in the room's studio; one page
-  per press.
+- **Slides**, one page per press: the files uploaded on the session in
+  Strapi (Agenda 26, field `slides`; PDFs and images, in their order), or a
+  PDF uploaded in the room's studio on that computer, which takes
+  precedence.
 - **Breaks** in the programme are their own cue; **P** puts up a short-pause
   screen at any time, **B** blacks out.
 
@@ -59,7 +61,10 @@ Sessions, speakers, photos and roles come from Strapi (`getAgendaEntries`,
 `getSpeakers`); the screen refreshes every minute and keeps its cue, so an
 edit in Strapi shows without the screen jumping.
 
-Speaker PDFs live in the browser's IndexedDB on the stage computer
+Slides from Strapi load straight from the Strapi server, not through Vercel;
+pdf.js reads each PDF's page count when the day is chosen.
+
+Studio PDFs live in the browser's IndexedDB on the stage computer
 (`decks.ts`), rendered with pdf.js (`DeckPage.tsx`, worker in
 `public/stage/pdf.worker.min.mjs`). Upload them on the stage computer itself;
 once there they work offline. Animations and videos inside the slides are

@@ -47,6 +47,8 @@ export type StageSlot = {
   /** The Digital Assets Day focus track, and who presents it. */
   track?: string;
   trackSponsors?: { name: string; src: string; light: boolean }[];
+  /** Slides from Strapi that the screen can show: PDFs and images. */
+  slides?: { src: string; kind: "pdf" | "image"; name: string }[];
 };
 
 /**
@@ -116,6 +118,22 @@ export const getStageSlots = async (room: StageRoom): Promise<StageSlot[]> => {
       title: e.title ?? "To be announced",
       ...(e.format ? { format: e.format } : {}),
       ...(e.track ? { track: e.track } : {}),
+      ...(() => {
+        const files = (e.slides ?? []).flatMap((f) => {
+          const pdf = f.mime === "application/pdf" || /\.pdf$/i.test(f.name);
+          const image = f.mime.startsWith("image/");
+          return pdf || image
+            ? [
+                {
+                  src: f.src,
+                  kind: pdf ? ("pdf" as const) : ("image" as const),
+                  name: f.name,
+                },
+              ]
+            : [];
+        });
+        return files.length ? { slides: files } : {};
+      })(),
       ...(e.track && byTrack.get(e.track)
         ? { trackSponsors: byTrack.get(e.track) }
         : {}),
