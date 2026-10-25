@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/button";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 const META_PIXEL_ID = "2626290637773063";
 const CONSENT_COOKIE = "tbc_conference_marketing_consent";
@@ -121,6 +122,9 @@ function loadMetaPixel() {
 
 export function MarketingConsent() {
   const [consent, setConsent] = useState<ConsentState>("loading");
+  // The stage screens are crew tools on a projector, not visitor pages: no
+  // banner over them, and no marketing tracking there either.
+  const onStageScreens = usePathname()?.startsWith("/stage-76803f8f95");
 
   useEffect(() => {
     const storedConsent = getStoredConsent();
@@ -143,7 +147,7 @@ export function MarketingConsent() {
     }
   };
 
-  if (consent !== "unset") {
+  if (consent !== "unset" || onStageScreens) {
     return null;
   }
 
