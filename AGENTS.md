@@ -27,3 +27,6 @@
 - Agenda sessions open `components/agenda/SessionDialog.tsx` and are shareable at `/agenda/<id>` with per-session preview images; every talk in `constants/digitalAssetsDayAgenda.ts` needs a permanent, unique `id`. See `docs/agenda-session-dialog.md`.
 - The partnership deck CTA lives in `sections/Sponsors.tsx` and links to the Tally form at `https://tally.so/r/vGzv6g`.
 - Vercel deploy workflows require `VERCEL_TOKEN`, `VERCEL_ORG_ID`, and `VERCEL_PROJECT_ID` GitHub secrets and install dependencies with `pnpm --frozen-lockfile`.
+
+Use pnpm-lock.yaml as the authoritative dependency lockfile. See
+`docs/nextjs-security-update-2026-10.md` for the framework security baseline.
