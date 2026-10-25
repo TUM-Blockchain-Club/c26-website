@@ -5,7 +5,7 @@
   "framework": "nextjs",
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/((?!stage-76803f8f95).*)",
       "destination": "/"
     }
   ],
