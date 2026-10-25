@@ -21,9 +21,15 @@ Up next → Intro → On stage → Slides 1…n → Thank you → next session
   grows and softens, the day's mark tilts in, then the speakers and the
   title; at the end the ring goes back to its place. About 8 seconds, then
   "On stage" by itself. Only transform and opacity animate (the soft ring is
-  a second, pre-blurred copy faded in), so it stays smooth on a laptop. Optional sound sting (`introSound.ts`, synthesised,
+  a second, pre-blurred copy faded in), so it stays smooth on a laptop.
+  Sparkles twinkle around the ring and the day mark floats. The sound is a
+  warm cue in F sharp major (`introSound.ts`, synthesised); **M** switches it
+  on or off at once, also mid-intro. Optional sound sting (`introSound.ts`, synthesised,
   off by default).
-- **On stage** shows every speaker and the moderator with photo and role.
+- **On stage** shows every speaker and the moderator with photo, position
+  and, in bold, the company; "Moderator" sits under the text. Long titles
+  and big panels shrink step by step (never below 60 percent) so all of it
+  fits.
   It is also the fallback while a talk has no slides.
 - **Slides**, one page per press: the files uploaded on the session in
   Strapi (Agenda 26, field `slides`; PDFs and images, in their order), or a
@@ -82,3 +88,12 @@ and every stage page check an httpOnly cookie set by `/api/stage-login`; the
 code only holds the passcode's SHA-256 (`components/stage/stageAccess.ts`).
 To change the passcode, put the SHA-256 of the new one there. Signing in
 lasts 30 days per browser.
+
+## Look
+
+No corner brackets, blinking dots, tracked capitals or crew hints on the
+audience screen. Text is never smaller than 1.2u (crew panel: 14px), and
+clipping boxes leave room for descenders. Photos and logos of the chosen day
+are preloaded and fade in once loaded; portraits are laid over their circle
+so no photo format can turn it into an oval. On the Digital Assets Day the
+ring is the original artwork's light and shade toned in several blues.

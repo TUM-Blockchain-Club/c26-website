@@ -1,6 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { StagePerson, StageSlot } from "@/components/stage/stageData";
 import { playIntroSting } from "@/components/stage/introSound";
@@ -402,45 +409,64 @@ export const StageDisplay = ({
       // Storage blocked: sound stays off.
     }
   }, [soundKey]);
-  useEffect(() => {
-    const unlock = () => {
-      if (!audio.current) {
-        const Ctx =
-          window.AudioContext ||
-          (window as unknown as { webkitAudioContext?: typeof AudioContext })
-            .webkitAudioContext;
-        if (Ctx) audio.current = new Ctx();
-      }
-      void audio.current?.resume();
-    };
-    window.addEventListener("pointerdown", unlock);
-    window.addEventListener("keydown", unlock);
-    return () => {
-      window.removeEventListener("pointerdown", unlock);
-      window.removeEventListener("keydown", unlock);
-    };
+  // Browsers only allow audio after a press or click; the context is made
+  // on the first one, before any cue reacts to it (capture phase).
+  const ensureAudio = useCallback(() => {
+    if (!audio.current) {
+      const Ctx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext?: typeof AudioContext })
+          .webkitAudioContext;
+      if (Ctx) audio.current = new Ctx();
+    }
+    if (audio.current?.state === "suspended") void audio.current.resume();
+    return audio.current;
   }, []);
-  const toggleSound = useCallback(
-    () =>
-      setSoundOn((on) => {
-        try {
-          window.localStorage.setItem(soundKey, on ? "off" : "on");
-        } catch {
-          // Not fatal.
-        }
-        return !on;
-      }),
-    [soundKey],
-  );
+  useEffect(() => {
+    window.addEventListener("pointerdown", ensureAudio, true);
+    window.addEventListener("keydown", ensureAudio, true);
+    return () => {
+      window.removeEventListener("pointerdown", ensureAudio, true);
+      window.removeEventListener("keydown", ensureAudio, true);
+    };
+  }, [ensureAudio]);
+  const stopSting = useRef<(() => void) | null>(null);
+  const playSting = useCallback(() => {
+    const ctx = ensureAudio();
+    if (!ctx) return;
+    const go = () => {
+      stopSting.current?.();
+      stopSting.current = playIntroSting(ctx);
+    };
+    if (ctx.state === "running") go();
+    else void ctx.resume().then(go);
+  }, [ensureAudio]);
+  const introOn = useRef(false);
+  const toggleSound = useCallback(() => {
+    const next = !soundOn;
+    setSoundOn(next);
+    try {
+      window.localStorage.setItem(soundKey, next ? "on" : "off");
+    } catch {
+      // Not fatal.
+    }
+    // Takes effect at once: on during an intro starts the cue, off stops it.
+    if (!next) {
+      stopSting.current?.();
+      stopSting.current = null;
+    } else if (introOn.current) playSting();
+  }, [soundOn, soundKey, playSting]);
 
   // The intro plays when the crew cues it, and again on I.
   const cueKey = cue?.key;
   const playIntro = useCallback(() => {
     setIntroRun((n) => n + 1);
-    if (soundOn && audio.current) playIntroSting(audio.current);
-  }, [soundOn]);
+    if (soundOn) playSting();
+  }, [soundOn, playSting]);
   const lastCue = useRef<string | undefined>(undefined);
-  useEffect(() => {
+  // A layout effect, so the intro starts before the browser paints the new
+  // cue; with a plain effect "On stage" flashed for one frame first.
+  useLayoutEffect(() => {
     if (!mounted) return;
     if (
       cue?.kind === "intro" &&
@@ -560,6 +586,56 @@ export const StageDisplay = ({
     panelTimer.current = window.setTimeout(() => setPanel(false), 4000);
   }, []);
 
+  // Every picture of the chosen day is fetched up front, so photos and logos
+  // are in the cache before their cue comes up.
+  const preloaded = useRef<HTMLImageElement[]>([]);
+  useEffect(() => {
+    const srcs = new Set<string>([
+      "/logos/c26-wordmark-no-hackathon.svg",
+      "/logos/digital-assets-day-logo.png",
+    ]);
+    for (const sl of daySlots) {
+      for (const p of sl.people) if (p.photo) srcs.add(p.photo);
+      for (const sp of sl.trackSponsors ?? []) srcs.add(sp.src);
+      for (const f of sl.slides ?? []) if (f.kind === "image") srcs.add(f.src);
+    }
+    preloaded.current = [...srcs].map((src) => {
+      const img = new Image();
+      img.decoding = "async";
+      img.src = src;
+      return img;
+    });
+  }, [daySlots]);
+
+  // Pictures fade in where they belong once loaded, instead of popping in.
+  const rootRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    rootRef.current
+      ?.querySelectorAll<HTMLImageElement>("img:not([data-ready])")
+      .forEach((img) => {
+        const ready = () => (img.dataset.ready = "1");
+        if (img.complete && img.naturalWidth) ready();
+        else {
+          img.addEventListener("load", ready, { once: true });
+          img.addEventListener("error", ready, { once: true });
+        }
+      });
+  });
+
+  // Long titles and big panels: shrink the title and portraits step by step
+  // until everything fits above the ticker, never below 60 percent.
+  const mainRef = useRef<HTMLElement>(null);
+  useLayoutEffect(() => {
+    const el = mainRef.current;
+    if (!el) return;
+    let fit = 1;
+    el.style.setProperty("--fit", "1");
+    while (el.scrollHeight > el.clientHeight + 1 && fit > 0.6) {
+      fit = Math.round((fit - 0.05) * 100) / 100;
+      el.style.setProperty("--fit", String(fit));
+    }
+  });
+
   if (!mounted) return <div className="fixed inset-0 bg-[#050407]" />;
 
   const slot = cue?.slot;
@@ -572,8 +648,11 @@ export const StageDisplay = ({
   const nextCue = cues[index + 1];
   const introActive = cue?.kind === "intro" && introRun > 0;
 
+  introOn.current = introActive;
+
   return (
     <div
+      ref={rootRef}
       className={`stg-root ${introActive ? "is-intro" : ""}`}
       data-brand={event}
       onMouseMove={showPanel}
@@ -590,7 +669,6 @@ export const StageDisplay = ({
     >
       <style>{CSS}</style>
       <Backdrop dad={event === "digital-assets-day"} />
-      <Frame />
 
       <header className="stg-top">
         <div className="stg-brand">
@@ -618,7 +696,7 @@ export const StageDisplay = ({
         </div>
       </header>
 
-      <main className="stg-main">
+      <main className="stg-main" ref={mainRef}>
         {!cue && <Wrap key="wrap" />}
         {cue?.kind === "upnext" && (
           <UpNext
@@ -656,7 +734,9 @@ export const StageDisplay = ({
       )}
       {cue?.kind === "deck" && cue.deck?.from === "strapi" && (
         <RemotePage
-          key={cue.key}
+          // One canvas per file: the next page is drawn off screen and
+          // swapped in, so the old page stays until the new one is ready.
+          key={cue.deck.src}
           src={cue.deck.src}
           kind={cue.deck.kind}
           page={cue.deck.page}
@@ -803,8 +883,8 @@ const ORBITS: [number, number, number, number, number, boolean][] = [
 
 const Backdrop = ({ dad }: { dad: boolean }) => (
   <div className="stg-bg" aria-hidden>
-    {/* The conference ring shape, filled in one colour family: blues on the
-        Digital Assets Day, golds on the conference day. */}
+    {/* The conference ring: as designed on the conference days; on the
+        Digital Assets Day its own light and shade, toned in several blues. */}
     {/* During the intro this ring moves to the middle, grows and softens,
         then returns. Only transform and opacity change, so it runs on the
         graphics card; the soft copy is blurred once, not per frame. */}
@@ -812,8 +892,13 @@ const Backdrop = ({ dad }: { dad: boolean }) => (
       <div className="stg-ring-spin">
         {dad ? (
           <>
-            <div className="stg-ring-art" />
-            <div className="stg-ring-art stg-ring-soft" />
+            {["", " stg-ring-soft"].map((soft) => (
+              <div key={soft} className={`stg-ring-art${soft}`}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/hero/mask-group-1.png" alt="" />
+                <i />
+              </div>
+            ))}
           </>
         ) : (
           <>
@@ -858,17 +943,6 @@ const Backdrop = ({ dad }: { dad: boolean }) => (
         );
       })}
     </svg>
-    <div className="stg-grain" />
-  </div>
-);
-
-/** Corner marks of a broadcast safe area. */
-const Frame = () => (
-  <div className="stg-frame" aria-hidden>
-    <i className="tl" />
-    <i className="tr" />
-    <i className="bl" />
-    <i className="br" />
   </div>
 );
 
@@ -909,9 +983,10 @@ const People = ({
         >
           <Portrait p={p} />
           <span className="stg-person-text">
-            {p.moderator && <span className="stg-tag">Moderator</span>}
             <span className="stg-name">{p.name}</span>
-            {p.role && <span className="stg-role">{p.role}</span>}
+            {p.position && <span className="stg-role">{p.position}</span>}
+            {p.company && <span className="stg-company">{p.company}</span>}
+            {p.moderator && <span className="stg-tag">Moderator</span>}
           </span>
         </li>
       ))}
@@ -1143,7 +1218,6 @@ const Thanks = ({ slot, next }: { slot: StageSlot; next?: StageSlot }) => (
 
 const Pause = ({ next }: { next?: StageSlot }) => (
   <div className="stg-pause">
-    <Frame />
     <section className="stg-scene stg-center">
       <Label>Short break</Label>
       <h1 className="stg-title stg-huge">We’ll be right back</h1>
@@ -1177,6 +1251,39 @@ const DayMark = ({ dad }: { dad: boolean }) => {
   );
 };
 
+/** Small four-point stars that twinkle around the ring during the intro:
+ * x and y in percent of the screen, size in --u, delay in seconds. */
+const SPARKLES: [number, number, number, number][] = [
+  [18, 22, 1.6, 1.2],
+  [31, 74, 1.1, 1.8],
+  [72, 18, 1.3, 1.5],
+  [84, 66, 1.8, 2.1],
+  [62, 84, 0.9, 2.6],
+  [12, 52, 0.8, 2.9],
+  [90, 34, 0.9, 3.3],
+];
+
+const Sparkles = () => (
+  <div className="stg-sparkles" aria-hidden>
+    {SPARKLES.map(([x, y, size, delay], i) => (
+      <svg
+        key={i}
+        viewBox="-10 -10 20 20"
+        style={
+          {
+            left: `${x}%`,
+            top: `${y}%`,
+            "--s": size,
+            animationDelay: `${delay}s`,
+          } as React.CSSProperties
+        }
+      >
+        <path d="M0 -10 Q1.2 -1.2 10 0 Q1.2 1.2 0 10 Q-1.2 1.2 -10 0 Q-1.2 -1.2 0 -10Z" />
+      </svg>
+    ))}
+  </div>
+);
+
 const Intro = ({
   slot,
   label,
@@ -1197,6 +1304,7 @@ const Intro = ({
           <TrackLine slot={slot} />
         </div>
       )}
+      <Sparkles />
       <DayMark dad={dad} />
       <div className="stg-intro-content">
         <span className="stg-intro-eyebrow">
@@ -1212,8 +1320,8 @@ const Intro = ({
               >
                 <Portrait p={p} />
                 <figcaption>
-                  {p.moderator && <span className="stg-tag">Moderator</span>}
                   {!solo && <span className="stg-intro-cap">{p.name}</span>}
+                  {p.moderator && <span className="stg-tag">Moderator</span>}
                 </figcaption>
               </figure>
             ))}
@@ -1239,27 +1347,33 @@ const Intro = ({
 /* -------------------------------------------------------------------- css */
 
 const CSS = `
-.stg-root{--u:min(1vw,1.7778vh);--bg:#0a090c;--ink:#f5f3f7;--mute:rgba(245,243,247,.58);--line:rgba(245,243,247,.14);position:fixed;inset:0;z-index:20000;background:var(--bg);color:var(--ink);overflow:hidden;cursor:none;font-feature-settings:"tnum" 1,"ss01" 1}
+.stg-root{--u:min(1vw,1.7778vh);--bg:#0a090c;--ink:#f5f3f7;--mute:rgba(245,243,247,.8);--line:rgba(245,243,247,.14);position:fixed;inset:0;z-index:20000;background:var(--bg);color:var(--ink);overflow:hidden;cursor:none;font-feature-settings:"tnum" 1,"ss01" 1}
 .stg-root:hover{cursor:default}
 .stg-bg{position:absolute;inset:0;pointer-events:none}
 .stg-ring{position:absolute;right:calc(var(--u)*-34);top:calc(50% - var(--u)*60);width:calc(var(--u)*120);aspect-ratio:3264/4096;transform-origin:51.1% 46.58%;opacity:.32;will-change:transform,opacity;transition:translate 1.4s cubic-bezier(.65,0,.25,1),scale 1.4s cubic-bezier(.65,0,.25,1),opacity 1.4s ease}
 .stg-ring-spin{position:absolute;inset:0;transform-origin:51.1% 46.58%;will-change:transform;animation:stg-spin 240s linear infinite}
 .stg-ring-art{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;mix-blend-mode:screen;filter:saturate(.9)}
-.stg-ring.is-dad{opacity:.24}
-.stg-ring.is-dad .stg-ring-art{mix-blend-mode:normal;filter:none;background:conic-gradient(from 200deg,#cfe0ff,#6f9dff,#2b45d8,#9cc2ff,#cfe0ff);-webkit-mask:url(/hero/mask-group-1.png) center/contain no-repeat;mask:url(/hero/mask-group-1.png) center/contain no-repeat}
+.stg-ring.is-dad{opacity:.4}
+.stg-ring.is-dad .stg-ring-art{mix-blend-mode:normal;filter:none;isolation:isolate}
+.stg-ring.is-dad .stg-ring-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;filter:grayscale(1) brightness(1.05) contrast(1.2)}
+.stg-ring.is-dad .stg-ring-art i{position:absolute;inset:0;background:conic-gradient(from 160deg at 51.1% 46.58%,#0b1a6b,#2340d6 14%,#3f86ff 30%,#3fb8ff 42%,#5d8dff 52%,#5a63f2 66%,#1d2fa8 80%,#3f86ff 90%,#0b1a6b);mix-blend-mode:color;-webkit-mask:url(/hero/mask-group-1.png) center/contain no-repeat;mask:url(/hero/mask-group-1.png) center/contain no-repeat}
 .stg-ring-soft{filter:blur(calc(var(--u)*1.1)) saturate(.9);opacity:0;transition:opacity 1.6s ease}
 .stg-ring.is-dad .stg-ring-soft{filter:blur(calc(var(--u)*1.1))}
+.stg-ring.is-dad .stg-ring-soft img{filter:grayscale(1) brightness(1.05) contrast(1.2)}
 /* intro: the ring comes to the middle of the screen, grows and softens */
 .stg-root.is-intro .stg-ring{translate:calc(var(--u)*24.68 - 50vw) calc(var(--u)*-10.15);scale:1.4;opacity:.42}
-.stg-root.is-intro .stg-ring.is-dad{opacity:.34}
+.stg-root.is-intro .stg-ring.is-dad{opacity:.5}
 .stg-root.is-intro .stg-ring-soft{opacity:1;transition-delay:.5s}
 .stg-root.is-intro .stg-ring-art:not(.stg-ring-soft){opacity:0;transition:opacity 1.6s ease .5s}
 .stg-ring-art:not(.stg-ring-soft){transition:opacity 1.2s ease}
-.stg-top,.stg-main,.stg-frame,.stg-orbits{transition:opacity .6s ease}
-.stg-root.is-intro .stg-top,.stg-root.is-intro .stg-main,.stg-root.is-intro .stg-frame,.stg-root.is-intro .stg-orbits{opacity:0}
+.stg-top,.stg-main,.stg-orbits{transition:opacity .6s ease}
+.stg-root.is-intro .stg-top,.stg-root.is-intro .stg-main,.stg-root.is-intro .stg-orbits{opacity:0}
+/* out fast so no old text lingers under the intro; back in after it */
+.stg-root.is-intro .stg-top,.stg-root.is-intro .stg-main,.stg-root.is-intro .stg-orbits{transition:opacity .22s ease-out}
 .stg-orbits{position:absolute;inset:0;width:100%;height:100%}
-.stg-root[data-brand="digital-assets-day"]{--bg:#050913;--line:rgba(160,190,255,.16);--mute:rgba(214,226,255,.62)}
-.stg-root[data-brand="digital-assets-day"] .stg-frame i{border-color:rgba(150,185,255,.45)}
+.stg-root img:not(.stg-ring img){transition:opacity .45s ease}
+.stg-root img:not([data-ready]):not(.stg-ring img){opacity:0}
+.stg-root[data-brand="digital-assets-day"]{--bg:#050913;--line:rgba(160,190,255,.16);--mute:rgba(214,226,255,.82)}
 .stg-orbits circle{fill:none;vector-effect:non-scaling-stroke}
 .stg-orbit-track{stroke:rgba(255,255,255,.025);stroke-width:1}
 .stg-orbit-light{stroke:rgba(255,255,255,.13);stroke-width:1.6;stroke-linecap:round;filter:blur(1.2px);animation:stg-orbit linear infinite}
@@ -1272,32 +1386,25 @@ const CSS = `
 .stg-intro-eyebrow{display:flex;gap:calc(var(--u)*2.4)}
 .stg-intro-eyebrow span+span{color:var(--acc)}
 .stg-panel-state{display:flex;gap:14px}
-.stg-grain{position:absolute;inset:0;opacity:.5;background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.018) 0 1px,transparent 1px calc(var(--u)*8.333))}
 @keyframes stg-spin{to{transform:rotate(360deg)}}
 
-.stg-frame{position:absolute;inset:calc(var(--u)*2.2);pointer-events:none;z-index:1}
-.stg-frame i{position:absolute;width:calc(var(--u)*1.6);height:calc(var(--u)*1.6);border-color:rgba(245,243,247,.35);border-style:solid;border-width:0}
-.stg-frame .tl{left:0;top:0;border-left-width:1px;border-top-width:1px}
-.stg-frame .tr{right:0;top:0;border-right-width:1px;border-top-width:1px}
-.stg-frame .bl{left:0;bottom:0;border-left-width:1px;border-bottom-width:1px}
-.stg-frame .br{right:0;bottom:0;border-right-width:1px;border-bottom-width:1px}
 
 .stg-top{position:absolute;left:calc(var(--u)*5);right:calc(var(--u)*5);top:calc(var(--u)*4);display:flex;align-items:center;justify-content:space-between;gap:calc(var(--u)*3);z-index:2}
 .stg-brand{display:flex;align-items:center;gap:calc(var(--u)*1.4);min-width:0}
 .stg-wordmark{height:calc(var(--u)*4.2);width:auto}
-.stg-including{letter-spacing:.24em;text-transform:uppercase;font-size:calc(var(--u)*.72);color:var(--mute)}
+.stg-including{font-weight:600;letter-spacing:.01em;font-size:calc(var(--u)*1.2);color:var(--mute)}
 .stg-dad{height:calc(var(--u)*3);width:auto}
 .stg-dad-solo{height:calc(var(--u)*4.4)}
 .stg-track{display:flex;align-items:center;gap:calc(var(--u)*1.2);flex-wrap:wrap}
-.stg-track-name{font-size:calc(var(--u)*1);letter-spacing:.22em;text-transform:uppercase;color:var(--acc)}
-.stg-track-by{font-size:calc(var(--u)*.9);letter-spacing:.18em;text-transform:uppercase;color:var(--mute)}
+.stg-track-name{font-weight:600;font-size:calc(var(--u)*1.2);letter-spacing:.01em;color:var(--acc)}
+.stg-track-by{font-weight:600;font-size:calc(var(--u)*1.2);letter-spacing:.01em;color:var(--mute)}
 .stg-track-logos{display:flex;gap:calc(var(--u)*.8);align-items:center}
 .stg-track-plate{display:flex;align-items:center;justify-content:center;height:calc(var(--u)*3.4);padding:0 calc(var(--u)*1);border-radius:calc(var(--u)*.4)}
 .stg-track-plate.is-light{background:#fff}
 .stg-track-plate img{display:block;max-height:calc(var(--u)*2.7);max-width:calc(var(--u)*11);width:auto;height:auto}
 .stg-intro-track{position:absolute;left:0;right:0;bottom:calc(var(--u)*5);display:flex;justify-content:center;z-index:2;animation:stg-rise .9s cubic-bezier(.2,.7,.1,1) 4s both}
 .stg-where{display:flex;align-items:center;gap:calc(var(--u)*1.4);white-space:nowrap}
-.stg-stage{letter-spacing:.22em;text-transform:uppercase;font-size:calc(var(--u)*1);color:var(--mute)}
+.stg-stage{font-weight:600;letter-spacing:.01em;font-size:calc(var(--u)*1.2);color:var(--mute)}
 .stg-sep{width:1px;height:calc(var(--u)*1.6);background:var(--line)}
 .stg-clock{font-size:calc(var(--u)*1.9);letter-spacing:.04em}
 
@@ -1307,43 +1414,50 @@ const CSS = `
 
 .stg-head{display:flex;flex-direction:column;gap:calc(var(--u)*1.1);max-width:calc(var(--u)*82);margin-bottom:calc(var(--u)*2.4)}
 .stg-head-row{display:flex;align-items:center;gap:calc(var(--u)*2.4);flex-wrap:wrap}
-.stg-label{display:inline-flex;align-items:center;gap:calc(var(--u)*.8);font-size:calc(var(--u)*1.05);letter-spacing:.26em;text-transform:uppercase;color:var(--ink)}
+.stg-label{font-weight:600;display:inline-flex;align-items:center;gap:calc(var(--u)*.8);font-size:calc(var(--u)*1.2);letter-spacing:.01em;color:var(--ink)}
 .stg-label i{width:calc(var(--u)*.7);height:calc(var(--u)*.7);background:var(--acc)}
-.stg-label.is-live i{animation:stg-blink 2.4s steps(2,jump-none) infinite}
-@keyframes stg-blink{50%{opacity:.25}}
-.stg-countdown{font-size:calc(var(--u)*1.05);letter-spacing:.12em;color:var(--acc);display:inline-flex;align-items:baseline;gap:calc(var(--u)*.6)}
-.stg-countdown small{font-size:inherit;color:var(--mute);letter-spacing:.26em;text-transform:uppercase}
-.stg-meta{display:flex;gap:calc(var(--u)*3);font-size:calc(var(--u)*1.25);color:var(--mute);letter-spacing:.06em;text-transform:uppercase}
-.stg-title{margin:0;font-weight:800;line-height:1.02;letter-spacing:-.025em;font-size:calc(var(--u)*5.6);text-wrap:balance;padding-bottom:.06em}
+.stg-countdown{font-size:calc(var(--u)*1.2);letter-spacing:.12em;color:var(--acc);display:inline-flex;align-items:baseline;gap:calc(var(--u)*.6)}
+.stg-countdown small{font-weight:600;font-size:inherit;color:var(--mute);letter-spacing:.01em}
+.stg-meta{font-weight:600;display:flex;gap:calc(var(--u)*3);font-size:calc(var(--u)*1.25);color:var(--mute);letter-spacing:.01em}
+.stg-title{margin:0;font-weight:800;line-height:1.1;letter-spacing:-.025em;font-size:calc(var(--u)*5.6*var(--fit,1));text-wrap:balance;padding-bottom:.06em}
 .stg-title.is-mid{font-size:calc(var(--u)*4.5)}
-.stg-title.is-long{font-size:calc(var(--u)*3.6);line-height:1.06}
+.stg-title.is-long{font-size:calc(var(--u)*3.6*max(var(--fit,1),.8));line-height:1.12}
 .stg-huge{font-size:calc(var(--u)*7.4)}
-.stg-subtitle{margin:calc(var(--u)*.8) 0 0;font-weight:800;font-size:calc(var(--u)*2.8);line-height:1.08;letter-spacing:-.015em;text-wrap:balance}
+.stg-subtitle{margin:calc(var(--u)*.8) 0 0;font-weight:800;font-size:calc(var(--u)*2.8);line-height:1.14;letter-spacing:-.015em;text-wrap:balance}
 .stg-lede{margin:calc(var(--u)*1.6) 0 0;font-size:calc(var(--u)*1.8);line-height:1.35;color:var(--mute);max-width:calc(var(--u)*70)}
 
 /* people */
 .stg-people{list-style:none;margin:auto 0 0;padding:0;display:grid;gap:calc(var(--u)*1.6)}
 .stg-people li{display:flex;gap:calc(var(--u)*1.6);align-items:center;min-width:0;animation:stg-in .6s cubic-bezier(.2,.7,.1,1) both}
-.stg-portrait{display:block;flex:none;position:relative;border-radius:50%;aspect-ratio:1;padding:calc(var(--u)*.28);border:calc(var(--u)*.32) solid var(--acc);background:var(--bg)}
-.stg-portrait img,.stg-portrait svg{display:block;width:100%;height:100%;border-radius:50%;object-fit:cover;object-position:50% 22%}
+.stg-portrait{display:block;flex:none;position:relative;border-radius:50%;aspect-ratio:1;min-height:0;overflow:hidden;box-sizing:border-box;padding:calc(var(--u)*.28);border:calc(var(--u)*.32) solid var(--acc);background:var(--bg)}
+/* the photo is laid over the circle rather than sizing it, so a portrait-
+   format picture can never stretch the ring into an oval */
+.stg-portrait img,.stg-portrait svg{position:absolute;inset:calc(var(--u)*.28);display:block;width:calc(100% - var(--u)*.56);height:calc(100% - var(--u)*.56);border-radius:50%;object-fit:cover;object-position:50% 22%}
 .stg-person-text{display:flex;flex-direction:column;gap:calc(var(--u)*.35);min-width:0;padding-bottom:calc(var(--u)*.2)}
-.stg-tag{align-self:flex-start;font-size:calc(var(--u)*.72);letter-spacing:.22em;text-transform:uppercase;color:var(--acc);border:1px solid color-mix(in srgb,var(--acc) 55%,transparent);padding:calc(var(--u)*.2) calc(var(--u)*.5);margin-bottom:calc(var(--u)*.3)}
+.stg-tag{font-weight:600;align-self:flex-start;font-size:calc(var(--u)*1.2);letter-spacing:.01em;color:var(--acc);border:1px solid color-mix(in srgb,var(--acc) 55%,transparent);padding:calc(var(--u)*.2) calc(var(--u)*.5);margin-bottom:calc(var(--u)*.3)}
 .stg-name{font-weight:700;font-size:calc(var(--u)*1.75);line-height:1.12;letter-spacing:-.01em}
-.stg-role{font-size:calc(var(--u)*1.1);line-height:1.35;color:var(--mute);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.stg-role{font-size:calc(var(--u)*1.35);line-height:1.35;color:var(--mute);}
 
 .stg-people.is-solo{grid-template-columns:1fr}
 .stg-people.is-solo .stg-portrait{width:calc(var(--u)*15);height:calc(var(--u)*15)}
 .stg-people.is-solo .stg-name{font-size:calc(var(--u)*3)}
 .stg-people.is-solo .stg-role{font-size:calc(var(--u)*1.5);max-width:calc(var(--u)*50)}
 .stg-people.is-row{grid-template-columns:repeat(3,minmax(0,1fr))}
-.stg-people.is-row .stg-portrait{width:calc(var(--u)*9.4);height:calc(var(--u)*9.4)}
+.stg-people.is-row .stg-portrait{width:calc(var(--u)*9.4*var(--fit,1));height:calc(var(--u)*9.4*var(--fit,1))}
 .stg-people.is-strip{grid-template-columns:repeat(var(--cols,5),minmax(0,1fr));gap:calc(var(--u)*1.4)}
 .stg-people.is-strip[data-n="4"]{--cols:4}
 .stg-people.is-strip[data-n="6"]{--cols:6}
-.stg-people.is-strip li{flex-direction:column;align-items:flex-start;gap:calc(var(--u)*1)}
-.stg-people.is-strip .stg-portrait{width:min(100%,calc(var(--u)*11));height:auto}
+.stg-people.is-strip li{flex-direction:column;align-items:flex-start;gap:calc(var(--u)*.8)}
+.stg-people.is-strip .stg-portrait{width:min(100%,calc(var(--u)*8.4*var(--fit,1)));height:auto}
+/* four or more people: a smaller title leaves room for every name, role,
+   company and the moderator note */
+.stg-main:has(.stg-people.is-strip) .stg-title:not(.is-long){font-size:calc(var(--u)*4.4*var(--fit,1))}
 .stg-people.is-strip .stg-name{font-size:calc(var(--u)*1.45)}
-.stg-people.is-strip .stg-role{font-size:calc(var(--u)*.98)}
+.stg-people.is-strip .stg-role{font-size:calc(var(--u)*1.25)}
+.stg-company{font-weight:700;font-size:calc(var(--u)*1.5);line-height:1.25;color:var(--ink);padding-bottom:.08em}
+.stg-people.is-solo .stg-company{font-size:calc(var(--u)*2)}
+.stg-people.is-strip .stg-company{font-size:calc(var(--u)*1.3)}
+.stg-person-text .stg-tag{margin-top:calc(var(--u)*.5)}
 .stg-session.has-group .stg-people.is-strip{margin-top:auto}
 .stg-break-next .stg-people{grid-template-columns:1fr;gap:calc(var(--u)*1.1)}
 .stg-break-next .stg-people li{flex-direction:row;align-items:center}
@@ -1352,9 +1466,9 @@ const CSS = `
 .is-mod .stg-portrait{opacity:.92}
 
 .stg-ticker{margin-top:calc(var(--u)*2.2);padding-top:calc(var(--u)*1.3);border-top:1px solid var(--line);display:flex;align-items:baseline;gap:calc(var(--u)*1.4);font-size:calc(var(--u)*1.2);min-width:0}
-.stg-ticker-label{letter-spacing:.26em;text-transform:uppercase;font-size:calc(var(--u)*.9);color:var(--acc)}
+.stg-ticker-label{font-weight:600;letter-spacing:.01em;font-size:calc(var(--u)*1.2);color:var(--acc)}
 .stg-ticker-time{color:var(--mute)}
-.stg-ticker-title{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.stg-ticker-title{font-weight:600;white-space:nowrap;overflow:hidden;line-height:1.35;padding-bottom:.08em;text-overflow:ellipsis;min-width:0}
 
 .stg-break{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:calc(var(--u)*5);align-items:stretch}
 .stg-break-main{display:flex;flex-direction:column;justify-content:center;gap:calc(var(--u)*1.6)}
@@ -1364,7 +1478,7 @@ const CSS = `
 .stg-center .stg-label{margin-bottom:calc(var(--u)*1.4)}
 .stg-names{display:flex;flex-wrap:wrap;gap:0 calc(var(--u)*2.6);font-size:calc(var(--u)*6)}
 .stg-names.is-many{font-size:calc(var(--u)*3.8)}
-.stg-names em{font-style:normal;font-weight:400;font-size:calc(var(--u)*.9);letter-spacing:.22em;text-transform:uppercase;color:var(--acc);margin-left:calc(var(--u)*.8);vertical-align:super}
+.stg-names em{font-style:normal;font-weight:400;font-size:calc(var(--u)*1.2);letter-spacing:.01em;color:var(--acc);margin-left:calc(var(--u)*.8);vertical-align:super}
 .stg-center .stg-ticker{margin-top:auto}
 
 .stg-pause{position:absolute;inset:0;z-index:6;background:var(--bg);padding:calc(var(--u)*11.5) calc(var(--u)*5) calc(var(--u)*4.4);animation:stg-in .5s ease both}
@@ -1372,16 +1486,16 @@ const CSS = `
 .stg-start{position:absolute;inset:0;z-index:11;background:var(--bg);display:flex;flex-direction:column;justify-content:center;gap:calc(var(--u)*1.8);padding:0 calc(var(--u)*5);cursor:default}
 .stg-start-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:calc(var(--u)*1.2);max-width:calc(var(--u)*90)}
 .stg-start-group{display:flex;flex-direction:column;gap:calc(var(--u)*.8)}
-.stg-start-caption{font-size:calc(var(--u)*.9);letter-spacing:.26em;text-transform:uppercase;color:var(--mute)}
+.stg-start-caption{font-weight:600;font-size:calc(var(--u)*1.2);letter-spacing:.01em;color:var(--mute)}
 .stg-start-options a{all:unset;cursor:pointer;display:flex;flex-direction:column;gap:calc(var(--u)*.5);padding:calc(var(--u)*1.6);border:1px solid var(--line);border-radius:calc(var(--u)*.5);color:var(--ink)}
 .stg-start-options a strong{font-size:calc(var(--u)*1.6)}
-.stg-start-options a small{font-size:calc(var(--u)*1);color:var(--mute)}
+.stg-start-options a small{font-size:calc(var(--u)*1.2);color:var(--mute)}
 .stg-start-options a.is-on{border-color:var(--acc);box-shadow:inset 0 0 0 1px var(--acc)}
 .stg-start-options button[data-dad].is-on{border-color:#8fb4ff;box-shadow:inset 0 0 0 1px #8fb4ff}
 .stg-start-go[disabled]{opacity:.35;cursor:default}
 .stg-start-options button,.stg-start-go{all:unset;cursor:pointer;display:flex;flex-direction:column;gap:calc(var(--u)*.5);padding:calc(var(--u)*1.6);border:1px solid var(--line);border-radius:calc(var(--u)*.5);color:var(--ink)}
 .stg-start-options button strong{font-size:calc(var(--u)*1.6)}
-.stg-start-options button small{font-size:calc(var(--u)*1);color:var(--mute)}
+.stg-start-options button small{font-size:calc(var(--u)*1.2);color:var(--mute)}
 .stg-start-options button.is-on{border-color:var(--acc);box-shadow:inset 0 0 0 1px var(--acc)}
 .stg-start-options button:focus-visible,.stg-start-go:focus-visible{outline:2px solid var(--acc);outline-offset:3px}
 .stg-start-go{align-self:flex-start;background:var(--acc);color:#0a090c;font-weight:800;font-size:calc(var(--u)*1.3);padding:calc(var(--u)*1.1) calc(var(--u)*2.2);border:0}
@@ -1391,7 +1505,7 @@ const CSS = `
 @keyframes stg-intro-out{to{opacity:0}}
 .stg-intro-content{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;gap:calc(var(--u)*1.6);padding:0 calc(var(--u)*12);max-width:calc(var(--u)*90);animation:stg-intro-content-out .9s cubic-bezier(.6,0,.4,1) ${INTRO_MS - 1600}ms forwards}
 @keyframes stg-intro-content-out{to{opacity:0;transform:scale(1.06)}}
-.stg-intro-eyebrow{letter-spacing:.32em;text-transform:uppercase;font-size:calc(var(--u)*.95);color:rgba(255,255,255,.75);animation:stg-rise .8s cubic-bezier(.2,.7,.1,1) 3s both}
+.stg-intro-eyebrow{font-weight:600;letter-spacing:.01em;font-size:calc(var(--u)*1.35);color:rgba(255,255,255,.75);animation:stg-rise .8s cubic-bezier(.2,.7,.1,1) 3s both}
 .stg-intro-eyebrow b{font-weight:400;color:var(--acc);margin:0 .6em}
 .stg-intro-faces{display:flex;gap:calc(var(--u)*1.2);justify-content:center}
 .stg-intro-faces figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*.6);animation:stg-rise .9s cubic-bezier(.2,.8,.2,1) both}
@@ -1399,9 +1513,9 @@ const CSS = `
 .stg-intro-faces.is-solo .stg-portrait{width:calc(var(--u)*16);height:calc(var(--u)*16)}
 .stg-intro-faces figcaption{display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*.3);min-height:calc(var(--u)*1.2)}
 .stg-intro-faces .stg-tag{align-self:center;margin:0}
-.stg-intro-cap{font-size:calc(var(--u)*1.05);font-weight:600;color:rgba(255,255,255,.85);max-width:calc(var(--u)*10);line-height:1.2}
-.stg-intro-mask{display:block;overflow:hidden;padding-bottom:.08em}
-.stg-intro-name{display:block;font-weight:800;font-size:calc(var(--u)*5.2);line-height:1.04;letter-spacing:-.025em;color:#fff;text-wrap:balance;transform:translateY(110%);animation:stg-up 1s cubic-bezier(.2,.8,.1,1) 3.45s forwards}
+.stg-intro-cap{font-size:calc(var(--u)*1.4);font-weight:700;color:#fff;max-width:calc(var(--u)*16);line-height:1.25}
+.stg-intro-mask{display:block;overflow:hidden;padding-bottom:.28em;margin-bottom:-.2em}
+.stg-intro-name{display:block;font-weight:800;font-size:calc(var(--u)*5.2);line-height:1.1;letter-spacing:-.025em;color:var(--acc);text-wrap:balance;transform:translateY(110%);animation:stg-up 1s cubic-bezier(.2,.8,.1,1) 3.45s forwards}
 @keyframes stg-up{to{transform:none}}
 .stg-intro-mark{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;perspective:calc(var(--u)*90);pointer-events:none;z-index:1}
 .stg-intro-mark-out{position:relative;transform-style:preserve-3d;animation:stg-mark-out .55s cubic-bezier(.55,0,.35,1) 2.65s forwards}
@@ -1414,7 +1528,7 @@ const CSS = `
 @keyframes stg-mark-out{to{opacity:0;transform:translateZ(calc(var(--u)*40))}}
 @keyframes stg-shine{to{background-position:-20% 0}}
 @keyframes stg-floor{to{transform:scaleX(1)}}
-.stg-intro-title{font-size:calc(var(--u)*1.15);letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.7);max-width:calc(var(--u)*72);line-height:1.5;text-wrap:balance;animation:stg-rise 1s cubic-bezier(.2,.7,.1,1) 3.9s both}
+.stg-intro-title{font-weight:600;font-size:calc(var(--u)*1.7);letter-spacing:.01em;color:rgba(255,255,255,.7);max-width:calc(var(--u)*72);line-height:1.5;text-wrap:balance;animation:stg-rise 1s cubic-bezier(.2,.7,.1,1) 3.9s both}
 @keyframes stg-rise{from{opacity:0;transform:translateY(calc(var(--u)*1))}to{opacity:1;transform:none}}
 
 .stg-deck{position:absolute;inset:0;z-index:4;background:#000;display:flex;align-items:center;justify-content:center}
@@ -1424,10 +1538,26 @@ const CSS = `
 
 .stg-panel{position:absolute;left:50%;bottom:calc(var(--u)*1.6);transform:translate(-50%,calc(var(--u)*6));opacity:0;transition:all .3s ease;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;padding:10px 12px;border-radius:12px;background:rgba(18,17,22,.94);border:1px solid rgba(255,255,255,.14);z-index:10;max-width:94vw}
 .stg-panel.is-open{opacity:1;transform:translate(-50%,0)}
-.stg-panel button{font-family:inherit;font-size:13px;font-weight:600;line-height:1;color:#fff;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);border-radius:8px;padding:9px 12px;cursor:pointer}
+.stg-panel button{font-family:inherit;font-size:14px;font-weight:600;line-height:1;color:#fff;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);border-radius:8px;padding:9px 12px;cursor:pointer}
 .stg-panel button:hover{background:rgba(255,255,255,.15)}
 .stg-panel button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
-.stg-panel-state{align-self:center;font-size:12px;font-weight:700;line-height:1;letter-spacing:.08em;text-transform:uppercase;color:var(--acc);padding:0 6px}
-.stg-badge{position:absolute;right:calc(var(--u)*5);bottom:calc(var(--u)*1.1);font-size:10px;font-weight:600;line-height:1;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.32);z-index:3}
+.stg-panel-state{align-self:center;font-size:14px;font-weight:700;line-height:1;letter-spacing:.08em;text-transform:uppercase;color:var(--acc);padding:0 6px}
+.stg-badge{position:absolute;right:calc(var(--u)*5);bottom:calc(var(--u)*1.1);font-size:14px;font-weight:600;line-height:1;letter-spacing:.01em;color:rgba(255,255,255,.32);z-index:3}
+.stg-sparkles{position:absolute;inset:0;pointer-events:none}
+.stg-sparkles svg{position:absolute;width:calc(var(--u)*var(--s));height:calc(var(--u)*var(--s));translate:-50% -50%;fill:#fff;opacity:0;will-change:transform,opacity;animation:stg-twinkle 2.4s ease-in-out both}
+.stg-sparkles svg:nth-child(odd){fill:var(--acc)}
+@keyframes stg-twinkle{0%{opacity:0;transform:scale(.2) rotate(-30deg)}35%{opacity:.95;transform:scale(1) rotate(0)}100%{opacity:0;transform:scale(.4) rotate(25deg)}}
+/* no tells: no corner brackets, blinking dots, dividers or crew hints on
+   the audience screen */
+.stg-label i,.stg-sep,.stg-badge{display:none}
+.stg-label{gap:0;color:var(--acc)}
+.stg-intro-shine,.stg-intro-mark-floor{display:none}
+/* the day mark rises softly and then floats, like something held up */
+.stg-intro-mark{perspective:none}
+.stg-intro-mark-in{animation:stg-mark-rise 1.3s cubic-bezier(.2,.7,.1,1) .95s both,stg-float 3.2s ease-in-out 2.25s infinite alternate}
+.stg-intro-mark-out{animation:stg-mark-fade .6s ease-in 2.7s forwards}
+@keyframes stg-mark-rise{from{opacity:0;transform:translateY(calc(var(--u)*2.4)) scale(.96)}to{opacity:1;transform:none}}
+@keyframes stg-float{to{transform:translateY(calc(var(--u)*-.8))}}
+@keyframes stg-mark-fade{to{opacity:0;transform:translateY(calc(var(--u)*-1.5))}}
 @media (prefers-reduced-motion:reduce){.stg-root *{animation-duration:.01ms!important;animation-delay:0s!important;transition:none!important}.stg-intro-name{transform:none}}
 `;
