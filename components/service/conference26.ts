@@ -206,6 +206,8 @@ type StrapiSession = {
   speakerNames?: Record<string, string> | null;
   /** The linked speaker records, which is what the admin edits. */
   speakers?: { name: string }[] | null;
+  /** The speaker's slides, uploaded on the session: PDFs and images. */
+  slides?: { url: string; mime?: string | null; name?: string | null }[] | null;
 };
 
 /** Only for a session saved before `event` existed: the two conference days
@@ -303,6 +305,15 @@ const toEntry = (s: StrapiSession): AgendaEntry | null => {
     ...(s.type ? { format: s.type } : {}),
     ...(speakers.length ? { speakers } : {}),
     ...(moderator ? { moderator } : {}),
+    ...(s.slides?.length
+      ? {
+          slides: s.slides.map((f) => ({
+            src: STRAPI + f.url,
+            mime: f.mime ?? "",
+            name: f.name ?? "",
+          })),
+        }
+      : {}),
   };
 };
 

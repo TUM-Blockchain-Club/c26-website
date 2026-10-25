@@ -28,6 +28,21 @@ export const openDeck = (sessionId: string, version: number) => {
   return docs.get(key)!;
 };
 
+/** A PDF from Strapi, opened once and kept for the session. */
+export const openRemote = (src: string) => {
+  const key = `url:${src}`;
+  if (!docs.has(key)) {
+    docs.set(
+      key,
+      (async () => {
+        const pdfjs = await loadPdfjs();
+        return pdfjs.getDocument({ url: src }).promise;
+      })().catch(() => null),
+    );
+  }
+  return docs.get(key)!;
+};
+
 const renderInto = async (
   doc: PDFDocumentProxy,
   pageNo: number,
@@ -86,6 +101,48 @@ export const DeckPage = ({
         <p className="stg-deck-error">
           The slides for this session could not be opened.
         </p>
+      ) : (
+        <canvas ref={ref} />
+      )}
+    </div>
+  );
+};
+
+/** One page of a slide that came from Strapi: a PDF page or an image. */
+export const RemotePage = ({
+  src,
+  kind,
+  page,
+}: {
+  src: string;
+  kind: "pdf" | "image";
+  page: number;
+}) => {
+  const ref = useRef<HTMLCanvasElement>(null);
+  const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    if (kind !== "pdf") return;
+    let cancelled = false;
+    (async () => {
+      const doc = await openRemote(src);
+      if (!doc) return setFailed(true);
+      if (cancelled || !ref.current) return;
+      await renderInto(doc, page, ref.current);
+      if (page < doc.numPages) void doc.getPage(page + 1);
+    })().catch(() => setFailed(true));
+    return () => {
+      cancelled = true;
+    };
+  }, [src, kind, page]);
+  return (
+    <div className="stg-deck">
+      {failed ? (
+        <p className="stg-deck-error">
+          The slides for this session could not be opened.
+        </p>
+      ) : kind === "image" ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={src} alt="" className="stg-deck-img" />
       ) : (
         <canvas ref={ref} />
       )}
