@@ -131,6 +131,13 @@ export const sponsors26: Sponsor26[] = [
     background: "light",
   },
   {
+    name: "Little Unusual GM",
+    tier: "bronze",
+    src: "/sponsors26/little-unusual-gm.png",
+    website: "https://www.littleunusual.com",
+    background: "light",
+  },
+  {
     name: "BSV Association",
     tier: "premium",
     src: "/sponsors26/bsv-association.png",
