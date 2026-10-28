@@ -43,6 +43,8 @@ import {
  */
 
 const INTRO_MS = 8200;
+/** How long a scene takes to fade out when the next one comes. */
+const LEAVE_MS = 900;
 const COUNTDOWN_FROM_MS = 30 * 60 * 1000;
 const REFRESH_MS = 60 * 1000;
 
@@ -105,6 +107,15 @@ const TitleLines = ({ title }: { title: string }) => {
 const munich = (ms: number) => {
   const d = new Date(ms + 60 * 60 * 1000);
   return `${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
+};
+
+/** Rooms whose LED wall is wider than 16:9, by its resolution. Their screen
+ * is laid out in a frame of that shape, centred, with black above and below
+ * when the computer sends a taller picture, so nothing falls off the edge.
+ * Hopper is a plain 1920 x 1080 and needs no entry. */
+const WIDE_ROOMS: Record<string, [number, number]> = {
+  nakamoto: [2880, 1026],
+  turing: [3840, 1152],
 };
 
 type CueKind = "upnext" | "intro" | "onstage" | "deck" | "thanks" | "break";
@@ -478,14 +489,22 @@ export const StageDisplay = ({
     lastCue.current = cueKey;
   }, [cueKey, cue?.kind, mounted, playIntro]);
   // Once the intro has run, hand over to "On stage" by itself.
-  useEffect(() => {
-    if (cue?.kind !== "intro" || introRun === 0) return;
-    const id = window.setTimeout(() => {
+  // The timer depends only on which intro is running: data that reloads
+  // meanwhile (slide page counts, the minute refresh) used to restart it, so
+  // the intro sometimes never handed over.
+  const handOver = useRef(() => {});
+  useLayoutEffect(() => {
+    handOver.current = () => {
       const next = cues[index + 1];
       if (next) save((s) => ({ ...s, key: next.key }));
-    }, INTRO_MS);
+    };
+  });
+  const introCue = cue?.kind === "intro" ? cue.key : null;
+  useEffect(() => {
+    if (!introCue || introRun === 0) return;
+    const id = window.setTimeout(() => handOver.current(), INTRO_MS);
     return () => window.clearTimeout(id);
-  }, [introRun, cue?.kind, cues, index, save]);
+  }, [introRun, introCue]);
 
   // ---------------------------------------------------------- controls
   const go = useCallback(
@@ -653,7 +672,9 @@ export const StageDisplay = ({
   return (
     <div
       ref={rootRef}
-      className={`stg-root ${introActive ? "is-intro" : ""}`}
+      className={`stg-root ${introActive ? "is-intro" : ""} ${
+        WIDE_ROOMS[roomSlug] ? "is-wide" : ""
+      }`}
       data-brand={event}
       onMouseMove={showPanel}
       style={
@@ -664,6 +685,9 @@ export const StageDisplay = ({
           "--glowA": brand.glowA,
           "--glowB": brand.glowB,
           "--acc": brand.accent,
+          ...(WIDE_ROOMS[roomSlug] && {
+            "--r": WIDE_ROOMS[roomSlug][0] / WIDE_ROOMS[roomSlug][1],
+          }),
         } as React.CSSProperties
       }
     >
@@ -697,31 +721,45 @@ export const StageDisplay = ({
       </header>
 
       <main className="stg-main" ref={mainRef}>
-        {!cue && <Wrap key="wrap" />}
-        {cue?.kind === "upnext" && (
-          <UpNext
-            key={cue.key}
-            slot={cue.slot}
-            after={nextTalk(index + 3)}
-            now={now}
-          />
-        )}
-        {(cue?.kind === "onstage" ||
-          (cue?.kind === "intro" && !introActive)) && (
-          <NowOnStage
-            key={cue.slot.id}
-            slot={cue.slot}
-            next={upcoming}
-            now={now}
-            manual
-          />
-        )}
-        {cue?.kind === "thanks" && (
-          <Thanks key={cue.key} slot={cue.slot} next={upcoming} />
-        )}
-        {cue?.kind === "break" && (
-          <Break key={cue.key} slot={cue.slot} next={upcoming} now={now} />
-        )}
+        <SceneFader
+          sceneKey={
+            !cue
+              ? "wrap"
+              : cue.kind === "onstage" || (cue.kind === "intro" && !introActive)
+                ? `on-${cue.slot.id}`
+                : cue.kind === "upnext" ||
+                    cue.kind === "thanks" ||
+                    cue.kind === "break"
+                  ? cue.key
+                  : "none"
+          }
+        >
+          {!cue && <Wrap key="wrap" />}
+          {cue?.kind === "upnext" && (
+            <UpNext
+              key={cue.key}
+              slot={cue.slot}
+              after={nextTalk(index + 3)}
+              now={now}
+            />
+          )}
+          {(cue?.kind === "onstage" ||
+            (cue?.kind === "intro" && !introActive)) && (
+            <NowOnStage
+              key={cue.slot.id}
+              slot={cue.slot}
+              next={upcoming}
+              now={now}
+              manual
+            />
+          )}
+          {cue?.kind === "thanks" && (
+            <Thanks key={cue.key} slot={cue.slot} next={upcoming} />
+          )}
+          {cue?.kind === "break" && (
+            <Break key={cue.key} slot={cue.slot} next={upcoming} now={now} />
+          )}
+        </SceneFader>
       </main>
 
       {cue?.kind === "deck" && cue.deck?.from === "local" && (
@@ -881,6 +919,12 @@ const ORBITS: [number, number, number, number, number, boolean][] = [
   [260, -160, 760, 112, 47, true],
 ];
 
+/** The conference ring, scaled down from the 3264 px hero artwork: the full
+ * size cost a long first decode on stage laptops. The soft copy is only ever
+ * shown blurred, so a small file is enough. */
+const RING = "/stage/ring.png";
+const RING_SOFT = "/stage/ring-soft.png";
+
 const Backdrop = ({ dad }: { dad: boolean }) => (
   <div className="stg-bg" aria-hidden>
     {/* The conference ring: as designed on the conference days; on the
@@ -895,7 +939,7 @@ const Backdrop = ({ dad }: { dad: boolean }) => (
             {["", " stg-ring-soft"].map((soft) => (
               <div key={soft} className={`stg-ring-art${soft}`}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/hero/mask-group-1.png" alt="" />
+                <img src={soft ? RING_SOFT : RING} alt="" />
                 <i />
               </div>
             ))}
@@ -904,10 +948,10 @@ const Backdrop = ({ dad }: { dad: boolean }) => (
           <>
             {/* The conference ring as designed: yellow, red and purple. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/hero/mask-group-1.png" alt="" className="stg-ring-art" />
+            <img src={RING} alt="" className="stg-ring-art" />
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/hero/mask-group-1.png"
+              src={RING_SOFT}
               alt=""
               className="stg-ring-art stg-ring-soft"
             />
@@ -979,7 +1023,7 @@ const People = ({
         <li
           key={p.name}
           className={p.moderator ? "is-mod" : undefined}
-          style={{ animationDelay: `${0.25 + i * 0.07}s` }}
+          style={{ animationDelay: `${0.75 + i * 0.12}s` }}
         >
           <Portrait p={p} />
           <span className="stg-person-text">
@@ -1180,6 +1224,66 @@ const Break = ({
   </section>
 );
 
+/** Cross-fades the scenes in the middle of the screen: the old one stays
+ * mounted and fades out slowly while the new one fades in after it, so
+ * nothing pops. The leaving scene keeps its DOM node (same key, placed after
+ * the new one), which keeps its animations from restarting. */
+const SceneFader = ({
+  sceneKey,
+  children,
+}: {
+  sceneKey: string;
+  children: React.ReactNode;
+}) => {
+  const [leaving, setLeaving] = useState<
+    { key: string; node: React.ReactNode; at: number }[]
+  >([]);
+  // The switch is noticed while rendering (not in an effect afterwards), so
+  // the old scene is never unmounted, not even for one frame.
+  const [shownKey, setShownKey] = useState(sceneKey);
+  const [lastNode, setLastNode] = useState<React.ReactNode>(children);
+  if (shownKey !== sceneKey) {
+    setShownKey(sceneKey);
+    setLeaving((l) => [
+      ...l.filter((x) => x.key !== shownKey && x.key !== sceneKey),
+      ...(shownKey === "none"
+        ? []
+        : [{ key: shownKey, node: lastNode, at: Date.now() }]),
+    ]);
+  }
+  // Remember the current scene's latest content for when it leaves.
+  useLayoutEffect(() => {
+    setLastNode(() => children);
+  }, [children]);
+  useEffect(() => {
+    if (!leaving.length) return;
+    const id = window.setTimeout(
+      () => setLeaving((l) => l.filter((x) => Date.now() - x.at < LEAVE_MS)),
+      LEAVE_MS + 50,
+    );
+    return () => window.clearTimeout(id);
+  }, [leaving]);
+  // One keyed list, so the scene that starts leaving keeps its DOM node.
+  return (
+    <>
+      {[
+        { key: sceneKey, node: children, out: false },
+        ...leaving
+          .filter((l) => l.key !== sceneKey)
+          .map((l) => ({ ...l, out: true })),
+      ].map((l) => (
+        <div
+          key={l.key}
+          className={`stg-layer${l.out ? " is-leaving" : ""}`}
+          aria-hidden={l.out || undefined}
+        >
+          {l.node}
+        </div>
+      ))}
+    </>
+  );
+};
+
 const Wrap = ({ nextDay }: { nextDay?: StageSlot } = {}) => (
   <section className="stg-scene stg-center">
     <Label>Thank you</Label>
@@ -1199,14 +1303,18 @@ const Thanks = ({ slot, next }: { slot: StageSlot; next?: StageSlot }) => (
       className={`stg-title stg-names ${slot.people.length > 3 ? "is-many" : ""}`}
     >
       {slot.people.length
-        ? slot.people.map((p) => (
-            <span key={p.name}>
-              {p.name}
-              {p.moderator && <em>Moderator</em>}
-            </span>
-          ))
+        ? slot.people
+            .filter((p) => !p.moderator)
+            .map((p) => <span key={p.name}>{p.name}</span>)
         : slot.title}
     </h1>
+    {slot.people
+      .filter((p) => p.moderator)
+      .map((p) => (
+        <p key={p.name} className="stg-thanks-mod">
+          <span className="stg-tag">Moderator</span> {p.name}
+        </p>
+      ))}
     {slot.people.length > 0 && (
       <p className="stg-lede">
         <TitleLines title={slot.title} />
@@ -1347,24 +1455,28 @@ const Intro = ({
 /* -------------------------------------------------------------------- css */
 
 const CSS = `
-.stg-root{--u:min(1vw,1.7778vh);--bg:#0a090c;--ink:#f5f3f7;--mute:rgba(245,243,247,.8);--line:rgba(245,243,247,.14);position:fixed;inset:0;z-index:20000;background:var(--bg);color:var(--ink);overflow:hidden;cursor:none;font-feature-settings:"tnum" 1,"ss01" 1}
+.stg-root{--fw:100vw;--u:min(1vw,1.7778vh);--bg:#0a090c;--ink:#f5f3f7;--mute:rgba(245,243,247,.8);--line:rgba(245,243,247,.14);position:fixed;inset:0;z-index:20000;background:var(--bg);color:var(--ink);overflow:hidden;cursor:none;font-feature-settings:"tnum" 1,"ss01" 1}
+.stg-root.is-wide{--fw:min(100vw,calc(var(--r)*100vh));--u:min(calc(1.7778vw/var(--r)),1.7778vh);inset:auto;left:50%;top:50%;translate:-50% -50%;width:var(--fw);height:min(calc(100vw/var(--r)),100vh);box-shadow:0 0 0 100vmax #000}
 .stg-root:hover{cursor:default}
 .stg-bg{position:absolute;inset:0;pointer-events:none}
 .stg-ring{position:absolute;right:calc(var(--u)*-34);top:calc(50% - var(--u)*60);width:calc(var(--u)*120);aspect-ratio:3264/4096;transform-origin:51.1% 46.58%;opacity:.32;will-change:transform,opacity;transition:translate 1.4s cubic-bezier(.65,0,.25,1),scale 1.4s cubic-bezier(.65,0,.25,1),opacity 1.4s ease}
 .stg-ring-spin{position:absolute;inset:0;transform-origin:51.1% 46.58%;will-change:transform;animation:stg-spin 240s linear infinite}
-.stg-ring-art{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;mix-blend-mode:screen;filter:saturate(.9)}
+.stg-ring-art{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+/* the ring's slow turn pauses for the intro, so the soft copy is drawn once
+   instead of every frame; nobody sees a 240 s rotation stop for 8 s */
+.stg-root.is-intro .stg-ring-spin{animation-play-state:paused}
 .stg-ring.is-dad{opacity:.4}
 .stg-ring.is-dad .stg-ring-art{mix-blend-mode:normal;filter:none;isolation:isolate}
 .stg-ring.is-dad .stg-ring-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;filter:grayscale(1) brightness(1.05) contrast(1.2)}
-.stg-ring.is-dad .stg-ring-art i{position:absolute;inset:0;background:conic-gradient(from 160deg at 51.1% 46.58%,#0b1a6b,#2340d6 14%,#3f86ff 30%,#3fb8ff 42%,#5d8dff 52%,#5a63f2 66%,#1d2fa8 80%,#3f86ff 90%,#0b1a6b);mix-blend-mode:color;-webkit-mask:url(/hero/mask-group-1.png) center/contain no-repeat;mask:url(/hero/mask-group-1.png) center/contain no-repeat}
-.stg-ring-soft{filter:blur(calc(var(--u)*1.1)) saturate(.9);opacity:0;transition:opacity 1.6s ease}
+.stg-ring.is-dad .stg-ring-art i{position:absolute;inset:0;background:conic-gradient(from 160deg at 51.1% 46.58%,#0b1a6b,#2340d6 14%,#3f86ff 30%,#3fb8ff 42%,#5d8dff 52%,#5a63f2 66%,#1d2fa8 80%,#3f86ff 90%,#0b1a6b);mix-blend-mode:color;-webkit-mask:url(/stage/ring.png) center/contain no-repeat;mask:url(/stage/ring.png) center/contain no-repeat}
+.stg-ring-soft{filter:blur(calc(var(--u)*1.1));opacity:.001;transition:opacity 1.6s ease}
 .stg-ring.is-dad .stg-ring-soft{filter:blur(calc(var(--u)*1.1))}
 .stg-ring.is-dad .stg-ring-soft img{filter:grayscale(1) brightness(1.05) contrast(1.2)}
 /* intro: the ring comes to the middle of the screen, grows and softens */
-.stg-root.is-intro .stg-ring{translate:calc(var(--u)*24.68 - 50vw) calc(var(--u)*-10.15);scale:1.4;opacity:.42}
+.stg-root.is-intro .stg-ring{translate:calc(var(--u)*24.68 - var(--fw)/2) calc(var(--u)*-10.15);scale:1.4;opacity:.42}
 .stg-root.is-intro .stg-ring.is-dad{opacity:.5}
 .stg-root.is-intro .stg-ring-soft{opacity:1;transition-delay:.5s}
-.stg-root.is-intro .stg-ring-art:not(.stg-ring-soft){opacity:0;transition:opacity 1.6s ease .5s}
+.stg-root.is-intro .stg-ring-art:not(.stg-ring-soft){opacity:.001;transition:opacity 1.6s ease .5s}
 .stg-ring-art:not(.stg-ring-soft){transition:opacity 1.2s ease}
 .stg-top,.stg-main,.stg-orbits{transition:opacity .6s ease}
 .stg-root.is-intro .stg-top,.stg-root.is-intro .stg-main,.stg-root.is-intro .stg-orbits{opacity:0}
@@ -1409,8 +1521,12 @@ const CSS = `
 .stg-clock{font-size:calc(var(--u)*1.9);letter-spacing:.04em}
 
 .stg-main{position:absolute;left:calc(var(--u)*5);right:calc(var(--u)*5);top:calc(var(--u)*11.5);bottom:calc(var(--u)*4.4);z-index:2}
-.stg-scene{height:100%;display:flex;flex-direction:column;animation:stg-in .7s cubic-bezier(.2,.7,.1,1) both}
-@keyframes stg-in{from{opacity:0;transform:translateY(calc(var(--u)*.8))}to{opacity:1;transform:none}}
+.stg-scene{height:100%;display:flex;flex-direction:column;animation:stg-in 1.2s cubic-bezier(.22,.61,.36,1) .45s both}
+@keyframes stg-in{from{opacity:0;transform:translateY(calc(var(--u)*.5))}to{opacity:1;transform:none}}
+@keyframes stg-fade{from{opacity:0}}
+@keyframes stg-layer-out{to{opacity:0}}
+.stg-layer{position:absolute;inset:0}
+.stg-layer.is-leaving{pointer-events:none;animation:stg-layer-out .9s cubic-bezier(.4,0,.2,1) forwards}
 
 .stg-head{display:flex;flex-direction:column;gap:calc(var(--u)*1.1);max-width:calc(var(--u)*82);margin-bottom:calc(var(--u)*2.4)}
 .stg-head-row{display:flex;align-items:center;gap:calc(var(--u)*2.4);flex-wrap:wrap}
@@ -1428,7 +1544,7 @@ const CSS = `
 
 /* people */
 .stg-people{list-style:none;margin:auto 0 0;padding:0;display:grid;gap:calc(var(--u)*1.6)}
-.stg-people li{display:flex;gap:calc(var(--u)*1.6);align-items:center;min-width:0;animation:stg-in .6s cubic-bezier(.2,.7,.1,1) both}
+.stg-people li{display:flex;gap:calc(var(--u)*1.6);align-items:center;min-width:0;animation:stg-in 1.1s cubic-bezier(.22,.61,.36,1) both}
 .stg-portrait{display:block;flex:none;position:relative;border-radius:50%;aspect-ratio:1;min-height:0;overflow:hidden;box-sizing:border-box;padding:calc(var(--u)*.28);border:calc(var(--u)*.32) solid var(--acc);background:var(--bg)}
 /* the photo is laid over the circle rather than sizing it, so a portrait-
    format picture can never stretch the ring into an oval */
@@ -1481,8 +1597,8 @@ const CSS = `
 .stg-names em{font-style:normal;font-weight:400;font-size:calc(var(--u)*1.2);letter-spacing:.01em;color:var(--acc);margin-left:calc(var(--u)*.8);vertical-align:super}
 .stg-center .stg-ticker{margin-top:auto}
 
-.stg-pause{position:absolute;inset:0;z-index:6;background:var(--bg);padding:calc(var(--u)*11.5) calc(var(--u)*5) calc(var(--u)*4.4);animation:stg-in .5s ease both}
-.stg-black{position:absolute;inset:0;z-index:9;background:#000}
+.stg-pause{position:absolute;inset:0;z-index:6;background:var(--bg);padding:calc(var(--u)*11.5) calc(var(--u)*5) calc(var(--u)*4.4);animation:stg-fade .9s ease both}
+.stg-black{position:absolute;inset:0;z-index:9;background:#000;animation:stg-fade .9s ease both}
 .stg-start{position:absolute;inset:0;z-index:11;background:var(--bg);display:flex;flex-direction:column;justify-content:center;gap:calc(var(--u)*1.8);padding:0 calc(var(--u)*5);cursor:default}
 .stg-start-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:calc(var(--u)*1.2);max-width:calc(var(--u)*90)}
 .stg-start-group{display:flex;flex-direction:column;gap:calc(var(--u)*.8)}
@@ -1514,6 +1630,8 @@ const CSS = `
 .stg-intro-faces figcaption{display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*.3);min-height:calc(var(--u)*1.2)}
 .stg-intro-faces .stg-tag{align-self:center;margin:0}
 .stg-intro-cap{font-size:calc(var(--u)*1.4);font-weight:700;color:#fff;max-width:calc(var(--u)*16);line-height:1.25}
+.stg-thanks-mod{margin:calc(var(--u)*1.4) 0 0;display:flex;align-items:center;gap:calc(var(--u)*1);font-size:calc(var(--u)*1.9);font-weight:700}
+.stg-thanks-mod .stg-tag{align-self:center}
 .stg-intro-mask{display:block;overflow:hidden;padding-bottom:.28em;margin-bottom:-.2em}
 .stg-intro-name{display:block;font-weight:800;font-size:calc(var(--u)*5.2);line-height:1.1;letter-spacing:-.025em;color:var(--acc);text-wrap:balance;transform:translateY(110%);animation:stg-up 1s cubic-bezier(.2,.8,.1,1) 3.45s forwards}
 @keyframes stg-up{to{transform:none}}
@@ -1531,7 +1649,7 @@ const CSS = `
 .stg-intro-title{font-weight:600;font-size:calc(var(--u)*1.7);letter-spacing:.01em;color:rgba(255,255,255,.7);max-width:calc(var(--u)*72);line-height:1.5;text-wrap:balance;animation:stg-rise 1s cubic-bezier(.2,.7,.1,1) 3.9s both}
 @keyframes stg-rise{from{opacity:0;transform:translateY(calc(var(--u)*1))}to{opacity:1;transform:none}}
 
-.stg-deck{position:absolute;inset:0;z-index:4;background:#000;display:flex;align-items:center;justify-content:center}
+.stg-deck{position:absolute;inset:0;z-index:4;background:#000;display:flex;align-items:center;justify-content:center;animation:stg-fade .8s ease both}
 .stg-deck canvas{display:block}
 .stg-deck-img{display:block;max-width:100%;max-height:100%;object-fit:contain}
 .stg-deck-error{font-size:calc(var(--u)*1.6);color:rgba(255,255,255,.7)}

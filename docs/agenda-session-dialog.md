@@ -66,3 +66,15 @@ the speakers in one column with their full role and company; only on screens
 shorter than 640px do panels of four or five switch to two columns, cutting
 roles at two lines. A phone held in landscape is too short for any panel, so
 the sheet scrolls there instead of cutting content off.
+
+## Slides
+
+Files uploaded to a session's `slides` field in Strapi show in its dialog
+under **Slides** (`components/agenda/SessionSlides.tsx`), and the agenda
+card gets a small "Slides" chip. They come with the rest of the agenda, so
+saving the session in Strapi is all it takes: the webhook refreshes the page,
+or the 60-second cache does. Each file opens in a new tab: Strapi forbids
+framing its files, so they are linked rather than embedded. A file named
+`slides-pdf-<hash of the original>.pdf` in the media library stands in for
+a PowerPoint, Keynote or ODP file of that hash, so the browser can open it.
+A media upload (`file` in the webhook) refreshes the agenda too.

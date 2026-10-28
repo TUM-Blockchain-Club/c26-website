@@ -1,7 +1,11 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { ImageResponse } from "next/og";
-import { dayLabel, peopleOf, timeRange } from "@/components/agenda/sessionMeta";
+import {
+  dayLabel,
+  peopleOf,
+  sessionTime,
+} from "@/components/agenda/sessionMeta";
 import {
   getAgendaTalks,
   getSpeakers,
@@ -193,7 +197,9 @@ export default async function Image({
           color: accent.color,
         }}
       >
-        {`${dayLabel(talk.day)} · ${timeRange(talk.time, talk.duration)} · ${talk.stage}`}
+        {[dayLabel(talk.day), sessionTime(talk), talk.stage]
+          .filter(Boolean)
+          .join(" · ")}
       </div>
 
       <div

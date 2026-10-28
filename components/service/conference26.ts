@@ -198,8 +198,12 @@ type StrapiSession = {
   description?: string | null;
   type: string | null;
   startTime: string;
-  endTime: string;
-  room: string;
+  /** Missing where the programme gives only a start time. */
+  endTime: string | null;
+  /** Missing where the programme names no room. */
+  room: string | null;
+  /** Planned slot whose time is not confirmed yet. */
+  timeTba?: boolean | null;
   track: string | null;
   /** The names as the organisers' export spells them, kept for anyone who
    * has no speaker card of their own. */
@@ -207,7 +211,16 @@ type StrapiSession = {
   /** The linked speaker records, which is what the admin edits. */
   speakers?: { name: string }[] | null;
   /** The speaker's slides, uploaded on the session: PDFs and images. */
-  slides?: { url: string; mime?: string | null; name?: string | null }[] | null;
+  slides?:
+    | {
+        url: string;
+        mime?: string | null;
+        name?: string | null;
+        hash?: string | null;
+        /** kB, as Strapi reports it. */
+        size?: number | null;
+      }[]
+    | null;
 };
 
 /** Only for a session saved before `event` existed: the two conference days
@@ -242,24 +255,41 @@ const berlin = (iso: string) => {
 };
 
 const toEntry = (s: StrapiSession): AgendaEntry | null => {
-  if (!s.startTime || !s.endTime || !s.room) return null;
+  if (!s.startTime) return null;
   const { day, time } = berlin(s.startTime);
-  const duration = Math.round(
-    (Date.parse(s.endTime) - Date.parse(s.startTime)) / 60000,
-  );
+  // The Hackathon gives some entries a start time only; they show it alone.
+  const duration = s.endTime
+    ? Math.round((Date.parse(s.endTime) - Date.parse(s.startTime)) / 60000)
+    : undefined;
+  const stage = s.room ?? "";
   const common = { event: s.event ?? eventOfDay(day), day };
   // A field cleared in the admin comes back as "" or whitespace rather than
   // null, and should render as no abstract at all.
   const description =
     typeof s.description === "string" ? s.description.trim() : "";
 
+  // A milestone ("Hackathon Starts"), or a meal given only a start time, is
+  // one quiet line in the feed, like a break, but without a length.
+  if (
+    s.type === "Milestone" ||
+    (s.type === "Break" && duration === undefined)
+  ) {
+    return {
+      ...common,
+      kind: "milestone",
+      time,
+      ...(stage ? { stage } : {}),
+      label: s.title ?? "",
+    };
+  }
+
   if (s.type === "Break") {
     return {
       ...common,
       kind: "break",
       time,
-      duration,
-      stage: s.room,
+      duration: duration ?? 0,
+      stage,
       label: s.title ?? "Break",
     };
   }
@@ -297,8 +327,9 @@ const toEntry = (s: StrapiSession): AgendaEntry | null => {
     kind: "talk",
     id: s.sessionId || s.documentId,
     time,
-    duration,
-    stage: s.room,
+    ...(duration !== undefined ? { duration } : {}),
+    ...(s.timeTba ? { timeTba: true } : {}),
+    stage,
     ...(s.track ? { track: s.track as AgendaTrackName } : {}),
     ...(s.title ? { title: s.title } : {}),
     ...(description ? { description } : {}),
@@ -311,6 +342,8 @@ const toEntry = (s: StrapiSession): AgendaEntry | null => {
             src: STRAPI + f.url,
             mime: f.mime ?? "",
             name: f.name ?? "",
+            hash: f.hash ?? "",
+            ...(f.size ? { size: f.size } : {}),
           })),
         }
       : {}),
@@ -318,16 +351,34 @@ const toEntry = (s: StrapiSession): AgendaEntry | null => {
 };
 
 export const getAgendaEntries = async (): Promise<AgendaEntry[]> => {
-  const rows = await fetchAll<StrapiSession>(
-    "agenda-26s",
-    "sort=startTime:asc&populate=*",
-    TAGS.agenda,
-  );
+  const [rows, converted] = await Promise.all([
+    fetchAll<StrapiSession>(
+      "agenda-26s",
+      "sort=startTime:asc&populate=*",
+      TAGS.agenda,
+    ),
+    getConvertedSlides(),
+  ]);
   if (!rows || rows.length === 0) {
     announce("agenda", "code", fallbackAgenda.length);
     return fallbackAgenda;
   }
-  const entries = rows.map(toEntry).filter((e): e is AgendaEntry => e !== null);
+  const entries = rows
+    .map(toEntry)
+    .filter((e): e is AgendaEntry => e !== null)
+    .map((e) =>
+      // A PowerPoint, Keynote or ODP file gets the PDF made of it, so the
+      // site can open it in the browser.
+      e.kind === "talk" && e.slides
+        ? {
+            ...e,
+            slides: e.slides.map((f) => {
+              const pdf = f.hash ? converted.get(f.hash) : undefined;
+              return pdf ? { ...f, pdf } : f;
+            }),
+          }
+        : e,
+    );
   if (entries.length === 0) {
     console.error("[strapi] agenda: every session was unusable");
     announce("agenda", "code", fallbackAgenda.length);
@@ -338,6 +389,35 @@ export const getAgendaEntries = async (): Promise<AgendaEntry[]> => {
 };
 
 /** Every talk of the live programme, in order. */
+/**
+ * PDFs made from uploaded PowerPoint, Keynote or ODP slides by the
+ * convert-slides workflow (`scripts/convert_slides.py`). Each is named
+ * `slides-pdf-<hash of the original>.pdf`; returns hash -> PDF URL.
+ */
+export const getConvertedSlides = async (): Promise<Map<string, string>> => {
+  const token = process.env.STRAPI_API_TOKEN;
+  const out = new Map<string, string>();
+  if (!token) return out;
+  try {
+    const res = await fetch(
+      `${STRAPI}/api/upload/files?filters[name][$startsWith]=slides-pdf-&fields[0]=name&fields[1]=url`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+        next: { revalidate: REVALIDATE, tags: ["converted-slides"] },
+      },
+    );
+    if (!res.ok) return out;
+    const files: { name: string; url: string }[] = await res.json();
+    for (const f of files) {
+      const m = /^slides-pdf-(.+)\.pdf$/.exec(f.name);
+      if (m) out.set(m[1], STRAPI + f.url);
+    }
+  } catch {
+    // No converted slides: the originals are reported in the studio.
+  }
+  return out;
+};
+
 export const getAgendaTalks = async () =>
   (await getAgendaEntries()).filter(
     (e): e is Extract<AgendaEntry, { kind: "talk" }> => e.kind === "talk",

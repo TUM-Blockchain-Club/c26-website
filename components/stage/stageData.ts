@@ -1,5 +1,6 @@
 import {
   getAgendaEntries,
+  getConvertedSlides,
   getSpeakers,
   getSponsors,
 } from "@/components/service/conference26";
@@ -51,6 +52,9 @@ export type StageSlot = {
   trackSponsors?: { name: string; src: string; light: boolean }[];
   /** Slides from Strapi that the screen can show: PDFs and images. */
   slides?: { src: string; kind: "pdf" | "image"; name: string }[];
+  /** Files on the session the screen cannot show (PowerPoint, Keynote…);
+   * the studio asks for a PDF export instead. */
+  slidesSkipped?: string[];
 };
 
 /**
@@ -71,10 +75,11 @@ const clock = (ms: number) => {
 const OPEN_ENDED_MIN = 30;
 
 export const getStageSlots = async (room: StageRoom): Promise<StageSlot[]> => {
-  const [entries, speakers, sponsors] = await Promise.all([
+  const [entries, speakers, sponsors, converted] = await Promise.all([
     getAgendaEntries(),
     getSpeakers(),
     getSponsors(),
+    getConvertedSlides(),
   ]);
   const byTrack = new Map<string, StageSlot["trackSponsors"]>();
   for (const sp of sponsors) {
@@ -121,20 +126,27 @@ export const getStageSlots = async (room: StageRoom): Promise<StageSlot[]> => {
       ...(e.format ? { format: e.format } : {}),
       ...(e.track ? { track: e.track } : {}),
       ...(() => {
-        const files = (e.slides ?? []).flatMap((f) => {
+        // PDFs and images show as they are; PowerPoint, Keynote and ODP show
+        // as the PDF the convert-slides workflow made of them, in the same
+        // place in the order. Anything else is listed for the studio.
+        const files: NonNullable<StageSlot["slides"]> = [];
+        const skipped: string[] = [];
+        for (const f of e.slides ?? []) {
           const pdf = f.mime === "application/pdf" || /\.pdf$/i.test(f.name);
-          const image = f.mime.startsWith("image/");
-          return pdf || image
-            ? [
-                {
-                  src: f.src,
-                  kind: pdf ? ("pdf" as const) : ("image" as const),
-                  name: f.name,
-                },
-              ]
-            : [];
-        });
-        return files.length ? { slides: files } : {};
+          const made = f.hash ? converted.get(f.hash) : undefined;
+          if (pdf || f.mime.startsWith("image/"))
+            files.push({
+              src: f.src,
+              kind: pdf ? "pdf" : "image",
+              name: f.name,
+            });
+          else if (made) files.push({ src: made, kind: "pdf", name: f.name });
+          else skipped.push(f.name);
+        }
+        return {
+          ...(files.length ? { slides: files } : {}),
+          ...(skipped.length ? { slidesSkipped: skipped } : {}),
+        };
       })(),
       ...(e.track && byTrack.get(e.track)
         ? { trackSponsors: byTrack.get(e.track) }

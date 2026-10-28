@@ -40,6 +40,9 @@ const TAG_FOR_MODEL: Record<string, string[]> = {
   "side-event-26": [TAGS.sideEvents],
   "community-partner-26": [TAGS.partners],
   "sponsor-26": [TAGS.sponsors],
+  // A media upload, such as the PDF the convert-slides workflow makes of a
+  // PowerPoint deck.
+  file: [TAGS.agenda, "converted-slides"],
 };
 
 export async function POST(request: Request) {

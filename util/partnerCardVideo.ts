@@ -169,6 +169,13 @@ export type CardContent = {
   blurb?: string;
   /** Which day the speaker is on. Day 2 is the Digital Assets Day (blue). */
   day?: SpeakerDay;
+  /** A second speaker sharing the card, for a fireside chat or a session
+   * held by two. `photo` is loaded next to the first speaker's. */
+  second?: { name: string; job?: string; photo: string };
+  /** Replaces the eyebrow, e.g. "FIRESIDE CHAT" on a card for two. */
+  eyebrow?: string;
+  /** Time and stage on a card for two, e.g. "13:30 | Nakamoto Stage". */
+  when?: string;
 };
 
 /** How many characters each field can hold and still lay out cleanly. */
@@ -195,6 +202,9 @@ type Assets = {
   useLightChip: boolean;
   /** Whether the uploaded image has real transparency (a cut-out subject). */
   photoHasAlpha: boolean;
+  /** The second speaker's photo on a card for two, null otherwise. */
+  secondPhoto: HTMLImageElement | null;
+  secondPhotoHasAlpha: boolean;
   kind: CardConfig["kind"];
   eyebrow: string;
   hackathon: boolean;
@@ -839,7 +849,13 @@ function drawCard(
     orientation,
   );
 
-  if (a.kind === "speaker" || a.kind === "attendee") {
+  if (a.kind === "speaker" && a.secondPhoto && content.second) {
+    if (orientation === "landscape") {
+      drawDuoLandscape(ctx, dims, a, p, gradient, content);
+    } else {
+      drawDuoPortrait(ctx, dims, a, p, gradient, content);
+    }
+  } else if (a.kind === "speaker" || a.kind === "attendee") {
     if (orientation === "landscape") {
       drawPersonLandscape(ctx, dims, a, p, gradient, content);
     } else {
@@ -1330,15 +1346,19 @@ function drawSpeakerPhoto(
   box: { x: number; y: number; w: number; h: number },
   alpha: number,
   radius: number,
+  /** Draw the second speaker's photo instead, on a card for two. */
+  second = false,
 ) {
   if (alpha <= 0) return;
-  if (a.photoHasAlpha) {
+  const img = second && a.secondPhoto ? a.secondPhoto : a.partnerLogo;
+  const cutOut = second ? a.secondPhotoHasAlpha : a.photoHasAlpha;
+  if (cutOut) {
     ctx.save();
     ctx.globalAlpha = alpha;
-    drawContain(ctx, a.partnerLogo, box);
+    drawContain(ctx, img, box);
     ctx.restore();
   } else {
-    drawPhotoCover(ctx, a.partnerLogo, box, radius, alpha);
+    drawPhotoCover(ctx, img, box, radius, alpha);
   }
 }
 
@@ -1359,7 +1379,12 @@ function wrapLines(
     } else {
       lines.push(line);
       line = word;
-      if (lines.length === o.maxLines - 1) break;
+      // The last line keeps filling like the others; only a word that would
+      // start a line past maxLines is dropped.
+      if (lines.length === o.maxLines) {
+        line = "";
+        break;
+      }
     }
   }
   if (line && lines.length < o.maxLines) lines.push(line);
@@ -1375,7 +1400,7 @@ function drawParagraph(
   o: {
     size: number;
     weight: number;
-    color: string;
+    color: string | CanvasGradient;
     alpha: number;
     maxWidth: number;
     maxLines: number;
@@ -1942,6 +1967,466 @@ function drawPersonPortrait(
   }
 }
 
+/** The bottom lines of a card for two use bars between their parts. */
+const withBars = (line: string) => line.replaceAll(" · ", " | ");
+
+/**
+ * Header of a speaker card: the eyebrow top-left and the day's mark flush on
+ * the right margin, centred on the same row. Shared by both orientations
+ * of the card for two.
+ */
+function drawDuoHeader(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  a: Assets,
+  p: number,
+  gradient: CanvasGradient,
+  content: CardContent,
+  o: {
+    P: number;
+    rowY: number;
+    rule: number;
+    size: number;
+    spacing: number;
+    markGap: number;
+    markH: number;
+    maxWidth: number;
+  },
+) {
+  const day: SpeakerDay = content.day ?? "day1";
+  drawAccentRule(
+    ctx,
+    o.P,
+    o.rowY - 40,
+    o.rule,
+    gradient,
+    easeOut(phase(p, 0.08, 0.18)),
+  );
+  const eyebrowIn = easeOut(phase(p, 0.1, 0.2));
+  const eyebrowW = drawSpacedText(
+    ctx,
+    content.eyebrow ?? a.eyebrow,
+    o.P,
+    o.rowY + (1 - eyebrowIn) * 14,
+    {
+      size: o.size,
+      spacing: o.spacing,
+      color: "#ffffff",
+      alpha: eyebrowIn,
+      weight: 800,
+      font: brandFont(),
+      maxWidth: o.maxWidth,
+    },
+  );
+
+  const logoIn = easeOut(phase(p, 0.06, 0.18));
+  if (logoIn <= 0) return;
+  ctx.save();
+  ctx.globalAlpha = logoIn;
+  const mark = day === "day2" ? a.dayMark : a.confMark;
+  const markX = o.P + eyebrowW + o.markGap;
+  drawContain(
+    ctx,
+    mark,
+    {
+      x: markX,
+      y: o.rowY - 20 - o.markH / 2,
+      w: w - o.P - markX,
+      h: o.markH,
+    },
+    "right",
+  );
+  ctx.restore();
+}
+
+/**
+ * The largest size, down to `minSize`, at which all of `text` wraps into
+ * `maxLines`. wrapLines drops whatever does not fit, so a long role or title
+ * shrinks instead of losing its last words.
+ */
+function sizeToFit(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  o: {
+    size: number;
+    minSize: number;
+    weight: number;
+    maxWidth: number;
+    maxLines: number;
+  },
+): number {
+  const words = text.split(/\s+/).filter(Boolean).length;
+  for (let size = o.size; size > o.minSize; size -= 2) {
+    const lines = wrapLines(ctx, text, { ...o, size });
+    if (lines.join(" ").split(" ").length >= words) return size;
+  }
+  return o.minSize;
+}
+
+/** Short date of each day, for the bottom line of a card that names a time. */
+const DAY_DATE: Record<SpeakerDay, string> = {
+  day1: "THU, OCT 29",
+  day2: "FRI, OCT 30",
+};
+const DAY_NAME: Record<SpeakerDay, string> = {
+  day1: "FIRST CONFERENCE DAY",
+  day2: "DIGITAL ASSETS DAY",
+};
+
+/**
+ * One speaker of the pair: a round portrait inside a gradient ring with a soft
+ * glow behind it, then name and role centred beneath.
+ */
+function drawDuoPerson(
+  ctx: CanvasRenderingContext2D,
+  a: Assets,
+  p: number,
+  gradient: CanvasGradient,
+  person: { name: string; job?: string },
+  circle: { cx: number; cy: number; r: number },
+  o: {
+    index: number;
+    textWidth: number;
+    nameSize: number;
+    nameDrop: number;
+    jobSize: number;
+    jobDrop: number;
+    jobGap: number;
+  },
+) {
+  const { cx, cy, r } = circle;
+  // The second speaker follows the first a beat later.
+  const lag = o.index * 0.05;
+  const photoIn = easeOut(phase(p, 0.16 + lag, 0.34 + lag));
+  if (photoIn > 0) {
+    const y = cy + (1 - photoIn) * 24;
+
+    ctx.save();
+    ctx.globalAlpha = photoIn * 0.55;
+    const glow = ctx.createRadialGradient(cx, y, r * 0.6, cx, y, r * 1.6);
+    glow.addColorStop(0, o.index === 0 ? a.colors.yellow : a.colors.purple);
+    glow.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = glow;
+    ctx.fillRect(cx - r * 1.6, y - r * 1.6, r * 3.2, r * 3.2);
+    ctx.restore();
+
+    drawSpeakerPhoto(
+      ctx,
+      a,
+      { x: cx - r, y: y - r, w: r * 2, h: r * 2 },
+      photoIn,
+      r,
+      o.index === 1,
+    );
+
+    // The ring draws itself round as the photo settles.
+    ctx.save();
+    ctx.globalAlpha = photoIn;
+    ctx.strokeStyle = gradient;
+    ctx.lineWidth = 6;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.arc(cx, y, r + 14, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * photoIn);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  const bottom = cy + r;
+  drawFittedText(ctx, person.name, cx, bottom + o.nameDrop, {
+    size: o.nameSize,
+    color: "#ffffff",
+    alpha: easeOut(phase(p, 0.32 + lag, 0.44 + lag)),
+    weight: 800,
+    align: "center",
+    maxWidth: o.textWidth,
+  });
+  if (person.job) {
+    const size = sizeToFit(ctx, person.job, {
+      size: o.jobSize,
+      minSize: 22,
+      weight: 600,
+      maxWidth: o.textWidth,
+      maxLines: 2,
+    });
+    drawParagraph(ctx, person.job, cx, bottom + o.jobDrop, {
+      size,
+      weight: 600,
+      color: "rgba(255,255,255,0.72)",
+      alpha: easeOut(phase(p, 0.4 + lag, 0.5 + lag)),
+      maxWidth: o.textWidth,
+      maxLines: 2,
+      align: "center",
+      lineGap: o.jobGap * (size / o.jobSize),
+    });
+  }
+}
+
+/**
+ * The session title in the brand gradient, centred vertically on `centerY`
+ * whatever its length. The gradient runs across the title's own width, so all
+ * three colours show in it rather than the slice of the card it sits on.
+ */
+function drawDuoTitle(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  centerY: number,
+  p: number,
+  colors: GradientPalette,
+  o: {
+    size: number;
+    gap: number;
+    maxWidth: number;
+    maxLines: number;
+    align: "left" | "center";
+  },
+) {
+  if (!text) return;
+  const size = sizeToFit(ctx, text, {
+    size: o.size,
+    minSize: Math.round(o.size * 0.7),
+    weight: 800,
+    maxWidth: o.maxWidth,
+    maxLines: o.maxLines,
+  });
+  const gap = o.gap * (size / o.size);
+  const lines = wrapLines(ctx, text, {
+    size,
+    weight: 800,
+    maxWidth: o.maxWidth,
+    maxLines: o.maxLines,
+  }).length;
+  const titleIn = easeOut(phase(p, 0.24, 0.38));
+  const left = o.align === "center" ? x - o.maxWidth / 2 : x;
+  const gradient = ctx.createLinearGradient(left, 0, left + o.maxWidth, 0);
+  gradient.addColorStop(0, colors.yellow);
+  gradient.addColorStop(0.5, colors.red);
+  gradient.addColorStop(1, colors.purple);
+  drawParagraph(
+    ctx,
+    text,
+    x,
+    centerY - ((lines - 1) * gap) / 2 + (1 - titleIn) * 16,
+    {
+      size,
+      weight: 800,
+      color: gradient,
+      alpha: titleIn,
+      maxWidth: o.maxWidth,
+      maxLines: o.maxLines,
+      align: o.align,
+      lineGap: gap,
+    },
+  );
+}
+
+/**
+ * Bottom of a card for two: with a time and stage given, the date with them on
+ * the first line and the day by name on the second; otherwise the same two
+ * lines as the single-speaker card. Bars rather than dots between the parts.
+ */
+function drawDuoFooter(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  p: number,
+  content: CardContent,
+  o: {
+    P: number;
+    ruleY: number;
+    centredRule: boolean;
+    line1Y: number;
+    line1Size: number;
+    line1Spacing: number;
+    line2Y: number;
+    line2Size: number;
+    line2Spacing: number;
+  },
+) {
+  const day: SpeakerDay = content.day ?? "day1";
+  const when = content.when?.trim().toUpperCase();
+  const line1 = when
+    ? `${DAY_DATE[day]} | ${when}`
+    : withBars(DAY_PRIMARY[day]);
+  const line2 = when
+    ? `${DAY_NAME[day]} | TUM BLOCKCHAIN CONFERENCE 26 | MUNICH`
+    : withBars(SPEAKER_SPAN);
+
+  const infoIn = easeOut(phase(p, 0.54, 0.66));
+  const ruleW = (w - o.P * 2) * infoIn;
+  ctx.save();
+  ctx.globalAlpha = infoIn * 0.16;
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(o.centredRule ? w / 2 - ruleW / 2 : o.P, o.ruleY, ruleW, 2);
+  ctx.restore();
+  drawSpacedText(ctx, line1, w / 2, o.line1Y, {
+    size: o.line1Size,
+    spacing: o.line1Spacing,
+    color: "rgba(255,255,255,0.95)",
+    alpha: infoIn,
+    align: "center",
+    weight: 800,
+    font: brandFont(),
+    maxWidth: w - o.P * 2,
+  });
+  drawSpacedText(ctx, line2, w / 2, o.line2Y, {
+    size: o.line2Size,
+    spacing: o.line2Spacing,
+    color: "rgba(255,255,255,0.62)",
+    alpha: infoIn,
+    align: "center",
+    weight: 600,
+    font: brandFont(),
+    maxWidth: w - o.P * 2,
+  });
+}
+
+/**
+ * Card for two speakers, 16:9: the session title large on the left, the two
+ * round portraits on the right with a gradient × between them.
+ */
+function drawDuoLandscape(
+  ctx: CanvasRenderingContext2D,
+  { w, h }: { w: number; h: number },
+  a: Assets,
+  p: number,
+  gradient: CanvasGradient,
+  content: CardContent,
+) {
+  const P = 150;
+  const day: SpeakerDay = content.day ?? "day1";
+  drawDuoHeader(ctx, w, a, p, gradient, content, {
+    P,
+    rowY: 156,
+    rule: 116,
+    size: 46,
+    spacing: 14,
+    markGap: 60,
+    markH: day === "day2" ? 140 : 150,
+    maxWidth: w * 0.62,
+  });
+
+  drawDuoTitle(ctx, content.blurb ?? "", P, 500, p, a.colors, {
+    size: 82,
+    gap: 96,
+    maxWidth: 820,
+    maxLines: 4,
+    align: "left",
+  });
+
+  const r = 160;
+  const cy = 440;
+  const centres = [1170, 1600];
+  [content, content.second!].forEach((person, index) =>
+    drawDuoPerson(
+      ctx,
+      a,
+      p,
+      gradient,
+      person,
+      { cx: centres[index], cy, r },
+      {
+        index,
+        textWidth: 380,
+        nameSize: 44,
+        nameDrop: 76,
+        jobSize: 27,
+        jobDrop: 126,
+        jobGap: 35,
+      },
+    ),
+  );
+  drawDivider(
+    ctx,
+    (centres[0] + centres[1]) / 2,
+    cy,
+    64,
+    gradient,
+    easeOut(phase(p, 0.3, 0.42)),
+  );
+
+  drawDuoFooter(ctx, w, p, content, {
+    P,
+    ruleY: h - 196,
+    centredRule: false,
+    line1Y: h - 138,
+    line1Size: 36,
+    line1Spacing: 6,
+    line2Y: h - 90,
+    line2Size: 26,
+    line2Spacing: 4,
+  });
+}
+
+/**
+ * Card for two speakers, 4:5: the session title large under the header, the
+ * two round portraits side by side beneath it with a gradient × between them.
+ */
+function drawDuoPortrait(
+  ctx: CanvasRenderingContext2D,
+  { w, h }: { w: number; h: number },
+  a: Assets,
+  p: number,
+  gradient: CanvasGradient,
+  content: CardContent,
+) {
+  const P = 110;
+  const day: SpeakerDay = content.day ?? "day1";
+  drawDuoHeader(ctx, w, a, p, gradient, content, {
+    P,
+    rowY: 150,
+    rule: 104,
+    size: 32,
+    spacing: 7,
+    markGap: 48,
+    markH: day === "day2" ? 112 : 120,
+    maxWidth: w - P * 2 - 340,
+  });
+
+  drawDuoTitle(ctx, content.blurb ?? "", P, 340, p, a.colors, {
+    size: 62,
+    gap: 74,
+    maxWidth: w - P * 2,
+    maxLines: 3,
+    align: "left",
+  });
+
+  const r = 168;
+  const cy = 684;
+  const centres = [w / 2 - 218, w / 2 + 218];
+  [content, content.second!].forEach((person, index) =>
+    drawDuoPerson(
+      ctx,
+      a,
+      p,
+      gradient,
+      person,
+      { cx: centres[index], cy, r },
+      {
+        index,
+        textWidth: 410,
+        nameSize: 44,
+        nameDrop: 74,
+        jobSize: 26,
+        jobDrop: 122,
+        jobGap: 33,
+      },
+    ),
+  );
+  drawDivider(ctx, w / 2, cy, 56, gradient, easeOut(phase(p, 0.3, 0.42)));
+
+  drawDuoFooter(ctx, w, p, content, {
+    P,
+    ruleY: h - 170,
+    centredRule: true,
+    line1Y: h - 122,
+    line1Size: 30,
+    line1Spacing: 4,
+    line2Y: h - 78,
+    line2Size: 22,
+    line2Spacing: 2,
+  });
+}
+
 /** Samples an image's alpha to tell a cut-out subject from an opaque photo. */
 function detectHasAlpha(img: HTMLImageElement): boolean {
   const s = 48;
@@ -2002,17 +2487,21 @@ async function loadAssets(
   partnerLogoUrl: string,
   config: CardConfig,
   day: SpeakerDay = "day1",
+  secondPhotoUrl?: string,
 ): Promise<Assets> {
-  const [confLogo, dadLogo, ring, partnerLogo] = await Promise.all([
-    loadImage(
-      config.withoutHackathon
-        ? "/logos/c26-wordmark-no-hackathon.svg"
-        : "/logos/c26-wordmark.svg",
-    ),
-    loadImage("/logos/digital-assets-day-logo.png"),
-    loadImage("/hero/mask-group-1.png"),
-    loadImage(partnerLogoUrl),
-  ]);
+  const [confLogo, dadLogo, ring, partnerLogo, secondPhoto] = await Promise.all(
+    [
+      loadImage(
+        config.withoutHackathon
+          ? "/logos/c26-wordmark-no-hackathon.svg"
+          : "/logos/c26-wordmark.svg",
+      ),
+      loadImage("/logos/digital-assets-day-logo.png"),
+      loadImage("/hero/mask-group-1.png"),
+      loadImage(partnerLogoUrl),
+      secondPhotoUrl ? loadImage(secondPhotoUrl) : null,
+    ],
+  );
   // The big-logo card also puts a logo supplied on a white canvas on the
   // white chip, where that canvas is trimmed away and the logo fills it.
   const useLightChip = config.photo
@@ -2048,6 +2537,8 @@ async function loadAssets(
     // Photos always sit on the glass panel; only logos may get a white chip.
     useLightChip,
     photoHasAlpha: config.photo ? detectHasAlpha(partnerLogo) : false,
+    secondPhoto,
+    secondPhotoHasAlpha: secondPhoto ? detectHasAlpha(secondPhoto) : false,
     kind: config.kind,
     eyebrow: config.eyebrow,
     hackathon: !!config.hackathon,
@@ -2084,7 +2575,12 @@ export async function renderPartnerCardFrame(
   }
 
   const content = toContent(nameOrContent);
-  const assets = await loadAssets(partnerLogoUrl, config, content.day);
+  const assets = await loadAssets(
+    partnerLogoUrl,
+    config,
+    content.day,
+    content.second?.photo,
+  );
   drawCard(ctx, dims, assets, p, elapsedMs, orientation, content);
   return canvas;
 }
@@ -2207,7 +2703,12 @@ export async function renderPartnerCardVideo(
     // System fonts are fine as a fallback.
   }
 
-  const assets = await loadAssets(partnerLogoUrl, config, content.day);
+  const assets = await loadAssets(
+    partnerLogoUrl,
+    config,
+    content.day,
+    content.second?.photo,
+  );
 
   return recordCanvasVideo(
     canvas,
@@ -2269,7 +2770,12 @@ export async function renderPersonCardFrames(
   }
 
   // Assets are loaded once for the whole clip, not per frame.
-  const assets = await loadAssets(photoUrl, config, content.day);
+  const assets = await loadAssets(
+    photoUrl,
+    config,
+    content.day,
+    content.second?.photo,
+  );
   const total = Math.round((DURATION_MS / 1000) * FPS);
   for (let i = 0; i < total; i++) {
     const elapsed = (i / FPS) * 1000;

@@ -38,6 +38,14 @@ Up next → Intro → On stage → Slides 1…n → Thank you → next session
 - **Breaks** in the programme are their own cue; **P** puts up a short-pause
   screen at any time, **B** blacks out.
 
+The LED walls differ: Nakamoto (Main Stage on the Digital Assets Day) is
+2880 x 1026, Turing (Executive Forum) 3840 x 1152, Hopper (Future Stage) a
+plain 1920 x 1080. The two wide rooms are listed in `WIDE_ROOMS` in
+`StageDisplay.tsx` with their resolution; their display lays itself out in a
+frame of exactly that shape, centred in the browser window. At the wall's
+own resolution it fills the screen, on a 16:9 output it sits in a band with
+black above and below. Slides keep their own shape inside it.
+
 On first open a start screen asks for the stage and the day; the start page
 links straight to each. The Digital Assets Day runs in blue throughout, under
 the Digital Assets Day mark alone, with the track sponsors on Up next and in
