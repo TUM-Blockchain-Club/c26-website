@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { AgendaPageBody } from "@/app/agenda/agenda-page";
 import {
   dayLabel,
@@ -9,6 +9,7 @@ import {
   sessionPath,
 } from "@/components/agenda/sessionMeta";
 import { getAgendaTalks, getTalkById } from "@/components/service/conference26";
+import { HACKATHON_AGENDA_URL } from "@/constants/Links";
 
 /**
  * A session's own page: the agenda with that session's dialog open. It is
@@ -25,8 +26,12 @@ export const revalidate = 60;
 // rather than 404ing until someone deploys.
 export const dynamicParams = true;
 
+// Hackathon sessions are not prebuilt: their page sends people on to the
+// Hackathon's own agenda, see below.
 export const generateStaticParams = async () =>
-  (await getAgendaTalks()).map((t) => ({ sessionId: t.id }));
+  (await getAgendaTalks())
+    .filter((t) => t.event !== "hackathon")
+    .map((t) => ({ sessionId: t.id }));
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const talk = await getTalkById((await params).sessionId);
@@ -69,6 +74,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function SessionPage({ params }: Props) {
   const { sessionId } = await params;
-  if (!(await getTalkById(sessionId))) notFound();
+  const talk = await getTalkById(sessionId);
+  if (!talk) notFound();
+  // The Hackathon's schedule lives on its own site, so a shared link to one
+  // of its sessions goes there rather than to a feed that leaves it out.
+  if (talk.event === "hackathon") redirect(HACKATHON_AGENDA_URL);
   return <AgendaPageBody initialSessionId={sessionId} />;
 }

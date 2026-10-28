@@ -1,7 +1,10 @@
 "use client";
 
 import { Text } from "@/components/text";
+import { Button } from "@/components/button";
+import { Link } from "@/components/link";
 import { Toggle } from "@/components/toggle";
+import { HACKATHON_AGENDA_URL } from "@/constants/Links";
 import classNames from "classnames";
 import React, { useState } from "react";
 import AgendaFeed from "@/components/agenda/AgendaFeed";
@@ -18,10 +21,10 @@ type AgendaProps = {
   initialSessionId?: string;
 };
 
-// The three main parts of the conference. Sessions are matched via their
-// `event` field once the programme is published; each part keeps its own
-// accent so they are distinguishable at a glance (Digital Assets Day is
-// bluish like its logo, the Hackathon red like its logo).
+// The parts of the conference listed here. Sessions are matched via their
+// `event` field; each part keeps its own accent so they are distinguishable
+// at a glance (Digital Assets Day is bluish like its logo). The Hackathon
+// keeps its programme on its own site, see HACKATHON below.
 const EVENTS = [
   {
     key: "conference",
@@ -35,13 +38,12 @@ const EVENTS = [
     dot: "bg-blue-400",
     active: "border-blue-400 bg-blue-400/15 text-white",
   },
-  {
-    key: "hackathon",
-    label: "Hackathon",
-    dot: "bg-red-500",
-    active: "border-red-500 bg-red-500/15 text-white",
-  },
 ] as const;
+
+/** The Hackathon's schedule is published on the Hackathon site only, so it
+ * has one source of truth. Its entry in the event list links there, red like
+ * its logo, and any Hackathon session in Strapi is left out of this feed. */
+const HACKATHON = { label: "Hackathon", dot: "bg-red-500" };
 
 type EventKey = (typeof EVENTS)[number]["key"];
 
@@ -83,6 +85,7 @@ export const Agenda: React.FC<AgendaProps> = ({ initialSessionId }) => {
   // filter. Breaks, milestones and open slots only accompany the full flow.
   const feedQuery = titleFilter.trim().toLowerCase();
   const visibleEntries = agendaEntries.filter((entry) => {
+    if (entry.event === "hackathon") return false;
     if (eventFilter && entry.event !== eventFilter) return false;
 
     if (entry.kind !== "talk") {
@@ -187,6 +190,27 @@ export const Agenda: React.FC<AgendaProps> = ({ initialSessionId }) => {
                   </button>
                 );
               })}
+              <a
+                href={HACKATHON_AGENDA_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2.5 rounded-lg border border-line py-2 px-3 text-left text-secondary transition-colors hover:border-red-500 hover:text-white w-fit md:w-full"
+              >
+                <span
+                  className={classNames(
+                    "inline-block h-3 w-3 shrink-0 rounded-full",
+                    HACKATHON.dot,
+                  )}
+                  aria-hidden
+                />
+                <Text
+                  textType={"small"}
+                  className="!text-inherit text-left"
+                  as="p"
+                >
+                  {HACKATHON.label} ↗
+                </Text>
+              </a>
             </div>
           </div>
           <div className="flex flex-col gap-3 h-fit">
@@ -319,16 +343,25 @@ export const Agenda: React.FC<AgendaProps> = ({ initialSessionId }) => {
               !feedHasOwnFilters && (
                 <div className="card-tbc-soft mt-8 flex w-full flex-col items-center gap-2 px-6 py-10 text-center">
                   <Text as="p" textType="lgsmall" className="font-bold">
-                    More to come
+                    Looking for the Hackathon?
                   </Text>
                   <Text
                     as="p"
                     textType="small"
                     className="text-secondary max-w-md"
                   >
-                    The Hackathon programme is in the making and will be
-                    published right here. Stay tuned!
+                    Workshops, ceremonies and meals for October 30 to 31 are on
+                    the Hackathon&apos;s own agenda.
                   </Text>
+                  <Button buttonType={"cta"} asChild className="mt-4 w-fit">
+                    <Link
+                      href={HACKATHON_AGENDA_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Hackathon Agenda
+                    </Link>
+                  </Button>
                 </div>
               )
             ) : feedHasOwnFilters ? (
