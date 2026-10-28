@@ -5,7 +5,7 @@ import {
   dayLabel,
   isShareable,
   peopleOf,
-  timeRange,
+  sessionTime,
   sessionPath,
 } from "@/components/agenda/sessionMeta";
 import { getAgendaTalks, getTalkById } from "@/components/service/conference26";
@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const title = `${talk.title ?? "Session"} · TUM Blockchain Conference 26`;
   const names = peopleOf(talk).map((p) => p.name);
   const description = [
-    `${dayLabel(talk.day)}, ${timeRange(talk.time, talk.duration)}, ${talk.stage}.`,
+    `${[dayLabel(talk.day), sessionTime(talk), talk.stage].filter(Boolean).join(", ")}.`,
     names.length ? `With ${names.join(", ")}.` : "",
   ]
     .filter(Boolean)

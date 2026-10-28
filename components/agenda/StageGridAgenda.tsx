@@ -96,6 +96,10 @@ const minHeightFor = (title: string | undefined, names?: string) => {
  * but segments holding a session too short to be legible are stretched until
  * it fits. Built once per day, from every session boundary of that day.
  */
+/** Grid height for a session the programme gives no end time. Only the
+ * Hackathon has those, and it has no grid, so this is a safety net. */
+const GRID_FALLBACK_MIN = 15;
+
 const buildDay = (entries: AgendaEntry[], event: AgendaEventKey) => {
   const mine = entries.filter((e) => e.event === event);
   const talks = mine.filter((e): e is Talk => e.kind === "talk");
@@ -104,7 +108,7 @@ const buildDay = (entries: AgendaEntry[], event: AgendaEventKey) => {
   const blocks = [
     ...talks.map((t) => ({
       start: toMin(t.time),
-      end: toMin(t.time) + t.duration,
+      end: toMin(t.time) + (t.duration ?? GRID_FALLBACK_MIN),
       min: minHeightFor(t.title, namesOf(t)),
     })),
     ...breaks.map((b) => ({
@@ -278,7 +282,7 @@ const StageColumn = ({ stage, day }: { stage: string; day: Day }) => (
         <div
           key={i}
           className="absolute inset-x-0"
-          style={day.boxFor(t.time, t.duration)}
+          style={day.boxFor(t.time, t.duration ?? GRID_FALLBACK_MIN)}
         >
           <SessionCard talk={t} />
         </div>

@@ -15,12 +15,13 @@ import React, {
 import { Text } from "@/components/text";
 import { AgendaSpeakers } from "@/components/agenda/AgendaSpeakers";
 import { SessionShare } from "@/components/agenda/SessionShare";
+import { SessionSlides } from "@/components/agenda/SessionSlides";
 import {
   EVENT_BADGES,
   dayLabel,
   isShareable,
   sessionPath,
-  timeRange,
+  sessionTime,
   trackStyle,
 } from "@/components/agenda/sessionMeta";
 import { type AgendaTalk } from "@/constants/digitalAssetsDayAgenda";
@@ -238,24 +239,26 @@ const SessionDialogContent = ({ talk }: { talk: AgendaTalk }) => {
             <span className="sm:hidden">{dayLabel(talk.day, "short")}</span>
             <span className="hidden sm:inline">
               {dayLabel(talk.day)}
-            </span> · {timeRange(talk.time, talk.duration)}
+            </span> · {sessionTime(talk)}
           </Text>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
             {/* Where to go is what people look for first once they are in
                 the building, so the stage reads as loudly as the time. */}
-            <span className="flex items-center gap-1.5">
-              <MapPin
-                className={classNames("h-4 w-4 shrink-0", badge.text)}
-                aria-hidden
-              />
-              <Text
-                as="span"
-                textType="lgsmall"
-                className="font-bold text-white sm:!text-base"
-              >
-                {talk.stage}
-              </Text>
-            </span>
+            {talk.stage && (
+              <span className="flex items-center gap-1.5">
+                <MapPin
+                  className={classNames("h-4 w-4 shrink-0", badge.text)}
+                  aria-hidden
+                />
+                <Text
+                  as="span"
+                  textType="lgsmall"
+                  className="font-bold text-white sm:!text-base"
+                >
+                  {talk.stage}
+                </Text>
+              </span>
+            )}
             {track && talk.track && (
               <span className="flex items-center gap-1.5">
                 <span
@@ -301,6 +304,12 @@ const SessionDialogContent = ({ talk }: { talk: AgendaTalk }) => {
             size="compact"
           />
         </div>
+
+        {talk.slides?.length ? (
+          <div className="mt-5 sm:mt-6">
+            <SessionSlides talk={talk} />
+          </div>
+        ) : null}
 
         {isShareable(talk) && (
           <div className="mt-4 border-t border-line pt-3.5 sm:mt-6 sm:pt-5">

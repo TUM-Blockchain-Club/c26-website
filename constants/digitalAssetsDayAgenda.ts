@@ -138,7 +138,13 @@ export type AgendaEntry =
        * reuse an id for a different session. */
       id: string;
       time: string;
-      duration: number; // minutes
+      /** Minutes. Missing where the programme gives only a start time, as
+       * the Hackathon does for its ceremonies; the session then shows its
+       * start alone. */
+      duration?: number;
+      /** The slot is planned but its time is not confirmed yet ("Time TBA"). */
+      timeTba?: boolean;
+      /** Empty where the programme names no room. */
       stage: string;
       /** Missing where the programme does not sort the session into a track,
        * which is most of the First Conference Day. */
@@ -153,8 +159,17 @@ export type AgendaEntry =
        * confirmed yet, which renders "Speaker to be announced". */
       speakers?: string[];
       moderator?: string;
-      /** Slides uploaded on the session in Strapi, in their order. */
-      slides?: { src: string; mime: string; name: string }[];
+      /** Slides uploaded on the session in Strapi, in their order. `size` is
+       * in kB; `pdf` is the PDF the convert-slides workflow made of a
+       * PowerPoint, Keynote or ODP file, once there is one. */
+      slides?: {
+        src: string;
+        mime: string;
+        name: string;
+        hash?: string;
+        size?: number;
+        pdf?: string;
+      }[];
     })
   | (Common & {
       // Breaks come straight from the published agenda rather than being

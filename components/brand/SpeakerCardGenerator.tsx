@@ -11,6 +11,7 @@ import {
   renderSpeakerCardStill,
   renderSpeakerCardVideo,
   SPEAKER_LIMITS,
+  type CardContent,
   type CardOrientation,
   type SpeakerDay,
 } from "@/util/partnerCardVideo";
@@ -24,6 +25,14 @@ const MAX_UPLOAD = 40 * 1024 * 1024;
 // screen, while a transparent cut-out stays lossless PNG either way.
 const MAX_DIM = 1900;
 const JPEG_QUALITY = 0.92;
+
+// What a card for two says above the photos. The value is drawn as is.
+const FORMATS = [
+  ["SPEAKING AT", "Speaking at"],
+  ["FIRESIDE CHAT", "Fireside chat"],
+  ["TALK", "Talk"],
+  ["WORKSHOP", "Workshop"],
+] as const;
 
 export const SpeakerCardGenerator = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -41,13 +50,29 @@ export const SpeakerCardGenerator = () => {
   const [note, setNote] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [savingImage, setSavingImage] = useState(false);
+  // A card for two: a fireside chat or a session held by two speakers.
+  const [duo, setDuo] = useState(false);
+  const [secondFile, setSecondFile] = useState<File | null>(null);
+  const [secondPreviewUrl, setSecondPreviewUrl] = useState<string | null>(null);
+  const [secondName, setSecondName] = useState("");
+  const [secondJob, setSecondJob] = useState("");
+  const [format, setFormat] = useState<string>(FORMATS[1][0]);
+  const [when, setWhen] = useState("");
 
-  const hasPhoto = !!file && !!previewUrl;
+  const hasPhoto =
+    !!file && !!previewUrl && (!duo || (!!secondFile && !!secondPreviewUrl));
   const hasName = name.trim().length > 0;
   // Name and job title carry the card, so both are required. The talk is
   // optional: it is often not fixed yet when the card goes out, and the card
-  // reads fine without it.
-  const hasDetails = hasName && job.trim().length > 0;
+  // reads fine without it. A card for two needs both people and the session
+  // title, which fills the space a single speaker's details would take.
+  const hasDetails =
+    hasName &&
+    job.trim().length > 0 &&
+    (!duo ||
+      (secondName.trim().length > 0 &&
+        secondJob.trim().length > 0 &&
+        blurb.trim().length > 0));
   const ready = hasPhoto && hasDetails;
   // Step 1 (the day) always has a default, so guidance starts at the photo.
   const activeStep = !hasPhoto ? 2 : !hasDetails ? 3 : 4;
@@ -78,9 +103,25 @@ export const SpeakerCardGenerator = () => {
     setStatus("idle");
     setProgress(0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [name, job, blurb, day, previewUrl, orientation]);
+  }, [
+    name,
+    job,
+    blurb,
+    day,
+    previewUrl,
+    orientation,
+    duo,
+    secondName,
+    secondJob,
+    secondPreviewUrl,
+    format,
+    when,
+  ]);
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    second = false,
+  ) => {
     const selected = e.target.files?.[0];
     if (!selected) return;
 
@@ -98,11 +139,11 @@ export const SpeakerCardGenerator = () => {
         maxDim: MAX_DIM,
         jpegQuality: JPEG_QUALITY,
       });
-      setPreviewUrl((prev) => {
+      (second ? setSecondPreviewUrl : setPreviewUrl)((prev) => {
         if (prev) URL.revokeObjectURL(prev);
         return prepared.url;
       });
-      setFile(prepared.file);
+      (second ? setSecondFile : setFile)(prepared.file);
     } catch {
       setErrorMsg(
         "That file could not be loaded as an image. Try a PNG or JPEG.",
@@ -114,18 +155,33 @@ export const SpeakerCardGenerator = () => {
     setName(e.target.value);
   };
 
+  const cardContent = (): CardContent => ({
+    name: name.trim(),
+    job: job.trim(),
+    blurb: blurb.trim(),
+    day,
+    ...(duo && secondPreviewUrl
+      ? {
+          second: {
+            name: secondName.trim(),
+            job: secondJob.trim(),
+            photo: secondPreviewUrl,
+          },
+          eyebrow: format,
+          when: when.trim(),
+        }
+      : {}),
+  });
+
+  const fileStem = `tbc-conference-26-${duo ? "session" : "speaker"}-card-${orientation}`;
+
   const handleGenerate = async () => {
-    if (!file || !previewUrl || !hasDetails) return;
+    if (!file || !previewUrl || !hasPhoto || !hasDetails) return;
     setStatus("generating");
     setProgress(0);
     setErrorMsg(null);
 
-    const content = {
-      name: name.trim(),
-      job: job.trim(),
-      blurb: blurb.trim(),
-      day,
-    };
+    const content = cardContent();
 
     try {
       const { blob, extension } = await renderSpeakerCardVideo(
@@ -152,26 +208,22 @@ export const SpeakerCardGenerator = () => {
 
   const handleDownloadVideo = () => {
     if (!videoBlob) return;
-    downloadBlob(
-      videoBlob,
-      `tbc-conference-26-speaker-card-${orientation}.${videoExt}`,
-    );
+    downloadBlob(videoBlob, `${fileStem}.${videoExt}`);
   };
 
   // The still is the card's end state — everything faded in — so it works as
   // a plain image wherever a video is awkward to post.
   const handleDownloadImage = async () => {
-    if (!previewUrl || !hasDetails || savingImage) return;
+    if (!previewUrl || !ready || savingImage) return;
     setSavingImage(true);
     setErrorMsg(null);
     try {
-      const blob = await renderSpeakerCardStill(previewUrl, orientation, {
-        name: name.trim(),
-        job: job.trim(),
-        blurb: blurb.trim(),
-        day,
-      });
-      downloadBlob(blob, `tbc-conference-26-speaker-card-${orientation}.png`);
+      const blob = await renderSpeakerCardStill(
+        previewUrl,
+        orientation,
+        cardContent(),
+      );
+      downloadBlob(blob, `${fileStem}.png`);
     } catch (err) {
       console.error("Still image generation failed:", err);
       setErrorMsg("The image could not be created. Please try again.");
@@ -179,6 +231,9 @@ export const SpeakerCardGenerator = () => {
       setSavingImage(false);
     }
   };
+
+  const fileInputClass =
+    "w-full cursor-pointer rounded-md border border-dashed border-line bg-black px-4 py-3 text-sm text-secondary file:mr-3 file:rounded-sm file:border-0 file:bg-white/10 file:px-3 file:py-1.5 file:text-white";
 
   const inputClass =
     "w-full rounded-md border border-line bg-black px-4 py-2.5 text-sm text-white outline-none transition-colors placeholder:text-faint focus:border-line-strong";
@@ -228,6 +283,28 @@ export const SpeakerCardGenerator = () => {
     <div className="flex flex-col gap-8">
       <div className="card-tbc flex flex-col gap-8 p-7 lg:flex-row lg:items-start lg:gap-10">
         <div className="flex flex-1 flex-col gap-5">
+          <div className="flex flex-wrap gap-2">
+            {(
+              [
+                [false, "One speaker"],
+                [true, "Two speakers"],
+              ] as const
+            ).map(([val, label]) => (
+              <button
+                key={label}
+                type="button"
+                onClick={() => setDuo(val)}
+                className={`rounded-full border px-4 py-1.5 text-sm transition-colors ${
+                  duo === val
+                    ? "border-line-strong bg-white/10 text-white"
+                    : "border-line text-muted hover:text-white"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
           {/* Step 1 — day */}
           <div className={stepClass(1, true)}>
             <StepHeader n={1} title="Which day are you speaking?" complete />
@@ -261,34 +338,73 @@ export const SpeakerCardGenerator = () => {
 
           {/* Step 2 — photo */}
           <div className={stepClass(2, hasPhoto)}>
-            <StepHeader n={2} title="Upload your photo" complete={hasPhoto} />
+            <StepHeader
+              n={2}
+              title={duo ? "Upload both photos" : "Upload your photo"}
+              complete={hasPhoto}
+            />
             <Text textType="small" className="text-muted">
               A headshot works best. PNG, JPEG, WebP or SVG; large photos are
               compressed automatically, staying lossless if it&apos;s a cut-out
               with a transparent background. Tip: upload one with the background
               already removed and just you will appear on the brand background.
             </Text>
+            {duo && <span className="text-xs text-muted">First speaker</span>}
             <input
               type="file"
               accept="image/png,image/jpeg,image/svg+xml,image/webp"
-              onChange={handleFileChange}
-              className="w-full cursor-pointer rounded-md border border-dashed border-line bg-black px-4 py-3 text-sm text-secondary file:mr-3 file:rounded-sm file:border-0 file:bg-white/10 file:px-3 file:py-1.5 file:text-white"
+              onChange={(e) => handleFileChange(e)}
+              className={fileInputClass}
             />
+            {duo && (
+              <>
+                <span className="text-xs text-muted">Second speaker</span>
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/svg+xml,image/webp"
+                  onChange={(e) => handleFileChange(e, true)}
+                  className={fileInputClass}
+                />
+              </>
+            )}
           </div>
 
           {/* Step 3 — about you */}
           <div className={stepClass(3, hasDetails)}>
-            <StepHeader n={3} title="About you" complete={hasDetails} />
+            <StepHeader
+              n={3}
+              title={duo ? "The session" : "About you"}
+              complete={hasDetails}
+            />
             <Text textType="small" className="text-muted">
-              Name, job title with company, and a line about your talk all go on
-              the card. The counters show how much fits so the card always looks
-              good.
+              {duo
+                ? "Both names with job title and company, the format and the session title all go on the card. The counters show how much fits so the card always looks good."
+                : "Name, job title with company, and a line about your talk all go on the card. The counters show how much fits so the card always looks good."}
             </Text>
+
+            {duo && (
+              <div className="flex flex-wrap gap-2">
+                {FORMATS.map(([val, label]) => (
+                  <button
+                    key={val}
+                    type="button"
+                    onClick={() => setFormat(val)}
+                    className={`rounded-full border px-4 py-1.5 text-sm transition-colors ${
+                      format === val
+                        ? "border-line-strong bg-white/10 text-white"
+                        : "border-line text-muted hover:text-white"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            )}
 
             <div className="flex flex-col gap-1">
               <div className="flex items-center justify-between">
                 <label htmlFor="sp-name" className="text-xs text-muted">
-                  Name
+                  {duo ? "First speaker" : "Name"}
                 </label>
                 <span className="text-xs text-faint">
                   {name.length}/{SPEAKER_LIMITS.name}
@@ -325,11 +441,61 @@ export const SpeakerCardGenerator = () => {
               />
             </div>
 
+            {duo && (
+              <>
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center justify-between">
+                    <label htmlFor="sp-name-2" className="text-xs text-muted">
+                      Second speaker
+                    </label>
+                    <span className="text-xs text-faint">
+                      {secondName.length}/{SPEAKER_LIMITS.name}
+                    </span>
+                  </div>
+                  <input
+                    id="sp-name-2"
+                    type="text"
+                    value={secondName}
+                    onChange={(e) => setSecondName(e.target.value)}
+                    placeholder="e.g. Their Name"
+                    maxLength={SPEAKER_LIMITS.name}
+                    className={inputClass}
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center justify-between">
+                    <label htmlFor="sp-job-2" className="text-xs text-muted">
+                      Their job title &amp; company
+                    </label>
+                    <span className="text-xs text-faint">
+                      {secondJob.length}/{SPEAKER_LIMITS.job}
+                    </span>
+                  </div>
+                  <input
+                    id="sp-job-2"
+                    type="text"
+                    value={secondJob}
+                    onChange={(e) => setSecondJob(e.target.value)}
+                    placeholder="e.g. Partnership Lead, Acme"
+                    maxLength={SPEAKER_LIMITS.job}
+                    className={inputClass}
+                  />
+                </div>
+              </>
+            )}
+
             <div className="flex flex-col gap-1">
               <div className="flex items-center justify-between">
                 <label htmlFor="sp-blurb" className="text-xs text-muted">
-                  What you&apos;ll talk about{" "}
-                  <span className="text-faint">(optional)</span>
+                  {duo ? (
+                    "Session title"
+                  ) : (
+                    <>
+                      What you&apos;ll talk about{" "}
+                      <span className="text-faint">(optional)</span>
+                    </>
+                  )}
                 </label>
                 <span className="text-xs text-faint">
                   {blurb.length}/{SPEAKER_LIMITS.blurb}
@@ -339,12 +505,34 @@ export const SpeakerCardGenerator = () => {
                 id="sp-blurb"
                 value={blurb}
                 onChange={(e) => setBlurb(e.target.value)}
-                placeholder="A sentence or two about your talk…"
+                placeholder={
+                  duo
+                    ? "e.g. Architects of Tomorrow"
+                    : "A sentence or two about your talk…"
+                }
                 maxLength={SPEAKER_LIMITS.blurb}
                 rows={3}
                 className={`${inputClass} resize-y`}
               />
             </div>
+
+            {duo && (
+              <div className="flex flex-col gap-1">
+                <label htmlFor="sp-when" className="text-xs text-muted">
+                  Time &amp; stage{" "}
+                  <span className="text-faint">(optional)</span>
+                </label>
+                <input
+                  id="sp-when"
+                  type="text"
+                  value={when}
+                  onChange={(e) => setWhen(e.target.value)}
+                  placeholder="e.g. 13:30 | Nakamoto Stage"
+                  maxLength={32}
+                  className={inputClass}
+                />
+              </div>
+            )}
           </div>
 
           {/* Step 4 — format + generate */}
@@ -424,16 +612,28 @@ export const SpeakerCardGenerator = () => {
             />
           ) : previewUrl ? (
             <div className="flex flex-col items-center gap-3">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={previewUrl}
-                alt="Uploaded photo preview"
-                className="max-h-40 max-w-[240px] object-contain"
-              />
+              <div className="flex gap-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={previewUrl}
+                  alt="Uploaded photo preview"
+                  className="max-h-40 max-w-[240px] object-contain"
+                />
+                {duo && secondPreviewUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={secondPreviewUrl}
+                    alt="Second speaker's photo preview"
+                    className="max-h-40 max-w-[240px] object-contain"
+                  />
+                )}
+              </div>
               <Text textType="small" className="text-faint">
-                {hasDetails
+                {ready
                   ? "Ready. Click Generate."
-                  : "Now add your name and job title."}
+                  : duo
+                    ? "Now add both photos, names and the session title."
+                    : "Now add your name and job title."}
               </Text>
             </div>
           ) : (
@@ -444,7 +644,8 @@ export const SpeakerCardGenerator = () => {
         </div>
       </div>
 
-      {hasDetails && (
+      {/* The captions are written in the first person, for one speaker. */}
+      {hasDetails && !duo && (
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
             <Text textType="lgsmall" className="font-bold">

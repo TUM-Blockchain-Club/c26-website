@@ -59,13 +59,22 @@ export const endTime = (start: string, duration: number) => {
   ).padStart(2, "0")}`;
 };
 
-/** "09:20 – 10:00" */
-export const timeRange = (start: string, duration: number) =>
-  `${start} – ${endTime(start, duration)}`;
+/** "09:20 – 10:00", or just "09:20" for a session with no end time. */
+export const timeRange = (start: string, duration?: number) =>
+  duration === undefined ? start : `${start} – ${endTime(start, duration)}`;
 
 /** "09:20 – 10:00 · 40 min", where the grid has room for the length. */
-export const rangeLabel = (start: string, duration: number) =>
-  `${start} – ${endTime(start, duration)} · ${duration} min`;
+export const rangeLabel = (start: string, duration?: number) =>
+  duration === undefined
+    ? start
+    : `${start} – ${endTime(start, duration)} · ${duration} min`;
+
+/** The time a session shows: its range, or "Time TBA" while unconfirmed. */
+export const sessionTime = (s: {
+  time: string;
+  duration?: number;
+  timeTba?: boolean;
+}) => (s.timeTba ? "Time TBA" : timeRange(s.time, s.duration));
 
 /** "Thursday, October 29", or "Thu, Oct 29" where room is short. */
 export const dayLabel = (iso: string, style: "long" | "short" = "long") =>

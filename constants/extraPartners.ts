@@ -81,4 +81,23 @@ export const extraPartners: StaticCommunityPartner[] = [
     // variant, so it belongs on the white card.
     background: "light" as LogoBackground,
   },
+  {
+    // Euro stablecoin issuer backed by DWS, Galaxy and Flow Traders —
+    // community partner.
+    name: "AllUnity",
+    src: "/extra-partners26/allunity.png",
+    website: "https://allunity.com",
+    // Their black logo on transparent, so it belongs on the white card.
+    // Trimmed to the mark and scaled to 1200px wide, nothing recoloured.
+    background: "light" as LogoBackground,
+  },
+  {
+    // Community partner. No website supplied.
+    name: "Capital & Code",
+    src: "/extra-partners26/capital-and-code.png",
+    // Black wordmark from their SVG, rasterised and trimmed out of its square
+    // canvas, scaled to 1200px wide; belongs on the white card. Nothing
+    // recoloured.
+    background: "light" as LogoBackground,
+  },
 ];
