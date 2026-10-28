@@ -11,6 +11,7 @@ import {
   type AgendaEventKey,
 } from "@/constants/digitalAssetsDayAgenda";
 import { bareName, speakerLinksFrom } from "@/util/speakerPortraits";
+import { OPENING_SESSION } from "@/components/stage/OpeningDeck";
 
 /** One of the three rooms, by the slug used in the stage display's URL. */
 export const STAGE_ROOMS = ROOMS.map((r) => ({
@@ -32,6 +33,14 @@ export type StagePerson = {
 
 /** One slot on a stage, as the display needs it: absolute times, so the
  * browser can compare them against its own clock. */
+/** A sponsor's logo, with whether its dark ink needs a white plate. */
+export type StageSponsor = {
+  name: string;
+  tier: string;
+  src: string;
+  light: boolean;
+};
+
 export type StageSlot = {
   id: string;
   kind: "talk" | "break";
@@ -50,6 +59,8 @@ export type StageSlot = {
   /** The Digital Assets Day focus track, and who presents it. */
   track?: string;
   trackSponsors?: { name: string; src: string; light: boolean }[];
+  /** Every sponsor, for the opening ceremony's thank-you slide only. */
+  sponsors?: StageSponsor[];
   /** Slides from Strapi that the screen can show: PDFs and images. */
   slides?: { src: string; kind: "pdf" | "image"; name: string }[];
   /** Files on the session the screen cannot show (PowerPoint, Keynote…);
@@ -165,5 +176,13 @@ export const getStageSlots = async (room: StageRoom): Promise<StageSlot[]> => {
       }),
     });
   }
+  const opening = slots.find((sl) => sl.id === OPENING_SESSION);
+  if (opening)
+    opening.sponsors = sponsors.map((sp) => ({
+      name: sp.name,
+      tier: sp.tier,
+      src: sp.src,
+      light: sp.background === "light",
+    }));
   return slots.sort((a, b) => a.start - b.start || a.end - b.end);
 };

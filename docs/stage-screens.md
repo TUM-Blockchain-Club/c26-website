@@ -15,7 +15,7 @@ computer and cued by the crew. They replace last year's Figma plugin
 Nothing advances on its own. Each press of → (or a presentation clicker)
 moves one cue:
 
-Up next → Intro → On stage → Slides 1…n → Thank you → next session
+Up next → Intro → On stage → Slides 1…n → next session
 
 - **Intro**: the ring that is already in the background moves to the middle,
   grows and softens, the day's mark tilts in, then the speakers and the
@@ -105,3 +105,26 @@ clipping boxes leave room for descenders. Photos and logos of the chosen day
 are preloaded and fade in once loaded; portraits are laid over their circle
 so no photo format can turn it into an oval. On the Digital Assets Day the
 ring is the original artwork's light and shade toned in several blues.
+
+## Opening ceremony slides
+
+The conference opening (`conference-opening`, 29 October, Nakamoto) brings
+its own slides, built into the screen in `components/stage/OpeningDeck.tsx`
+after the "C26 Opening" deck in Figma: title, our story (timeline, then
+2023 to 2026 one by one), why we do this, what we want to achieve, agenda,
+stages with the floor plans, the agenda QR code, the sponsors and organized
+by. They follow "On stage" one press each and keep the screen's background.
+The sponsors come live from Strapi, grouped by tier. Figma's first slide
+(the hosts) is what "On stage" already shows. A PDF uploaded for the session
+replaces them, as for any other session. Pictures are in
+`public/stage/opening/`.
+
+## Digital Assets Day layout
+
+On 30 October the panel sits in front of the wall, so the lower part of
+each screen stays empty: 40 % on Nakamoto (Main Stage), 20 % on Turing and
+Hopper (`FLOOR_FREE` in `StageDisplay.tsx`). The Digital Assets Day mark is
+three times as large at the top left, the stage and clock sit at the top
+centre, the session runs down the left under the mark and the speakers are
+at the top right, with what comes next under them. Breaks and the pause
+screen keep to the same area. Speaker slides stay full screen.

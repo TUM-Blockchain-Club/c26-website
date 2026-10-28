@@ -13,6 +13,14 @@ import type { StagePerson, StageSlot } from "@/components/stage/stageData";
 import { playIntroSting } from "@/components/stage/introSound";
 import { DeckPage, RemotePage, openRemote } from "@/components/stage/DeckPage";
 import {
+  OPENING_CSS,
+  OPENING_IMAGES,
+  OPENING_SESSION,
+  OPENING_SLIDES,
+  OpeningSlide,
+  type OpeningSlideId,
+} from "@/components/stage/OpeningDeck";
+import {
   listDecks,
   onDecksChanged,
   type DeckMeta,
@@ -25,7 +33,7 @@ import {
  *
  * Each session is a short run of cues:
  *
- *   Up next → Intro (ring, music) → On stage → Slides 1…n → Thank you
+ *   Up next → Intro (ring, music) → On stage → Slides 1…n
  *
  * "On stage" holds the speakers' photos, names and title while they walk
  * up. If a PDF was uploaded for the session on the studio page, its pages
@@ -113,16 +121,27 @@ const munich = (ms: number) => {
  * is laid out in a frame of that shape, centred, with black above and below
  * when the computer sends a taller picture, so nothing falls off the edge.
  * Hopper is a plain 1920 x 1080 and needs no entry. */
+/** On the Digital Assets Day the panel sits in front of the wall, so the
+ * lower part of each screen stays empty: the share of the height kept free,
+ * per room. The logo grows, the stage and clock move to the top centre and
+ * the speakers to the top right, above the chairs. */
+const FLOOR_FREE: Record<string, number> = {
+  nakamoto: 0.4,
+  turing: 0.2,
+  hopper: 0.2,
+};
+
 const WIDE_ROOMS: Record<string, [number, number]> = {
   nakamoto: [2880, 1026],
   turing: [3840, 1152],
 };
 
-type CueKind = "upnext" | "intro" | "onstage" | "deck" | "thanks" | "break";
+type CueKind = "upnext" | "intro" | "onstage" | "deck" | "break";
 /** Where a slide cue comes from: the studio PDF on this computer, or a
  * file uploaded on the session in Strapi. */
 type DeckRef =
   | { from: "local"; page: number }
+  | { from: "opening"; slide: OpeningSlideId; page: number }
   | { from: "strapi"; src: string; kind: "pdf" | "image"; page: number };
 type Cue = {
   kind: CueKind;
@@ -138,7 +157,6 @@ const CUE_LABEL: Record<CueKind, string> = {
   intro: "Intro",
   onstage: "On stage",
   deck: "Slides",
-  thanks: "Thank you",
   break: "Break",
 };
 
@@ -169,6 +187,15 @@ const buildCues = (
                 page: i + 1,
               })),
         );
+    // The opening ceremony brings its own slides when nothing was uploaded.
+    if (!refs.length && slot.id === OPENING_SESSION)
+      refs.push(
+        ...OPENING_SLIDES.map((slide, i) => ({
+          from: "opening" as const,
+          slide,
+          page: i + 1,
+        })),
+      );
     return [
       { kind: "upnext", slot, key: `${slot.id}:upnext` },
       { kind: "intro", slot, key: `${slot.id}:intro` },
@@ -181,7 +208,6 @@ const buildCues = (
         deck,
         key: `${slot.id}:deck:${i + 1}`,
       })),
-      { kind: "thanks", slot, key: `${slot.id}:thanks` },
     ];
   });
 
@@ -613,9 +639,12 @@ export const StageDisplay = ({
       "/logos/c26-wordmark-no-hackathon.svg",
       "/logos/digital-assets-day-logo.png",
     ]);
+    if (daySlots.some((sl) => sl.id === OPENING_SESSION))
+      for (const src of OPENING_IMAGES) srcs.add(src);
     for (const sl of daySlots) {
       for (const p of sl.people) if (p.photo) srcs.add(p.photo);
       for (const sp of sl.trackSponsors ?? []) srcs.add(sp.src);
+      for (const sp of sl.sponsors ?? []) srcs.add(sp.src);
       for (const f of sl.slides ?? []) if (f.kind === "image") srcs.add(f.src);
     }
     preloaded.current = [...srcs].map((src) => {
@@ -666,6 +695,8 @@ export const StageDisplay = ({
   const upcoming = nextTalk(index);
   const nextCue = cues[index + 1];
   const introActive = cue?.kind === "intro" && introRun > 0;
+  const floor =
+    event === "digital-assets-day" ? (FLOOR_FREE[roomSlug] ?? 0) : 0;
 
   introOn.current = introActive;
 
@@ -674,7 +705,7 @@ export const StageDisplay = ({
       ref={rootRef}
       className={`stg-root ${introActive ? "is-intro" : ""} ${
         WIDE_ROOMS[roomSlug] ? "is-wide" : ""
-      }`}
+      } ${floor ? "is-floor" : ""}`}
       data-brand={event}
       onMouseMove={showPanel}
       style={
@@ -685,6 +716,7 @@ export const StageDisplay = ({
           "--glowA": brand.glowA,
           "--glowB": brand.glowB,
           "--acc": brand.accent,
+          ...(floor && { "--floor": floor }),
           ...(WIDE_ROOMS[roomSlug] && {
             "--r": WIDE_ROOMS[roomSlug][0] / WIDE_ROOMS[roomSlug][1],
           }),
@@ -728,8 +760,8 @@ export const StageDisplay = ({
               : cue.kind === "onstage" || (cue.kind === "intro" && !introActive)
                 ? `on-${cue.slot.id}`
                 : cue.kind === "upnext" ||
-                    cue.kind === "thanks" ||
-                    cue.kind === "break"
+                    cue.kind === "break" ||
+                    cue.deck?.from === "opening"
                   ? cue.key
                   : "none"
           }
@@ -753,11 +785,15 @@ export const StageDisplay = ({
               manual
             />
           )}
-          {cue?.kind === "thanks" && (
-            <Thanks key={cue.key} slot={cue.slot} next={upcoming} />
-          )}
           {cue?.kind === "break" && (
             <Break key={cue.key} slot={cue.slot} next={upcoming} now={now} />
+          )}
+          {cue?.deck?.from === "opening" && (
+            <OpeningSlide
+              key={cue.key}
+              id={cue.deck.slide}
+              sponsors={cue.slot.sponsors ?? []}
+            />
           )}
         </SceneFader>
       </main>
@@ -1296,34 +1332,6 @@ const Wrap = ({ nextDay }: { nextDay?: StageSlot } = {}) => (
   </section>
 );
 
-const Thanks = ({ slot, next }: { slot: StageSlot; next?: StageSlot }) => (
-  <section className="stg-scene stg-center">
-    <Label>Thank you</Label>
-    <h1
-      className={`stg-title stg-names ${slot.people.length > 3 ? "is-many" : ""}`}
-    >
-      {slot.people.length
-        ? slot.people
-            .filter((p) => !p.moderator)
-            .map((p) => <span key={p.name}>{p.name}</span>)
-        : slot.title}
-    </h1>
-    {slot.people
-      .filter((p) => p.moderator)
-      .map((p) => (
-        <p key={p.name} className="stg-thanks-mod">
-          <span className="stg-tag">Moderator</span> {p.name}
-        </p>
-      ))}
-    {slot.people.length > 0 && (
-      <p className="stg-lede">
-        <TitleLines title={slot.title} />
-      </p>
-    )}
-    <Ticker label="Up next" slot={next} />
-  </section>
-);
-
 const Pause = ({ next }: { next?: StageSlot }) => (
   <div className="stg-pause">
     <section className="stg-scene stg-center">
@@ -1455,8 +1463,8 @@ const Intro = ({
 /* -------------------------------------------------------------------- css */
 
 const CSS = `
-.stg-root{--fw:100vw;--u:min(1vw,1.7778vh);--bg:#0a090c;--ink:#f5f3f7;--mute:rgba(245,243,247,.8);--line:rgba(245,243,247,.14);position:fixed;inset:0;z-index:20000;background:var(--bg);color:var(--ink);overflow:hidden;cursor:none;font-feature-settings:"tnum" 1,"ss01" 1}
-.stg-root.is-wide{--fw:min(100vw,calc(var(--r)*100vh));--u:min(calc(1.7778vw/var(--r)),1.7778vh);inset:auto;left:50%;top:50%;translate:-50% -50%;width:var(--fw);height:min(calc(100vw/var(--r)),100vh);box-shadow:0 0 0 100vmax #000}
+.stg-root{--fw:100vw;--fh:100vh;--u:min(1vw,1.7778vh);--bg:#0a090c;--ink:#f5f3f7;--mute:rgba(245,243,247,.8);--line:rgba(245,243,247,.14);position:fixed;inset:0;z-index:20000;background:var(--bg);color:var(--ink);overflow:hidden;cursor:none;font-feature-settings:"tnum" 1,"ss01" 1}
+.stg-root.is-wide{--fw:min(100vw,calc(var(--r)*100vh));--fh:min(calc(100vw/var(--r)),100vh);--u:min(calc(1.7778vw/var(--r)),1.7778vh);inset:auto;left:50%;top:50%;translate:-50% -50%;width:var(--fw);height:min(calc(100vw/var(--r)),100vh);box-shadow:0 0 0 100vmax #000}
 .stg-root:hover{cursor:default}
 .stg-bg{position:absolute;inset:0;pointer-events:none}
 .stg-ring{position:absolute;right:calc(var(--u)*-34);top:calc(50% - var(--u)*60);width:calc(var(--u)*120);aspect-ratio:3264/4096;transform-origin:51.1% 46.58%;opacity:.32;will-change:transform,opacity;transition:translate 1.4s cubic-bezier(.65,0,.25,1),scale 1.4s cubic-bezier(.65,0,.25,1),opacity 1.4s ease}
@@ -1592,9 +1600,6 @@ const CSS = `
 .stg-break-next .stg-people{margin-top:calc(var(--u)*2.2)}
 .stg-center{justify-content:center;gap:calc(var(--u)*.4)}
 .stg-center .stg-label{margin-bottom:calc(var(--u)*1.4)}
-.stg-names{display:flex;flex-wrap:wrap;gap:0 calc(var(--u)*2.6);font-size:calc(var(--u)*6)}
-.stg-names.is-many{font-size:calc(var(--u)*3.8)}
-.stg-names em{font-style:normal;font-weight:400;font-size:calc(var(--u)*1.2);letter-spacing:.01em;color:var(--acc);margin-left:calc(var(--u)*.8);vertical-align:super}
 .stg-center .stg-ticker{margin-top:auto}
 
 .stg-pause{position:absolute;inset:0;z-index:6;background:var(--bg);padding:calc(var(--u)*11.5) calc(var(--u)*5) calc(var(--u)*4.4);animation:stg-fade .9s ease both}
@@ -1630,8 +1635,6 @@ const CSS = `
 .stg-intro-faces figcaption{display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*.3);min-height:calc(var(--u)*1.2)}
 .stg-intro-faces .stg-tag{align-self:center;margin:0}
 .stg-intro-cap{font-size:calc(var(--u)*1.4);font-weight:700;color:#fff;max-width:calc(var(--u)*16);line-height:1.25}
-.stg-thanks-mod{margin:calc(var(--u)*1.4) 0 0;display:flex;align-items:center;gap:calc(var(--u)*1);font-size:calc(var(--u)*1.9);font-weight:700}
-.stg-thanks-mod .stg-tag{align-self:center}
 .stg-intro-mask{display:block;overflow:hidden;padding-bottom:.28em;margin-bottom:-.2em}
 .stg-intro-name{display:block;font-weight:800;font-size:calc(var(--u)*5.2);line-height:1.1;letter-spacing:-.025em;color:var(--acc);text-wrap:balance;transform:translateY(110%);animation:stg-up 1s cubic-bezier(.2,.8,.1,1) 3.45s forwards}
 @keyframes stg-up{to{transform:none}}
@@ -1678,4 +1681,39 @@ const CSS = `
 @keyframes stg-float{to{transform:translateY(calc(var(--u)*-.8))}}
 @keyframes stg-mark-fade{to{opacity:0;transform:translateY(calc(var(--u)*-1.5))}}
 @media (prefers-reduced-motion:reduce){.stg-root *{animation-duration:.01ms!important;animation-delay:0s!important;transition:none!important}.stg-intro-name{transform:none}}
+/* Digital Assets Day: the lower part stays free for the panel in front.
+   Left: the big mark, then the session; right: the speakers under the
+   clock, then what comes next. Sizes are fixed so nothing shrinks. */
+.stg-root.is-floor .stg-dad-solo{height:calc(var(--u)*13.2)}
+.stg-root.is-floor .stg-top{align-items:flex-start}
+.stg-root.is-floor .stg-where{position:absolute;left:50%;top:calc(var(--u)*.6);translate:-50% 0}
+.stg-root.is-floor .stg-stage{font-size:calc(var(--u)*1.5)}
+.stg-root.is-floor .stg-clock{font-size:calc(var(--u)*2.2)}
+.stg-root.is-floor .stg-main{top:calc(var(--u)*4);bottom:calc(var(--floor)*100%)}
+.stg-root.is-floor .stg-session{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);grid-template-rows:1fr auto;column-gap:calc(var(--u)*5)}
+.stg-root.is-floor .stg-session .stg-head{grid-column:1;grid-row:1 / span 2;align-self:start;padding-top:calc(var(--u)*14.4)}
+.stg-root.is-floor .stg-session .stg-title,.stg-root.is-floor .stg-session .stg-title.is-mid{font-size:calc(var(--u)*3.6*var(--fit,1))}
+.stg-root.is-floor .stg-session .stg-title.is-long{font-size:calc(var(--u)*2.9*var(--fit,1))}
+.stg-root.is-floor .stg-session .stg-ticker{grid-column:2;grid-row:2;margin-top:calc(var(--u)*1.2)}
+.stg-root.is-floor :is(.stg-session,.stg-break-next) .stg-people{grid-column:2;grid-row:1;margin:0;align-self:start;padding-top:calc(var(--u)*4.6);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:calc(var(--u)*1.4*var(--fit,1)) calc(var(--u)*2)}
+.stg-root.is-floor :is(.stg-session,.stg-break-next) .stg-people[data-n="1"]{grid-template-columns:1fr}
+.stg-root.is-floor :is(.stg-session,.stg-break-next) .stg-people[data-n="2"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+.stg-root.is-floor :is(.stg-session,.stg-break-next) .stg-people li{flex-direction:row;align-items:center;gap:calc(var(--u)*1.2)}
+.stg-root.is-floor :is(.stg-session,.stg-break-next) .stg-people .stg-portrait{width:calc(var(--u)*7*var(--fit,1));height:calc(var(--u)*7*var(--fit,1))}
+.stg-root.is-floor :is(.stg-session,.stg-break-next) .stg-people[data-n="1"] .stg-portrait{width:calc(var(--u)*13);height:calc(var(--u)*13)}
+.stg-root.is-floor :is(.stg-session,.stg-break-next) .stg-people .stg-name{font-size:calc(var(--u)*1.7*var(--fit,1))}
+.stg-root.is-floor :is(.stg-session,.stg-break-next) .stg-people .stg-role{font-size:calc(var(--u)*1.2*max(var(--fit,1),.85))}
+.stg-root.is-floor :is(.stg-session,.stg-break-next) .stg-people .stg-company{font-size:calc(var(--u)*1.3*max(var(--fit,1),.85))}
+.stg-root.is-floor :is(.stg-session,.stg-break-next) .stg-people[data-n="1"] .stg-name{font-size:calc(var(--u)*3)}
+.stg-root.is-floor :is(.stg-session,.stg-break-next) .stg-people[data-n="1"] .stg-role{font-size:calc(var(--u)*1.6)}
+.stg-root.is-floor :is(.stg-session,.stg-break-next) .stg-people[data-n="1"] .stg-company{font-size:calc(var(--u)*1.9)}
+
+.stg-root.is-floor .stg-break{grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);align-items:start}
+.stg-root.is-floor .stg-break-main{justify-content:flex-start;padding-top:calc(var(--u)*14.4);gap:calc(var(--u)*1)}
+.stg-root.is-floor .stg-break-main .stg-huge{font-size:calc(var(--u)*4.6*var(--fit,1))}
+.stg-root.is-floor .stg-break-next{justify-content:flex-start;padding-top:calc(var(--u)*4.6)}
+.stg-root.is-floor .stg-break-next .stg-subtitle{font-size:calc(var(--u)*2.3*var(--fit,1))}
+.stg-root.is-floor .stg-break-next .stg-people{margin-top:calc(var(--u)*1.4);padding-top:0}
+.stg-root.is-floor .stg-pause{padding-bottom:calc(var(--floor)*var(--fh) + var(--u)*2)}
+${OPENING_CSS}
 `;
