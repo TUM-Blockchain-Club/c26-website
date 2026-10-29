@@ -740,6 +740,9 @@ export const StageDisplay = ({
   // picture goes to an ordinary projector instead of the LED wall.
   const wide =
     params.get("format") === "landscape" ? undefined : WIDE_ROOMS[roomSlug];
+  // Slides sit as a card over the background only on the wide LED walls; on
+  // a 16:9 screen (Hopper, or a wide room as landscape) they fill it on black.
+  const framed = FRAMED_DECK.has(roomSlug) && !!wide;
 
   introOn.current = introActive;
 
@@ -750,7 +753,7 @@ export const StageDisplay = ({
         wide ? "is-wide" : ""
       } ${floor ? "is-floor" : ""} ${
         floor || SIDE_ROOMS.has(roomSlug) ? "is-side" : ""
-      } ${FRAMED_DECK.has(roomSlug) ? "is-framed-deck" : ""}`}
+      } ${framed ? "is-framed-deck" : ""}`}
       data-brand={event}
       onMouseMove={showPanel}
       style={
@@ -809,7 +812,7 @@ export const StageDisplay = ({
                     cue.kind === "wrap" ||
                     cue.deck?.from === "opening"
                   ? cue.key
-                  : cue.kind === "deck" && FRAMED_DECK.has(roomSlug)
+                  : cue.kind === "deck" && framed
                     ? `deck-${cue.slot.id}`
                     : "none"
           }
@@ -842,11 +845,9 @@ export const StageDisplay = ({
             ) : (
               <Break key={cue.key} slot={cue.slot} next={upcoming} now={now} />
             ))}
-          {cue?.kind === "deck" &&
-            cue.deck?.from !== "opening" &&
-            FRAMED_DECK.has(roomSlug) && (
-              <DeckSide key={`deck-${cue.slot.id}`} slot={cue.slot} />
-            )}
+          {cue?.kind === "deck" && cue.deck?.from !== "opening" && framed && (
+            <DeckSide key={`deck-${cue.slot.id}`} slot={cue.slot} />
+          )}
           {cue?.deck?.from === "opening" && (
             <OpeningSlide
               key={cue.key}
@@ -1174,8 +1175,14 @@ const TrackLine = ({
   slot.track && slot.track !== "General Interest" ? (
     <div className="stg-track">
       <span className="stg-track-name">{slot.track} track</span>
-      {logos && slot.trackSponsors && slot.trackSponsors.length > 0 && (
-        <>
+      {/* Hidden rather than left out while the talk runs, so "On stage"
+          keeps the size "Up next" had and nothing jumps between them. */}
+      {slot.trackSponsors && slot.trackSponsors.length > 0 && (
+        <span
+          className="stg-track-sponsors"
+          style={logos ? undefined : { visibility: "hidden" }}
+          aria-hidden={!logos}
+        >
           <span className="stg-track-by">presented by</span>
           <span className="stg-track-logos">
             {slot.trackSponsors.map((sp) => (
@@ -1188,7 +1195,7 @@ const TrackLine = ({
               </span>
             ))}
           </span>
-        </>
+        </span>
       )}
     </div>
   ) : null;
@@ -1627,6 +1634,7 @@ const CSS = `
 .stg-track{display:flex;align-items:center;gap:calc(var(--u)*1.2);flex-wrap:wrap}
 .stg-track-name{font-weight:600;font-size:calc(var(--u)*1.2);letter-spacing:.01em;color:var(--acc)}
 .stg-track-by{font-weight:600;font-size:calc(var(--u)*1.2);letter-spacing:.01em;color:var(--mute)}
+.stg-track-sponsors{display:contents}
 .stg-track-logos{display:flex;gap:calc(var(--u)*.8);align-items:center}
 .stg-track-plate{display:flex;align-items:center;justify-content:center;height:calc(var(--u)*3.4);padding:0 calc(var(--u)*1);border-radius:calc(var(--u)*.4)}
 .stg-track-plate.is-light{background:#fff}
