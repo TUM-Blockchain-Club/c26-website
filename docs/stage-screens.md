@@ -121,6 +121,15 @@ The sponsors come live from Strapi, grouped by tier. Figma's first slide
 replaces them, as for any other session. Pictures are in
 `public/stage/opening/`.
 
+## Nakamoto layout
+
+On Nakamoto (Main Stage), every day, the stage name and clock sit at the
+top centre, the session on the left and the speakers large in their own
+column on the right, never under the text (`SIDE_ROOMS`): one speaker with
+a big portrait, two or four in two columns, three or five and more in
+three. Every room with a free floor on the Digital Assets Day uses the same
+layout.
+
 ## Digital Assets Day layout
 
 On 30 October the panel sits in front of the wall, so the lower part of
