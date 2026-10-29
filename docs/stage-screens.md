@@ -123,6 +123,9 @@ replaces them, as for any other session. Pictures are in
 `public/stage/opening/`. The look is deliberately plain: solid type, thin
 grey rules, no gradients or glows, and every element only fades in
 (opacity, no movement or scaling), so nothing jumps or stutters on the wall.
+Inside a slide nothing animates at all, there are no rules or dots, and
+only the core text is left: no kicker labels except on the sponsor and
+organizer slides, no edition line, no pillars under the statement.
 
 ## Nakamoto and Turing layout
 
@@ -150,7 +153,8 @@ or more speakers sit in two columns, so the speakers' column clears it.
 other.
 
 Scene changes: the old scene fades out in 0.35 s before the new one rises
-in, and the shrink-to-fit is measured as the new scene will stand once
+in, keeping its own size while it fades (the shrink-to-fit is set on each
+scene's layer, not on the shared container), and the shrink-to-fit is measured as the new scene will stand once
 its entrance is over, so nothing loads smaller first or keeps the old
 title on screen.
 

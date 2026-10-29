@@ -158,12 +158,9 @@ const Title = () => (
 
 const Story = () => (
   <section className="stg-scene op op-story">
-    <Label>Our story</Label>
     <ol className="op-years">
-      <span className="op-years-line op-draw" style={d(0.3)} aria-hidden />
       {YEARS.map((y, i) => (
         <li key={y.year} className={y.photo ? undefined : "is-now"}>
-          <span className="op-years-dot op-pop" style={d(0.45 + i * 0.2)} />
           <span className="op-years-year op-rise" style={d(0.5 + i * 0.2)}>
             {y.year}
           </span>
@@ -181,9 +178,6 @@ const YearSlide = ({ y, live }: { y: Year; live?: OpeningFacts }) => {
   return (
     <section className="stg-scene op op-year">
       <div className="op-year-text">
-        <span className="op-year-edition op-rise" style={d(0.25)}>
-          {y.edition}
-        </span>
         <span className="op-year-num op-rise" style={d(0.35)}>
           {y.year}
         </span>
@@ -216,26 +210,16 @@ const YearSlide = ({ y, live }: { y: Year; live?: OpeningFacts }) => {
 /* Why: the website's own words (constants/mediaPortal.ts, Manifesto). */
 const Why = () => (
   <section className="stg-scene op op-why">
-    <Label>Why we do this</Label>
     <p className="op-statement op-rise" style={d(0.35)}>
       Built for the entire blockchain ecosystem: curious newcomers, students,
       builders, researchers, founders, policymakers and industry leaders.
     </p>
-    <ul className="op-pillars">
-      {["Run by students", "Non-profit", "Open to everyone"].map((title, i) => (
-        <li key={title} className="op-rise" style={d(0.8 + i * 0.15)}>
-          <span className="op-pillar-rule op-draw" style={d(0.8 + i * 0.15)} />
-          <strong>{title}</strong>
-        </li>
-      ))}
-    </ul>
   </section>
 );
 
 /* Goals: as the organisers put them in the "C26 Opening" deck. */
 const Goals = () => (
   <section className="stg-scene op op-goals">
-    <Label>What we want to achieve</Label>
     <ol className="op-goal-list">
       {[
         "Connect students with the industry",
@@ -244,7 +228,6 @@ const Goals = () => (
         "Make Munich a home for Web3",
       ].map((text, i) => (
         <li key={text} className="op-rise" style={d(0.4 + i * 0.15)}>
-          <span className="op-goal-rule op-draw" style={d(0.4 + i * 0.15)} />
           <span className="op-goal-no">0{i + 1}</span>
           <span className="op-goal-text">{text}</span>
         </li>
@@ -257,7 +240,6 @@ const Goals = () => (
    portal, its 09:00 Friday start from hackathon.tum-blockchain.com. */
 const Agenda = () => (
   <section className="stg-scene op op-agenda">
-    <Label>Three days</Label>
     <div className="op-days">
       {(
         [
@@ -356,7 +338,6 @@ const Plan = ({
    agenda (constants/digitalAssetsDayAgenda.ts). */
 const Stages = () => (
   <section className="stg-scene op op-stages">
-    <Label>Stages</Label>
     <div className="op-plans">
       <Plan
         title="Ground floor"
@@ -382,7 +363,6 @@ const Stages = () => (
 
 const Qr = () => (
   <section className="stg-scene op op-qr">
-    <Label>Current sessions at a glance</Label>
     <div className="op-qr-row">
       <div className="op-qr-tile op-pop" style={d(0.4)}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -514,7 +494,6 @@ const Organizers = () => (
           style={d(0.4)}
         />
       </div>
-      <span className="op-org-divider op-grow" style={d(0.8)} aria-hidden />
       <div className="op-org-side">
         <p className="op-org-cap op-rise" style={d(1)}>
           Digital Assets Day curated by
@@ -573,6 +552,7 @@ export const OPENING_CSS = `
 /* clip, so the rise animations starting lower down never read as overflow
    to the screen's shrink-to-fit; the margin keeps descenders and halos */
 .op{--ease:cubic-bezier(.22,.61,.36,1);gap:calc(var(--u)*2);overflow:clip;overflow-clip-margin:calc(var(--u)*2)}
+.op-rise,.op-pop,.op-draw,.op-grow,.op-wipe,.op-spin-in,.op-year-media,.op-pin{animation:none!important}
 .op-rise{animation:op-rise .7s ease-out both;animation-delay:var(--d,0s)}
 .op-pop{animation:op-pop .7s ease-out both;animation-delay:var(--d,0s)}
 .op-draw{transform-origin:0 50%;animation:op-draw .7s ease-out both;animation-delay:var(--d,0s)}
@@ -602,10 +582,7 @@ export const OPENING_CSS = `
 .op-story .stg-label{position:absolute;top:0}
 .op-story{justify-content:center}
 .op-years{position:relative;flex:none;min-height:0;list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:calc(var(--u)*3)}
-.op-years-line{position:absolute;left:0;right:0;top:calc(var(--u)*.55);height:1px;background:var(--line)}
 .op-years li{position:relative;display:flex;flex-direction:column;min-width:0;padding-top:calc(var(--u)*2.2)}
-.op-years-dot{position:absolute;left:0;top:0;width:calc(var(--u)*1.1);height:calc(var(--u)*1.1);border-radius:50%;background:var(--ink)}
-.op-years .is-now .op-years-dot{background:var(--b)}
 .op-years-year{font-weight:800;font-size:calc(var(--u)*6.4);line-height:1;letter-spacing:-.03em;padding-bottom:.08em}
 .op-years .is-now .op-years-year{color:var(--ink)}
 .op-years-venue{margin-top:calc(var(--u)*.9);font-weight:700;font-size:calc(var(--u)*2.2)}
@@ -613,11 +590,10 @@ export const OPENING_CSS = `
 /* one year */
 .op-year{flex-direction:row;gap:calc(var(--u)*5)}
 .op-year-text{flex:0 0 auto;width:calc(var(--u)*50);display:flex;flex-direction:column;justify-content:center;min-width:0}
-.op-year-edition{margin-top:calc(var(--u)*1.4);font-weight:700;font-size:calc(var(--u)*1.4);color:var(--acc)}
 .op-year-num{font-weight:800;font-size:calc(var(--u)*9*var(--fit,1));line-height:1;letter-spacing:-.04em;padding-bottom:.08em}
 .op-year-venue{margin:calc(var(--u)*.6) 0 0;font-weight:800;font-size:calc(var(--u)*3.4*var(--fit,1));line-height:1.1;letter-spacing:-.02em;padding-bottom:.08em}
 .op-year-facts{margin:calc(var(--u)*2.6) 0 0;display:flex;gap:calc(var(--u)*3.2);flex-wrap:wrap}
-.op-year-facts div{display:flex;flex-direction:column;gap:calc(var(--u)*.3);padding-top:calc(var(--u)*.9);border-top:1px solid var(--line);min-width:calc(var(--u)*8)}
+.op-year-facts div{display:flex;flex-direction:column;gap:calc(var(--u)*.3);padding-top:calc(var(--u)*.9);min-width:calc(var(--u)*8)}
 .op-year-facts dt{font-weight:800;font-size:calc(var(--u)*3);line-height:1;letter-spacing:-.02em}
 .op-year-facts dd{margin:0;font-size:calc(var(--u)*1.25);color:var(--mute)}
 .op-year-media{flex:1;min-width:0;position:relative;overflow:hidden;border-radius:calc(var(--u)*.8);animation:op-pop .7s ease-out .2s both}
@@ -628,11 +604,6 @@ export const OPENING_CSS = `
 /* why */
 .op-why{justify-content:center}
 .op-statement{margin:calc(var(--u)*.6) 0 0;font-weight:800;font-size:calc(var(--u)*4*var(--fit,1));line-height:1.15;letter-spacing:-.02em;max-width:calc(var(--u)*105);text-wrap:balance}
-.op-pillars{list-style:none;margin:calc(var(--u)*4) 0 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:calc(var(--u)*4);max-width:calc(var(--u)*130)}
-.op-pillars li{position:relative;display:flex;flex-direction:column;gap:calc(var(--u)*.5);padding-top:calc(var(--u)*1.2)}
-.op-pillar-rule,.op-goal-rule{position:absolute;left:0;right:0;top:0;height:1px;background:var(--line)}
-.op-pillars strong{font-size:calc(var(--u)*2.2);font-weight:800}
-.op-pillars span:not(.op-pillar-rule){font-size:calc(var(--u)*1.4);color:var(--mute)}
 
 /* goals */
 .op-goals{justify-content:center}
@@ -644,14 +615,14 @@ export const OPENING_CSS = `
 /* agenda */
 .op-agenda{justify-content:center}
 .op-days{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:calc(var(--u)*4);row-gap:calc(var(--u)*2.2);margin-top:calc(var(--u)*1)}
-.op-day-head{display:flex;align-items:flex-end;gap:calc(var(--u)*1.2);padding-bottom:calc(var(--u)*1.2);border-bottom:1px solid var(--line)}
+.op-day-head{display:flex;align-items:flex-end;gap:calc(var(--u)*1.2);padding-bottom:calc(var(--u)*1.2)}
 .op-day-num{font-weight:800;font-size:calc(var(--u)*7);line-height:.9;letter-spacing:-.04em}
 .op-day-name{font-weight:600;font-size:calc(var(--u)*1.4);line-height:1.25;color:var(--mute);padding-bottom:calc(var(--u)*.4)}
 .op-day-event{display:flex;flex-direction:column;align-items:flex-start;gap:calc(var(--u)*1);min-width:0}
 .op-day-event span{font-size:calc(var(--u)*1.4);color:var(--mute)}
 .op-day-c26{height:calc(var(--u)*8);width:auto}
 .op-day-dad{width:min(100%,calc(var(--u)*30));height:auto}
-.op-hack{grid-column:2 / span 2;display:flex;align-items:center;gap:calc(var(--u)*3);padding:calc(var(--u)*1.4) calc(var(--u)*2.4);border-radius:calc(var(--u)*.8);background:rgba(255,255,255,.035);border:1px solid var(--line)}
+.op-hack{grid-column:2 / span 2;display:flex;align-items:center;gap:calc(var(--u)*3);padding:calc(var(--u)*1.4) calc(var(--u)*2.4);border-radius:calc(var(--u)*.8);background:none;border:0;padding-left:0}
 .op-hack-script{height:calc(var(--u)*3.8);width:auto}
 .op-hack-text{display:flex;flex-direction:column;gap:calc(var(--u)*.3)}
 .op-hack-text strong{font-size:calc(var(--u)*2.2);font-weight:800}
@@ -661,7 +632,7 @@ export const OPENING_CSS = `
 .op-plans{flex:1;min-height:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:calc(var(--u)*4)}
 .op-plan{margin:0;display:flex;flex-direction:column;gap:calc(var(--u)*1);min-width:0;min-height:0}
 .op-plan figcaption{font-weight:700;font-size:calc(var(--u)*1.4);color:var(--mute)}
-.op-plan-box{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;border-radius:calc(var(--u)*.8);background:rgba(255,255,255,.035);padding:calc(var(--u)*1.2)}
+.op-plan-box{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:calc(var(--u)*1.2)}
 .op-plan-img{position:relative;height:100%;max-width:100%}
 .op-plan-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:.92}
 .op-pin{position:absolute;display:flex;align-items:center;gap:calc(var(--u)*.5);transform:translate(calc(var(--u)*-1.1),-50%);animation:op-pop .7s ease-out both;animation-delay:var(--d,0s)}
@@ -704,7 +675,6 @@ export const OPENING_CSS = `
 .op-org-row{display:flex;align-items:center;justify-content:center;gap:calc(var(--u)*7)}
 .op-org-side{display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*1.6)}
 .op-org-tbc{height:calc(var(--u)*12*var(--fit,1));width:auto}
-.op-org-divider{width:1px;align-self:stretch;min-height:calc(var(--u)*24);background:var(--line)}
 .op-org-cap{margin:0;font-size:calc(var(--u)*1.7);color:var(--mute)}
 .op-org-dad{width:calc(var(--u)*34*var(--fit,1));height:auto}
 `;
