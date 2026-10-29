@@ -145,6 +145,10 @@ screen keep to the same area, and so do speaker slides on Nakamoto. On
 16:9 screens the mark is twice rather than three times as large, and four
 or more speakers sit in two columns, so the speakers' column clears it.
 
+"On stage" keeps the room the track sponsors' logos took on "Up next"
+(hidden, not removed), so a session stays the same size from one to the
+other.
+
 Scene changes: the old scene fades out in 0.35 s before the new one rises
 in, and the shrink-to-fit is measured as the new scene will stand once
 its entrance is over, so nothing loads smaller first or keeps the old
@@ -153,7 +157,8 @@ title on screen.
 ## Turing as 16:9
 
 `?format=landscape` runs a wide room as a plain 16:9 screen instead of its
-LED wall's shape, for an ordinary projector. The start page links Turing's
+LED wall's shape, for an ordinary projector. Slides then fill the screen on
+black, as on Hopper; the card over the background is only for the wide walls. The start page links Turing's
 days in that format too.
 
 ## Sponsors thank-you
