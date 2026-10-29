@@ -158,3 +158,31 @@ days in that format too.
 Every lunch break shows all sponsors from Strapi with "Thank you to our
 sponsors" and what comes after the break. Each day ends on its own cue
 after the last session: "That's a wrap for today" with all sponsors.
+
+## Opening slides: sources
+
+Only claims with a source are on the opening slides:
+
+- 2023, 1st edition: Deutsches Museum (Forum der Zukunft), 22 to 23
+  September, over 50 talks, panels and workshops. BTC-ECHO, 8 Sep 2023,
+  and the Qwoted event listing. "1st" follows from the 2025 manifesto
+  (sections/Manifesto.tsx) calling 2025 the 3rd iteration.
+- 2024, 2nd edition: Deutsches Museum, 12 to 13 September. Luma event page
+  (luma.com/195dfymh).
+- 2025, 3rd edition: House of Communication (sections/Venue.tsx), 1,200+
+  attendees, 125+ speakers, 18 sponsors (sections/Statistic.tsx,
+  constants/mediaPortal.ts).
+- 2026: dates and venue from the site; sessions (by distinct title),
+  speakers (distinct people on stage, moderators included) and sponsors
+  counted live from Strapi.
+- Why we do this: the site's own words (media portal, manifesto).
+- Goals: as the organisers wrote them in the "C26 Opening" Figma deck.
+- Agenda: the Hackathon's 32 hours from the media portal, its Friday 09:00
+  start from hackathon.tum-blockchain.com/schedule.
+- Stages: room names as on the floor plans, Friday's stage names from the
+  agenda.
+
+Dropped from the Figma deck for lack of a source: 2024's "1,000+ visitors,
+100 talks", "we expanded into the Deutsches Museum" (2023 was already
+there), 2025's "1,100+" (the site says 1,200+) and the Saturday 17:30
+closing time.

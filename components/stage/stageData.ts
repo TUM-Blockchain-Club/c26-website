@@ -59,8 +59,11 @@ export type StageSlot = {
   /** The Digital Assets Day focus track, and who presents it. */
   track?: string;
   trackSponsors?: { name: string; src: string; light: boolean }[];
-  /** Every sponsor, for the opening ceremony's thank-you slide only. */
+  /** Every sponsor, where the screen thanks them. */
   sponsors?: StageSponsor[];
+  /** This year's programme in numbers, counted from Strapi, for the opening
+   * ceremony only. */
+  facts?: { sessions: number; speakers: number; sponsors: number };
   /** Slides from Strapi that the screen can show: PDFs and images. */
   slides?: { src: string; kind: "pdf" | "image"; name: string }[];
   /** Files on the session the screen cannot show (PowerPoint, Keynote…);
@@ -188,6 +191,21 @@ export const getStageSlots = async (room: StageRoom): Promise<StageSlot[]> => {
     light: sp.background === "light",
   }));
   slots.sort((a, b) => a.start - b.start || a.end - b.end);
+  const opening = slots.find((sl) => sl.id === OPENING_SESSION);
+  if (opening) {
+    // Counted, not claimed: every talk, panel and keynote on the agenda, the
+    // distinct people on them and the sponsors listed in Strapi.
+    const talks = entries.filter((e) => e.kind === "talk");
+    const people = new Set(
+      talks.flatMap((e) => peopleOf(e).map((p) => bareName(p.name))),
+    );
+    opening.facts = {
+      // By title, so a session mirrored on two stages counts once.
+      sessions: new Set(talks.map((e) => e.title ?? e.id)).size,
+      speakers: people.size,
+      sponsors: new Set(sponsors.map((sp) => sp.name)).size,
+    };
+  }
   const lastOfDay = new Map<string, StageSlot>();
   for (const sl of slots) lastOfDay.set(dayOf(sl.start), sl);
   for (const sl of slots)
