@@ -59,7 +59,6 @@ type Year = {
   year: string;
   edition: string;
   venue: string;
-  when?: string;
   facts: Fact[];
   photo?: string;
 };
@@ -70,7 +69,6 @@ const YEARS: Year[] = [
     year: "2023",
     edition: "1st edition",
     venue: "Deutsches Museum",
-    when: "22 to 23 September",
     facts: [{ value: "50+", label: "Talks, panels and workshops" }],
     photo: `${IMG}/year-2023.jpg`,
   },
@@ -79,7 +77,6 @@ const YEARS: Year[] = [
     year: "2024",
     edition: "2nd edition",
     venue: "Deutsches Museum",
-    when: "12 to 13 September",
     facts: [],
     photo: `${IMG}/year-2024.jpg`,
   },
@@ -100,7 +97,6 @@ const YEARS: Year[] = [
     year: "2026",
     edition: "4th edition",
     venue: "House of Communication",
-    when: "29 to 31 October",
     facts: [],
   },
 ];
@@ -174,17 +170,6 @@ const Story = () => (
           <span className="op-years-venue op-rise" style={d(0.6 + i * 0.2)}>
             {y.venue}
           </span>
-          <span className="op-years-edition op-rise" style={d(0.65 + i * 0.2)}>
-            {y.edition}
-          </span>
-          <div className="op-years-media op-rise" style={d(0.75 + i * 0.2)}>
-            {y.photo ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={y.photo} alt="" />
-            ) : (
-              <Brand delay={1.5} />
-            )}
-          </div>
         </li>
       ))}
     </ol>
@@ -196,7 +181,6 @@ const YearSlide = ({ y, live }: { y: Year; live?: OpeningFacts }) => {
   return (
     <section className="stg-scene op op-year">
       <div className="op-year-text">
-        <Label>Our story</Label>
         <span className="op-year-edition op-rise" style={d(0.25)}>
           {y.edition}
         </span>
@@ -206,11 +190,6 @@ const YearSlide = ({ y, live }: { y: Year; live?: OpeningFacts }) => {
         <h1 className="op-year-venue op-rise" style={d(0.5)}>
           {y.venue}
         </h1>
-        {y.when && (
-          <p className="op-year-when op-rise" style={d(0.6)}>
-            {y.when}
-          </p>
-        )}
         {facts.length > 0 && (
           <dl className="op-year-facts">
             {facts.map((f, i) => (
@@ -243,23 +222,10 @@ const Why = () => (
       builders, researchers, founders, policymakers and industry leaders.
     </p>
     <ul className="op-pillars">
-      {(
-        [
-          [
-            "Run by students",
-            "Organised by the student-run TUM Blockchain Club",
-          ],
-          ["Non-profit", "A non-profit setting for open dialogue"],
-          [
-            "Open to everyone",
-            "No need to be a student or an expert to attend",
-          ],
-        ] as const
-      ).map(([title, line], i) => (
+      {["Run by students", "Non-profit", "Open to everyone"].map((title, i) => (
         <li key={title} className="op-rise" style={d(0.8 + i * 0.15)}>
           <span className="op-pillar-rule op-draw" style={d(0.8 + i * 0.15)} />
           <strong>{title}</strong>
-          <span>{line}</span>
         </li>
       ))}
     </ul>
@@ -320,7 +286,6 @@ const Agenda = () => (
           alt="TUM Blockchain Conference 26"
           className="op-day-c26"
         />
-        <span>Conference day</span>
       </div>
       <div className="op-day-event op-rise" style={d(0.95)}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -329,7 +294,6 @@ const Agenda = () => (
           alt="Digital Assets Day by Bundesblock"
           className="op-day-dad"
         />
-        <span>Curated by Bundesblock</span>
       </div>
       <span />
       <div className="op-hack op-wipe" style={d(1.2)}>
@@ -341,7 +305,6 @@ const Agenda = () => (
         />
         <span className="op-hack-text">
           <strong>32 hours</strong>
-          <span>Starts Friday at 09:00</span>
         </span>
       </div>
     </div>
@@ -355,14 +318,12 @@ const Plan = ({
   src,
   ratio,
   pins,
-  rooms,
   delay,
 }: {
   title: string;
   src: string;
   ratio: string;
   pins: Pin[];
-  rooms: [number, string, string][];
   delay: number;
 }) => (
   <figure className="op-plan op-rise" style={d(delay)}>
@@ -388,15 +349,6 @@ const Plan = ({
         ))}
       </div>
     </div>
-    <ul className="op-rooms">
-      {rooms.map(([n, name, where]) => (
-        <li key={n}>
-          <b>{n}</b>
-          <strong>{name}</strong>
-          <span>{where}</span>
-        </li>
-      ))}
-    </ul>
   </figure>
 );
 
@@ -416,11 +368,6 @@ const Stages = () => (
           { n: 3, name: "Hopper", x: 70.3, y: 22.9, left: true },
           { n: 4, name: "GERN", x: 19.6, y: 58.3 },
         ]}
-        rooms={[
-          [1, "Nakamoto", "LAB Lounge | Main Stage on Friday"],
-          [3, "Hopper", "Worklab 2 | Future Stage on Friday"],
-          [4, "GERN", "Entrance, expo and hackathon"],
-        ]}
       />
       <Plan
         title="First floor, up the stairs"
@@ -428,7 +375,6 @@ const Stages = () => (
         ratio="440 / 446"
         delay={0.5}
         pins={[{ n: 2, name: "Turing", x: 50.5, y: 83.8 }]}
-        rooms={[[2, "Turing", "Konferenz 9+10 | Executive Forum on Friday"]]}
       />
     </div>
   </section>
@@ -446,10 +392,6 @@ const Qr = () => (
         <h1 className="op-rise" style={d(0.6)}>
           Build your own agenda
         </h1>
-        <p className="op-rise" style={d(0.75)}>
-          Scan to see every session, stage and speaker, and plan your three
-          days.
-        </p>
         <p className="op-url op-rise" style={d(0.9)}>
           conference26.tum-blockchain.com/agenda
         </p>
@@ -571,9 +513,6 @@ const Organizers = () => (
           className="op-org-tbc op-rise"
           style={d(0.4)}
         />
-        <p className="op-org-claim op-rise" style={d(0.6)}>
-          Education <b>|</b> Network <b>|</b> Support
-        </p>
       </div>
       <span className="op-org-divider op-grow" style={d(0.8)} aria-hidden />
       <div className="op-org-side">
@@ -587,9 +526,6 @@ const Organizers = () => (
           className="op-org-dad op-rise"
           style={d(1.15)}
         />
-        <p className="op-org-day op-rise" style={d(1.3)}>
-          Friday 30 October
-        </p>
       </div>
     </div>
   </section>
@@ -637,23 +573,19 @@ export const OPENING_CSS = `
 /* clip, so the rise animations starting lower down never read as overflow
    to the screen's shrink-to-fit; the margin keeps descenders and halos */
 .op{--ease:cubic-bezier(.22,.61,.36,1);gap:calc(var(--u)*2);overflow:clip;overflow-clip-margin:calc(var(--u)*2)}
-.op-rise{animation:op-rise 1s var(--ease) both;animation-delay:var(--d,0s)}
-.op-pop{animation:op-pop .9s var(--ease) both;animation-delay:var(--d,0s)}
-.op-draw{transform-origin:0 50%;animation:op-draw 1.4s cubic-bezier(.65,0,.25,1) both;animation-delay:var(--d,0s)}
-.op-grow{transform-origin:50% 0;animation:op-grow 1.2s cubic-bezier(.65,0,.25,1) both;animation-delay:var(--d,0s)}
-.op-wipe{animation:op-wipe 1.3s cubic-bezier(.65,0,.25,1) both;animation-delay:var(--d,0s)}
-.op-spin-in{animation:op-spin-in 1.4s var(--ease) both;animation-delay:var(--d,0s)}
-@keyframes op-rise{from{opacity:0;transform:translateY(calc(var(--u)*1.2*var(--rise,1)))}to{opacity:1;transform:none}}
-@keyframes op-pop{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
-@keyframes op-draw{from{transform:scaleX(0)}to{transform:scaleX(1)}}
-@keyframes op-grow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
-@keyframes op-wipe{from{clip-path:inset(0 100% 0 0);opacity:.4}to{clip-path:inset(0 0 0 0);opacity:1}}
-@keyframes op-spin-in{from{opacity:0;transform:rotate(-70deg) scale(.85)}to{opacity:1;transform:none}}
-@keyframes op-ring{to{stroke-dashoffset:0}}
-@keyframes op-halo{0%{transform:translate(-50%,-50%) scale(.6);opacity:.7}100%{transform:translate(-50%,-50%) scale(1.6);opacity:0}}
-@keyframes op-kenburns{from{transform:scale(1.08)}to{transform:scale(1)}}
+.op-rise{animation:op-rise .7s ease-out both;animation-delay:var(--d,0s)}
+.op-pop{animation:op-pop .7s ease-out both;animation-delay:var(--d,0s)}
+.op-draw{transform-origin:0 50%;animation:op-draw .7s ease-out both;animation-delay:var(--d,0s)}
+.op-grow{transform-origin:50% 0;animation:op-grow .7s ease-out both;animation-delay:var(--d,0s)}
+.op-wipe{animation:op-wipe .7s ease-out both;animation-delay:var(--d,0s)}
+.op-spin-in{animation:op-spin-in .7s ease-out both;animation-delay:var(--d,0s)}
+@keyframes op-rise{from{opacity:0}to{opacity:1}}
+@keyframes op-pop{from{opacity:0}to{opacity:1}}
+@keyframes op-draw{from{opacity:0}to{opacity:1}}
+@keyframes op-grow{from{opacity:0}to{opacity:1}}
+@keyframes op-wipe{from{opacity:0}to{opacity:1}}
+@keyframes op-spin-in{from{opacity:0}to{opacity:1}}
 .op .stg-label{margin-bottom:calc(var(--u)*.6)}
-.op-grad{background:linear-gradient(100deg,var(--a),var(--b) 55%,var(--c));-webkit-background-clip:text;background-clip:text;color:transparent}
 
 /* brand mark */
 .op-brand{display:flex;align-items:center;justify-content:center;gap:calc(var(--u)*3)}
@@ -662,41 +594,35 @@ export const OPENING_CSS = `
 
 /* title */
 .op-title{justify-content:center;align-items:center}
-.op-rule{display:block;width:calc(var(--u)*40);height:2px;margin-top:calc(var(--u)*2.4);background:linear-gradient(90deg,var(--a),var(--b),var(--c))}
+.op-rule{display:none;width:calc(var(--u)*40);height:2px;margin-top:calc(var(--u)*2.4);background:linear-gradient(90deg,var(--a),var(--b),var(--c))}
 .op-date{margin:calc(var(--u)*1.6) 0 0;font-size:calc(var(--u)*2.2);font-weight:600;color:var(--mute)}
-.op-date b,.op-org-claim b{font-weight:400;opacity:.5;margin:0 .4em}
+.op-date b{font-weight:400;opacity:.5;margin:0 .4em}
 
 /* our story: a line through the years, photos underneath */
-.op-years{position:relative;flex:1;min-height:0;list-style:none;margin:calc(var(--u)*1) 0 0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:calc(var(--u)*3)}
-.op-years-line{position:absolute;left:0;right:0;top:calc(var(--u)*.55);height:1px;background:linear-gradient(90deg,var(--a),var(--b) 60%,var(--c))}
+.op-story .stg-label{position:absolute;top:0}
+.op-story{justify-content:center}
+.op-years{position:relative;flex:none;min-height:0;list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:calc(var(--u)*3)}
+.op-years-line{position:absolute;left:0;right:0;top:calc(var(--u)*.55);height:1px;background:var(--line)}
 .op-years li{position:relative;display:flex;flex-direction:column;min-width:0;padding-top:calc(var(--u)*2.2)}
 .op-years-dot{position:absolute;left:0;top:0;width:calc(var(--u)*1.1);height:calc(var(--u)*1.1);border-radius:50%;background:var(--ink)}
-.op-years .is-now .op-years-dot{background:var(--b);box-shadow:0 0 0 calc(var(--u)*.4) rgba(244,67,54,.22)}
-.op-years-year{font-weight:800;font-size:calc(var(--u)*4.2);line-height:1;letter-spacing:-.03em;padding-bottom:.08em}
-.op-years .is-now .op-years-year{background:linear-gradient(100deg,var(--a),var(--b) 55%,var(--c));-webkit-background-clip:text;background-clip:text;color:transparent}
-.op-years-venue{margin-top:calc(var(--u)*.6);font-weight:700;font-size:calc(var(--u)*1.7)}
-.op-years-edition{margin-top:calc(var(--u)*.2);font-size:calc(var(--u)*1.25);color:var(--mute)}
-.op-years-media{flex:1;min-height:0;position:relative;margin-top:calc(var(--u)*1.6);border-radius:calc(var(--u)*.6);overflow:hidden;background:#111016}
-.op-years-media > img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.op-years-media .op-brand{position:absolute;inset:0;gap:calc(var(--u)*1.2)}
-.op-years-media .op-sticker{height:42%}
-.op-years-media .op-wordmark{height:48%}
+.op-years .is-now .op-years-dot{background:var(--b)}
+.op-years-year{font-weight:800;font-size:calc(var(--u)*6.4);line-height:1;letter-spacing:-.03em;padding-bottom:.08em}
+.op-years .is-now .op-years-year{color:var(--ink)}
+.op-years-venue{margin-top:calc(var(--u)*.9);font-weight:700;font-size:calc(var(--u)*2.2)}
 
 /* one year */
 .op-year{flex-direction:row;gap:calc(var(--u)*5)}
 .op-year-text{flex:0 0 auto;width:calc(var(--u)*50);display:flex;flex-direction:column;justify-content:center;min-width:0}
 .op-year-edition{margin-top:calc(var(--u)*1.4);font-weight:700;font-size:calc(var(--u)*1.4);color:var(--acc)}
-.op-year-num{font-weight:800;font-size:calc(var(--u)*9*var(--fit,1));line-height:1;letter-spacing:-.04em;padding-bottom:.08em;background:linear-gradient(100deg,var(--a),var(--b) 55%,var(--c));-webkit-background-clip:text;background-clip:text;color:transparent}
+.op-year-num{font-weight:800;font-size:calc(var(--u)*9*var(--fit,1));line-height:1;letter-spacing:-.04em;padding-bottom:.08em}
 .op-year-venue{margin:calc(var(--u)*.6) 0 0;font-weight:800;font-size:calc(var(--u)*3.4*var(--fit,1));line-height:1.1;letter-spacing:-.02em;padding-bottom:.08em}
-.op-year-when{margin:calc(var(--u)*.6) 0 0;font-size:calc(var(--u)*1.7);color:var(--mute)}
 .op-year-facts{margin:calc(var(--u)*2.6) 0 0;display:flex;gap:calc(var(--u)*3.2);flex-wrap:wrap}
 .op-year-facts div{display:flex;flex-direction:column;gap:calc(var(--u)*.3);padding-top:calc(var(--u)*.9);border-top:1px solid var(--line);min-width:calc(var(--u)*8)}
 .op-year-facts dt{font-weight:800;font-size:calc(var(--u)*3);line-height:1;letter-spacing:-.02em}
 .op-year-facts dd{margin:0;font-size:calc(var(--u)*1.25);color:var(--mute)}
-.op-year-media{flex:1;min-width:0;position:relative;overflow:hidden;border-radius:calc(var(--u)*.8);animation:op-pop 1.2s var(--ease) .2s both}
+.op-year-media{flex:1;min-width:0;position:relative;overflow:hidden;border-radius:calc(var(--u)*.8);animation:op-pop .7s ease-out .2s both}
 .op-year-media > img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.op-kenburns{animation:op-kenburns 14s cubic-bezier(.2,.6,.2,1) both}
-.op-year-media.is-brand{background:radial-gradient(120% 120% at 80% 0%,rgba(111,61,226,.3),transparent 60%),radial-gradient(100% 100% at 0% 100%,rgba(244,67,54,.22),transparent 60%),#100f14}
+.op-year-media.is-brand{background:#121116}
 .op-year-media.is-brand .op-brand{position:absolute;inset:0}
 
 /* why */
@@ -704,7 +630,7 @@ export const OPENING_CSS = `
 .op-statement{margin:calc(var(--u)*.6) 0 0;font-weight:800;font-size:calc(var(--u)*4*var(--fit,1));line-height:1.15;letter-spacing:-.02em;max-width:calc(var(--u)*105);text-wrap:balance}
 .op-pillars{list-style:none;margin:calc(var(--u)*4) 0 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:calc(var(--u)*4);max-width:calc(var(--u)*130)}
 .op-pillars li{position:relative;display:flex;flex-direction:column;gap:calc(var(--u)*.5);padding-top:calc(var(--u)*1.2)}
-.op-pillar-rule,.op-goal-rule{position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,var(--a),var(--b),var(--c))}
+.op-pillar-rule,.op-goal-rule{position:absolute;left:0;right:0;top:0;height:1px;background:var(--line)}
 .op-pillars strong{font-size:calc(var(--u)*2.2);font-weight:800}
 .op-pillars span:not(.op-pillar-rule){font-size:calc(var(--u)*1.4);color:var(--mute)}
 
@@ -712,7 +638,7 @@ export const OPENING_CSS = `
 .op-goals{justify-content:center}
 .op-goal-list{list-style:none;margin:calc(var(--u)*2) 0 0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:calc(var(--u)*3.4)}
 .op-goal-list li{position:relative;display:flex;flex-direction:column;gap:calc(var(--u)*1.2);padding-top:calc(var(--u)*1.4)}
-.op-goal-no{font-weight:800;font-size:calc(var(--u)*5);line-height:1;letter-spacing:-.03em;background:linear-gradient(100deg,var(--a),var(--b) 55%,var(--c));-webkit-background-clip:text;background-clip:text;color:transparent;padding-bottom:.06em}
+.op-goal-no{font-weight:800;font-size:calc(var(--u)*5);line-height:1;letter-spacing:-.03em;color:var(--mute);padding-bottom:.06em}
 .op-goal-text{font-weight:800;font-size:calc(var(--u)*2.4);line-height:1.2;text-wrap:balance}
 
 /* agenda */
@@ -725,7 +651,7 @@ export const OPENING_CSS = `
 .op-day-event span{font-size:calc(var(--u)*1.4);color:var(--mute)}
 .op-day-c26{height:calc(var(--u)*8);width:auto}
 .op-day-dad{width:min(100%,calc(var(--u)*30));height:auto}
-.op-hack{grid-column:2 / span 2;display:flex;align-items:center;gap:calc(var(--u)*3);padding:calc(var(--u)*1.4) calc(var(--u)*2.4);border-radius:calc(var(--u)*.8);background:linear-gradient(100deg,rgba(255,193,16,.12),rgba(244,67,54,.12) 50%,rgba(111,61,226,.16));border:1px solid rgba(244,67,54,.35)}
+.op-hack{grid-column:2 / span 2;display:flex;align-items:center;gap:calc(var(--u)*3);padding:calc(var(--u)*1.4) calc(var(--u)*2.4);border-radius:calc(var(--u)*.8);background:rgba(255,255,255,.035);border:1px solid var(--line)}
 .op-hack-script{height:calc(var(--u)*3.8);width:auto}
 .op-hack-text{display:flex;flex-direction:column;gap:calc(var(--u)*.3)}
 .op-hack-text strong{font-size:calc(var(--u)*2.2);font-weight:800}
@@ -738,16 +664,12 @@ export const OPENING_CSS = `
 .op-plan-box{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;border-radius:calc(var(--u)*.8);background:rgba(255,255,255,.035);padding:calc(var(--u)*1.2)}
 .op-plan-img{position:relative;height:100%;max-width:100%}
 .op-plan-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:.92}
-.op-pin{position:absolute;display:flex;align-items:center;gap:calc(var(--u)*.5);transform:translate(calc(var(--u)*-1.1),-50%);animation:op-pop .8s var(--ease) both;animation-delay:var(--d,0s)}
+.op-pin{position:absolute;display:flex;align-items:center;gap:calc(var(--u)*.5);transform:translate(calc(var(--u)*-1.1),-50%);animation:op-pop .7s ease-out both;animation-delay:var(--d,0s)}
 .op-pin.is-left{flex-direction:row-reverse;transform:translate(calc(-100% + var(--u)*1.1),-50%)}
 .op-pin b{position:relative;z-index:1;width:calc(var(--u)*2.2);height:calc(var(--u)*2.2);border-radius:50%;display:grid;place-items:center;font-size:calc(var(--u)*1.1);font-weight:800;color:#fff;background:var(--b)}
-.op-halo{position:absolute;left:calc(var(--u)*1.1);top:50%;width:calc(var(--u)*4.4);height:calc(var(--u)*4.4);border-radius:50%;background:radial-gradient(circle,rgba(244,67,54,.45),rgba(244,67,54,0) 70%);animation:op-halo 2.8s ease-out infinite}
+.op-halo{position:absolute;left:calc(var(--u)*1.1);top:50%;width:calc(var(--u)*4.4);height:calc(var(--u)*4.4);border-radius:50%;background:radial-gradient(circle,rgba(244,67,54,.45),rgba(244,67,54,0) 70%);display:none}
 .op-pin.is-left .op-halo{left:auto;right:calc(var(--u)*-1.1)}
 .op-pin em{font-style:normal;font-weight:800;font-size:calc(var(--u)*1.15);padding:calc(var(--u)*.2) calc(var(--u)*.6);border-radius:calc(var(--u)*.3);background:rgba(10,9,12,.85);white-space:nowrap}
-.op-rooms{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:calc(var(--u)*.6) calc(var(--u)*2.6)}
-.op-rooms li{display:flex;align-items:baseline;gap:calc(var(--u)*.7);font-size:calc(var(--u)*1.25);color:var(--mute)}
-.op-rooms b{align-self:center;width:calc(var(--u)*1.8);height:calc(var(--u)*1.8);border-radius:50%;display:grid;place-items:center;font-size:calc(var(--u)*.95);font-weight:800;color:#fff;background:var(--b)}
-.op-rooms strong{font-size:calc(var(--u)*1.5);font-weight:800;color:var(--ink)}
 
 /* qr */
 .op-qr{justify-content:center}
@@ -766,7 +688,7 @@ export const OPENING_CSS = `
 .op-sponsor-cat.is-conference{grid-column:1;grid-row:1 / span 2}
 .op-sponsor-cat:not(.is-conference){grid-column:2;max-width:calc(var(--u)*40*var(--fit,1))}
 .op-sponsor-cat.is-digital{grid-row:2}
-.op-cat{margin:0 0 calc(var(--u)*.2);padding-bottom:calc(var(--u)*.6*var(--fit,1));font-weight:800;font-size:calc(var(--u)*2*var(--fit,1));letter-spacing:-.01em;line-height:1.25;border-bottom:2px solid transparent;border-image:linear-gradient(90deg,var(--a),var(--b) 50%,transparent) 1}
+.op-cat{margin:0 0 calc(var(--u)*.2);padding-bottom:calc(var(--u)*.6*var(--fit,1));font-weight:800;font-size:calc(var(--u)*2*var(--fit,1));letter-spacing:-.01em;line-height:1.25;border-bottom:1px solid var(--line)}
 .op-sponsor-row{display:flex;align-items:stretch;gap:calc(var(--u)*1*var(--fit,1))}
 .op-sponsor-logos{display:flex;flex-wrap:wrap;gap:calc(var(--u)*1*var(--fit,1));min-width:0}
 .op-tier{flex:none;display:grid;place-items:center;width:calc(var(--u)*10.5*var(--fit,1));box-sizing:border-box;font-size:calc(var(--u)*1.4*var(--fit,1))!important;padding:0 calc(var(--u)*.6);font-weight:700;color:var(--mute);border:1px solid color-mix(in srgb,var(--c) 60%,transparent);border-radius:calc(var(--u)*.6);background:rgba(10,9,12,.8)}
@@ -785,10 +707,7 @@ export const OPENING_CSS = `
 .op-org-row{display:flex;align-items:center;justify-content:center;gap:calc(var(--u)*7)}
 .op-org-side{display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*1.6)}
 .op-org-tbc{height:calc(var(--u)*12*var(--fit,1));width:auto}
-.op-org-claim{margin:0;font-weight:800;font-size:calc(var(--u)*2);letter-spacing:.06em;text-transform:uppercase;background:linear-gradient(100deg,var(--a),var(--b) 55%,var(--c));-webkit-background-clip:text;background-clip:text;color:transparent}
-.op-org-claim b{-webkit-text-fill-color:rgba(245,243,247,.4)}
-.op-org-divider{width:2px;align-self:stretch;min-height:calc(var(--u)*24);background:linear-gradient(var(--a),var(--b),var(--c))}
+.op-org-divider{width:1px;align-self:stretch;min-height:calc(var(--u)*24);background:var(--line)}
 .op-org-cap{margin:0;font-size:calc(var(--u)*1.7);color:var(--mute)}
 .op-org-dad{width:calc(var(--u)*34*var(--fit,1));height:auto}
-.op-org-day{margin:0;font-weight:800;font-size:calc(var(--u)*2);color:var(--b)}
 `;
