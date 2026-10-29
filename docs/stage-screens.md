@@ -138,7 +138,9 @@ Hopper (`FLOOR_FREE` in `StageDisplay.tsx`). The Digital Assets Day mark is
 three times as large at the top left, the stage and clock sit at the top
 centre, the session runs down the left under the mark and the speakers are
 at the top right, with what comes next under them. Breaks and the pause
-screen keep to the same area, and so do speaker slides on Nakamoto.
+screen keep to the same area, and so do speaker slides on Nakamoto. On
+16:9 screens the mark is twice rather than three times as large, and four
+or more speakers sit in two columns, so the speakers' column clears it.
 
 Scene changes: the old scene fades out in 0.35 s before the new one rises
 in, and the shrink-to-fit is measured as the new scene will stand once

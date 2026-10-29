@@ -1839,7 +1839,7 @@ const CSS = `
 /* Digital Assets Day: the lower part stays free for the panel in front, and
    the Digital Assets Day mark is three times as large */
 .stg-root.is-floor .stg-dad-solo{height:calc(var(--u)*13.2)}
-.stg-root.is-floor .stg-main{top:calc(var(--u)*4);bottom:calc(var(--floor)*100%)}
+.stg-root.is-floor .stg-main{top:calc(var(--u)*4);bottom:calc(var(--floor)*100% + var(--u)*.8)}
 .stg-root.is-floor .stg-session .stg-head{align-self:start;padding-top:calc(var(--u)*14.4)}
 .stg-root.is-floor .stg-session .stg-title,.stg-root.is-floor .stg-session .stg-title.is-mid{font-size:calc(var(--u)*3.6*var(--fit,1))}
 .stg-root.is-floor .stg-session .stg-title.is-long{font-size:calc(var(--u)*2.9*var(--fit,1))}
@@ -1871,8 +1871,25 @@ const CSS = `
 .stg-root.is-side .stg-thanks-wall .op-sponsor-rows{--fit:.64}
 .stg-root.is-floor .stg-thanks-wall{align-items:start}
 .stg-root.is-floor .stg-thanks-head{padding-top:calc(var(--u)*14.4)}
-.stg-root.is-floor .stg-thanks-head .stg-title{font-size:calc(var(--u)*3.6*var(--fit,1))}
+.stg-root.is-floor .stg-thanks-head .stg-title{font-size:calc(var(--u)*3.2*var(--fit,1))}
+.stg-root.is-floor .stg-thanks-head{gap:calc(var(--u)*.35)}
+.stg-root.is-floor .stg-thanks-head .stg-lede{font-size:calc(var(--u)*1.5)}
+.stg-root.is-floor .stg-thanks-next{margin-top:calc(var(--u)*.3)}
 .stg-root.is-floor .stg-thanks-next b{font-size:calc(var(--u)*1.35);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .stg-root.is-floor .stg-thanks-wall .op-sponsor-rows{--fit:.58;padding-top:calc(var(--u)*4.6)}
+/* 16:9 screens on the Digital Assets Day: the mark twice, not three times
+   as large, so the speakers' column clears it */
+.stg-root.is-floor:not(.is-wide) .stg-dad-solo{height:calc(var(--u)*8.8)}
+.stg-root.is-floor:not(.is-wide) :is(.stg-session .stg-head,.stg-thanks-head,.stg-break-main,.stg-deck-side){padding-top:calc(var(--u)*10)}
+.stg-root.is-floor:not(.is-wide) .stg-session{grid-template-columns:minmax(0,1fr) minmax(0,1.2fr)}
+.stg-root.is-floor:not(.is-wide) .stg-session .stg-people[data-n="1"] .stg-portrait{width:calc(var(--u)*15*var(--fit,1));height:calc(var(--u)*15*var(--fit,1))}
+.stg-root.is-floor:not(.is-wide) .stg-session .stg-people[data-n="1"] .stg-name{font-size:calc(var(--u)*2.8*var(--fit,1))}
+.stg-thanks-wall .op-sponsor-group{flex-wrap:wrap}
+.stg-root.is-side:not(.is-wide) .stg-thanks-wall{grid-template-columns:minmax(0,1fr) minmax(0,1.6fr)}
+.stg-root.is-side:not(.is-wide) .stg-thanks-wall .op-sponsor-rows{--fit:.5}
+/* 16:9 side layout: four and more speakers in two columns, so names and
+   roles keep room to breathe */
+.stg-root.is-side:not(.is-wide) :is(.stg-session,.stg-break-next) .stg-people:not([data-n="1"]):not([data-n="2"]):not([data-n="3"]){grid-template-columns:repeat(2,minmax(0,1fr))}
+.stg-root.is-side:not(.is-wide) :is(.stg-session,.stg-break-next) .stg-people:not([data-n="1"]):not([data-n="2"]):not([data-n="3"]) .stg-portrait{width:calc(var(--u)*6.6*var(--fit,1));height:calc(var(--u)*6.6*var(--fit,1))}
 ${OPENING_CSS}
 `;
