@@ -458,29 +458,40 @@ const Qr = () => (
   </section>
 );
 
-/** Rows of the sponsor slide, in the deck's order. Tiers without a sponsor
- * in Strapi drop out. */
-const SPONSOR_ROWS: { size: string; groups: [string, string[]][] }[] = [
+/** The sponsor wall's categories, each with its tiers from the highest down.
+ * The Conference and the Hackathon have separate ladders (a Premium Hackathon
+ * sponsor does not outrank Gold), so each keeps its own block; the logo size
+ * follows the rank inside it. Tiers without a sponsor in Strapi drop out. */
+const SPONSOR_GROUPS: {
+  label: string;
+  tiers: { key: string; label: string; size: string }[];
+}[] = [
   {
-    size: "is-lg",
-    groups: [
-      ["Platinum", ["platinum"]],
-      ["Gold", ["gold"]],
-      ["Premium", ["premium"]],
+    label: "Conference",
+    tiers: [
+      { key: "platinum", label: "Platinum", size: "is-xl" },
+      { key: "gold", label: "Gold", size: "is-lg" },
+      { key: "silver", label: "Silver", size: "is-md" },
+      { key: "bronze", label: "Bronze", size: "is-sm" },
+      { key: "partner", label: "Partners", size: "is-xs" },
     ],
   },
-  { size: "is-md", groups: [["Silver", ["silver"]]] },
-  { size: "is-sm", groups: [["Bronze", ["bronze"]]] },
   {
-    size: "is-sm",
-    groups: [
-      ["Tracks", ["track"]],
-      ["Bounty", ["bounty"]],
+    label: "Hackathon",
+    tiers: [
+      { key: "premium", label: "Premium", size: "is-lg" },
+      { key: "standard", label: "Standard", size: "is-md" },
+      { key: "bounty", label: "Bounty", size: "is-sm" },
+      { key: "travel", label: "Travel", size: "is-xs" },
     ],
+  },
+  {
+    label: "Digital Assets Day",
+    tiers: [{ key: "track", label: "Tracks", size: "is-sm" }],
   },
 ];
 
-/** Every sponsor, row by row by tier; also shown in the lunch break and at
+/** Every sponsor, by category and tier; also shown in the lunch break and at
  * the end of each day. */
 export const SponsorWall = ({
   sponsors,
@@ -490,35 +501,50 @@ export const SponsorWall = ({
   delay?: number;
 }) => {
   let n = 0;
+  let r = 0;
   return (
     <div className="op-sponsor-rows">
-      {SPONSOR_ROWS.map((row, r) => {
-        const groups = row.groups
-          .map(
-            ([label, tiers]) =>
-              [label, sponsors.filter((s) => tiers.includes(s.tier))] as const,
-          )
-          .filter(([, list]) => list.length);
-        if (!groups.length) return null;
+      {SPONSOR_GROUPS.map((group) => {
+        const tiers = group.tiers
+          .map((t) => ({
+            ...t,
+            list: sponsors.filter((s) => s.tier === t.key),
+          }))
+          .filter((t) => t.list.length);
+        if (!tiers.length) return null;
         return (
-          <div key={r} className={`op-sponsor-row ${row.size}`}>
-            {groups.map(([label, list]) => (
-              <div key={label} className="op-sponsor-group">
-                <span className="op-tier op-rise" style={d(delay + r * 0.15)}>
-                  {label}
-                </span>
-                {list.map((s) => (
+          <div
+            key={group.label}
+            className={`op-sponsor-cat is-${group.label.split(" ")[0].toLowerCase()}`}
+          >
+            <p className="op-cat op-rise" style={d(delay + r * 0.15)}>
+              {group.label}
+            </p>
+            {tiers.map((t) => {
+              const row = r++;
+              return (
+                <div key={t.key} className={`op-sponsor-row ${t.size}`}>
                   <span
-                    key={s.name}
-                    className={`op-logo op-pop ${s.light ? "" : "is-dark"}`}
-                    style={d(delay + 0.1 + r * 0.15 + n++ * 0.04)}
+                    className="op-tier op-rise"
+                    style={d(delay + row * 0.15)}
                   >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={s.src} alt={s.name} />
+                    {t.label}
                   </span>
-                ))}
-              </div>
-            ))}
+                  <div className="op-sponsor-logos">
+                    {t.list.map((s) => (
+                      <span
+                        key={s.name}
+                        className={`op-logo op-pop ${s.light ? "" : "is-dark"}`}
+                        style={d(delay + 0.1 + row * 0.15 + n++ * 0.04)}
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={s.src} alt={s.name} />
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         );
       })}
@@ -734,17 +760,25 @@ export const OPENING_CSS = `
 
 /* sponsors */
 .op-sponsors{justify-content:flex-start}
-.op-sponsor-rows{display:flex;flex-direction:column;gap:calc(var(--u)*1.2*var(--fit,1))}
-.op-sponsor-row{display:flex;flex-wrap:wrap;gap:calc(var(--u)*1) calc(var(--u)*3)}
-.op-sponsor-group{display:flex;align-items:stretch;gap:calc(var(--u)*1)}
-.op-tier{flex:none;display:grid;place-items:center;min-width:calc(var(--u)*10);font-size:calc(var(--u)*1.5)!important;padding:0 calc(var(--u)*1);font-weight:700;font-size:calc(var(--u)*1.3);border:1px solid color-mix(in srgb,var(--c) 70%,transparent);border-radius:calc(var(--u)*.6);background:rgba(10,9,12,.8)}
+.op-sponsors .op-sponsor-rows{--fit:.74}
+.op-sponsor-rows{display:grid;grid-template-columns:minmax(0,max-content) max-content;grid-auto-flow:column;align-items:start;gap:calc(var(--u)*2*var(--fit,1)) calc(var(--u)*4*var(--fit,1))}
+.op-sponsor-cat{display:flex;flex-direction:column;gap:calc(var(--u)*1*var(--fit,1));min-width:0}
+.op-sponsor-cat.is-conference{grid-column:1;grid-row:1 / span 2}
+.op-sponsor-cat:not(.is-conference){grid-column:2;max-width:calc(var(--u)*40*var(--fit,1))}
+.op-sponsor-cat.is-digital{grid-row:2}
+.op-cat{margin:0 0 calc(var(--u)*.2);padding-bottom:calc(var(--u)*.6*var(--fit,1));font-weight:800;font-size:calc(var(--u)*2*var(--fit,1));letter-spacing:-.01em;line-height:1.25;border-bottom:2px solid transparent;border-image:linear-gradient(90deg,var(--a),var(--b) 50%,transparent) 1}
+.op-sponsor-row{display:flex;align-items:stretch;gap:calc(var(--u)*1*var(--fit,1))}
+.op-sponsor-logos{display:flex;flex-wrap:wrap;gap:calc(var(--u)*1*var(--fit,1));min-width:0}
+.op-tier{flex:none;display:grid;place-items:center;width:calc(var(--u)*10.5*var(--fit,1));box-sizing:border-box;font-size:calc(var(--u)*1.4*var(--fit,1))!important;padding:0 calc(var(--u)*.6);font-weight:700;color:var(--mute);border:1px solid color-mix(in srgb,var(--c) 60%,transparent);border-radius:calc(var(--u)*.6);background:rgba(10,9,12,.8)}
+.is-xl .op-tier,.is-lg .op-tier{color:var(--ink);font-size:calc(var(--u)*1.7*var(--fit,1))!important}
 .op-logo{display:flex;align-items:center;justify-content:center;border-radius:calc(var(--u)*.6);background:#fff;box-sizing:border-box;overflow:hidden}
 .op-logo.is-dark{background:#16151b;border:1px solid var(--line)}
 .op-logo img{display:block;width:100%;height:100%;object-fit:contain}
-.is-lg .op-logo{width:calc(var(--u)*24*var(--fit,1));height:calc(var(--u)*8.6*var(--fit,1));padding:calc(var(--u)*1.5) calc(var(--u)*2.2)}
-
-.is-md .op-logo{width:calc(var(--u)*19*var(--fit,1));height:calc(var(--u)*7*var(--fit,1));padding:calc(var(--u)*1.2) calc(var(--u)*1.8)}
-.is-sm .op-logo{width:calc(var(--u)*13.2*var(--fit,1));height:calc(var(--u)*6*var(--fit,1));padding:calc(var(--u)*1) calc(var(--u)*1.3)}
+.is-xl .op-logo{width:calc(var(--u)*30*var(--fit,1));height:calc(var(--u)*10.5*var(--fit,1));padding:calc(var(--u)*1.8) calc(var(--u)*2.6)}
+.is-lg .op-logo{width:calc(var(--u)*24*var(--fit,1));height:calc(var(--u)*8.4*var(--fit,1));padding:calc(var(--u)*1.5) calc(var(--u)*2.2)}
+.is-md .op-logo{width:calc(var(--u)*18*var(--fit,1));height:calc(var(--u)*6.6*var(--fit,1));padding:calc(var(--u)*1.2) calc(var(--u)*1.8)}
+.is-sm .op-logo{width:calc(var(--u)*13*var(--fit,1));height:calc(var(--u)*5.2*var(--fit,1));padding:calc(var(--u)*.9) calc(var(--u)*1.2)}
+.is-xs .op-logo{width:calc(var(--u)*10.5*var(--fit,1));height:calc(var(--u)*4.2*var(--fit,1));padding:calc(var(--u)*.7) calc(var(--u)*1)}
 
 /* organizers */
 .op-org{justify-content:center}
