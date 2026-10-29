@@ -136,6 +136,11 @@ const FLOOR_FREE: Record<string, number> = {
  * the screen on black. */
 const FRAMED_DECK = new Set(["nakamoto"]);
 
+/** Rooms that always put the speakers in their own column on the right,
+ * with stage and clock at the top centre; every room with a free floor
+ * does too. */
+const SIDE_ROOMS = new Set(["nakamoto"]);
+
 const WIDE_ROOMS: Record<string, [number, number]> = {
   nakamoto: [2880, 1026],
   turing: [3840, 1152],
@@ -722,8 +727,8 @@ export const StageDisplay = ({
       className={`stg-root ${introActive ? "is-intro" : ""} ${
         WIDE_ROOMS[roomSlug] ? "is-wide" : ""
       } ${floor ? "is-floor" : ""} ${
-        FRAMED_DECK.has(roomSlug) ? "is-framed-deck" : ""
-      }`}
+        floor || SIDE_ROOMS.has(roomSlug) ? "is-side" : ""
+      } ${FRAMED_DECK.has(roomSlug) ? "is-framed-deck" : ""}`}
       data-brand={event}
       onMouseMove={showPanel}
       style={
@@ -1722,39 +1727,63 @@ const CSS = `
 @keyframes stg-float{to{transform:translateY(calc(var(--u)*-.8))}}
 @keyframes stg-mark-fade{to{opacity:0;transform:translateY(calc(var(--u)*-1.5))}}
 @media (prefers-reduced-motion:reduce){.stg-root *{animation-duration:.01ms!important;animation-delay:0s!important;transition:none!important}.stg-intro-name{transform:none}}
-/* Digital Assets Day: the lower part stays free for the panel in front.
-   Left: the big mark, then the session; right: the speakers under the
-   clock, then what comes next. Sizes are fixed so nothing shrinks. */
+/* Side layout, on Nakamoto every day and on every room with a free floor:
+   stage and clock at the top centre, the session on the left, the speakers
+   large in their own column on the right, never under the text. */
+.stg-root.is-side .stg-top{align-items:flex-start}
+.stg-root.is-side .stg-where{position:absolute;left:50%;top:calc(var(--u)*.6);translate:-50% 0}
+.stg-root.is-side .stg-stage{font-size:calc(var(--u)*1.5)}
+.stg-root.is-side .stg-clock{font-size:calc(var(--u)*2.2)}
+.stg-root.is-side .stg-session{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);grid-template-rows:1fr auto;column-gap:calc(var(--u)*5)}
+.stg-root.is-side .stg-session .stg-head{grid-column:1;grid-row:1 / span 2;align-self:center}
+.stg-root.is-side .stg-session .stg-title,.stg-root.is-side .stg-session .stg-title.is-mid{font-size:calc(var(--u)*4.4*var(--fit,1))}
+.stg-root.is-side .stg-session .stg-title.is-long{font-size:calc(var(--u)*3.4*var(--fit,1))}
+.stg-root.is-side .stg-session .stg-ticker{grid-column:2;grid-row:2;margin-top:calc(var(--u)*1.2)}
+.stg-root.is-side :is(.stg-session,.stg-break-next) .stg-people{grid-column:2;grid-row:1;margin:0;align-self:center;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:calc(var(--u)*1.6*var(--fit,1)) calc(var(--u)*2.2)}
+.stg-root.is-side :is(.stg-session,.stg-break-next) .stg-people li{flex-direction:row;align-items:center;gap:calc(var(--u)*1.4)}
+.stg-root.is-side :is(.stg-session,.stg-break-next) .stg-people .stg-portrait{width:calc(var(--u)*7.5*var(--fit,1));height:calc(var(--u)*7.5*var(--fit,1))}
+.stg-root.is-side :is(.stg-session,.stg-break-next) .stg-people .stg-name{font-size:calc(var(--u)*1.8*var(--fit,1))}
+.stg-root.is-side :is(.stg-session,.stg-break-next) .stg-people .stg-role{font-size:calc(var(--u)*1.25*max(var(--fit,1),.85))}
+.stg-root.is-side :is(.stg-session,.stg-break-next) .stg-people .stg-company{font-size:calc(var(--u)*1.35*max(var(--fit,1),.85))}
+.stg-root.is-side :is(.stg-session,.stg-break-next) .stg-people[data-n="1"]{grid-template-columns:1fr}
+.stg-root.is-side :is(.stg-session,.stg-break-next) .stg-people[data-n="1"] li{gap:calc(var(--u)*2.4)}
+.stg-root.is-side :is(.stg-session,.stg-break-next) .stg-people[data-n="1"] .stg-portrait{width:calc(var(--u)*20*var(--fit,1));height:calc(var(--u)*20*var(--fit,1))}
+.stg-root.is-side :is(.stg-session,.stg-break-next) .stg-people[data-n="1"] .stg-name{font-size:calc(var(--u)*3.6*var(--fit,1))}
+.stg-root.is-side :is(.stg-session,.stg-break-next) .stg-people[data-n="1"] .stg-role{font-size:calc(var(--u)*1.8*max(var(--fit,1),.8))}
+.stg-root.is-side :is(.stg-session,.stg-break-next) .stg-people[data-n="1"] .stg-company{font-size:calc(var(--u)*2.2*max(var(--fit,1),.8))}
+.stg-root.is-side :is(.stg-session,.stg-break-next) .stg-people[data-n="2"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+.stg-root.is-side :is(.stg-session,.stg-break-next) .stg-people[data-n="2"] .stg-portrait{width:calc(var(--u)*13*var(--fit,1));height:calc(var(--u)*13*var(--fit,1))}
+.stg-root.is-side :is(.stg-session,.stg-break-next) .stg-people[data-n="2"] .stg-name{font-size:calc(var(--u)*2.5*var(--fit,1))}
+.stg-root.is-side :is(.stg-session,.stg-break-next) .stg-people[data-n="2"] .stg-role{font-size:calc(var(--u)*1.45*max(var(--fit,1),.85))}
+.stg-root.is-side :is(.stg-session,.stg-break-next) .stg-people[data-n="2"] .stg-company{font-size:calc(var(--u)*1.7*max(var(--fit,1),.85))}
+.stg-root.is-side :is(.stg-session,.stg-break-next) .stg-people[data-n="3"] li{flex-direction:column;align-items:flex-start}
+.stg-root.is-side :is(.stg-session,.stg-break-next) .stg-people[data-n="3"] .stg-portrait{width:calc(var(--u)*12*var(--fit,1));height:calc(var(--u)*12*var(--fit,1))}
+.stg-root.is-side :is(.stg-session,.stg-break-next) .stg-people[data-n="3"] .stg-name{font-size:calc(var(--u)*2.2*var(--fit,1))}
+.stg-root.is-side :is(.stg-session,.stg-break-next) .stg-people[data-n="3"] .stg-role{font-size:calc(var(--u)*1.35*max(var(--fit,1),.85))}
+.stg-root.is-side :is(.stg-session,.stg-break-next) .stg-people[data-n="3"] .stg-company{font-size:calc(var(--u)*1.55*max(var(--fit,1),.85))}
+.stg-root.is-side :is(.stg-session,.stg-break-next) .stg-people[data-n="4"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+.stg-root.is-side :is(.stg-session,.stg-break-next) .stg-people[data-n="4"] .stg-portrait{width:calc(var(--u)*10*var(--fit,1));height:calc(var(--u)*10*var(--fit,1))}
+.stg-root.is-side :is(.stg-session,.stg-break-next) .stg-people[data-n="4"] .stg-name{font-size:calc(var(--u)*2.1*var(--fit,1))}
+.stg-root.is-side :is(.stg-session,.stg-break-next) .stg-people[data-n="4"] .stg-role{font-size:calc(var(--u)*1.35*max(var(--fit,1),.85))}
+.stg-root.is-side :is(.stg-session,.stg-break-next) .stg-people[data-n="4"] .stg-company{font-size:calc(var(--u)*1.5*max(var(--fit,1),.85))}
+.stg-root.is-side .stg-break{grid-template-columns:minmax(0,1fr) minmax(0,1.35fr)}
+.stg-root.is-side .stg-break-next{justify-content:center}
+.stg-root.is-side .stg-break-next .stg-people{margin-top:calc(var(--u)*1.6)}
+
+/* Digital Assets Day: the lower part stays free for the panel in front, and
+   the Digital Assets Day mark is three times as large */
 .stg-root.is-floor .stg-dad-solo{height:calc(var(--u)*13.2)}
-.stg-root.is-floor .stg-top{align-items:flex-start}
-.stg-root.is-floor .stg-where{position:absolute;left:50%;top:calc(var(--u)*.6);translate:-50% 0}
-.stg-root.is-floor .stg-stage{font-size:calc(var(--u)*1.5)}
-.stg-root.is-floor .stg-clock{font-size:calc(var(--u)*2.2)}
 .stg-root.is-floor .stg-main{top:calc(var(--u)*4);bottom:calc(var(--floor)*100%)}
-.stg-root.is-floor .stg-session{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);grid-template-rows:1fr auto;column-gap:calc(var(--u)*5)}
-.stg-root.is-floor .stg-session .stg-head{grid-column:1;grid-row:1 / span 2;align-self:start;padding-top:calc(var(--u)*14.4)}
+.stg-root.is-floor .stg-session .stg-head{align-self:start;padding-top:calc(var(--u)*14.4)}
 .stg-root.is-floor .stg-session .stg-title,.stg-root.is-floor .stg-session .stg-title.is-mid{font-size:calc(var(--u)*3.6*var(--fit,1))}
 .stg-root.is-floor .stg-session .stg-title.is-long{font-size:calc(var(--u)*2.9*var(--fit,1))}
-.stg-root.is-floor .stg-session .stg-ticker{grid-column:2;grid-row:2;margin-top:calc(var(--u)*1.2)}
-.stg-root.is-floor :is(.stg-session,.stg-break-next) .stg-people{grid-column:2;grid-row:1;margin:0;align-self:start;padding-top:calc(var(--u)*4.6);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:calc(var(--u)*1.4*var(--fit,1)) calc(var(--u)*2)}
-.stg-root.is-floor :is(.stg-session,.stg-break-next) .stg-people[data-n="1"]{grid-template-columns:1fr}
-.stg-root.is-floor :is(.stg-session,.stg-break-next) .stg-people[data-n="2"]{grid-template-columns:repeat(2,minmax(0,1fr))}
-.stg-root.is-floor :is(.stg-session,.stg-break-next) .stg-people li{flex-direction:row;align-items:center;gap:calc(var(--u)*1.2)}
-.stg-root.is-floor :is(.stg-session,.stg-break-next) .stg-people .stg-portrait{width:calc(var(--u)*7*var(--fit,1));height:calc(var(--u)*7*var(--fit,1))}
-.stg-root.is-floor :is(.stg-session,.stg-break-next) .stg-people[data-n="1"] .stg-portrait{width:calc(var(--u)*13);height:calc(var(--u)*13)}
-.stg-root.is-floor :is(.stg-session,.stg-break-next) .stg-people .stg-name{font-size:calc(var(--u)*1.7*var(--fit,1))}
-.stg-root.is-floor :is(.stg-session,.stg-break-next) .stg-people .stg-role{font-size:calc(var(--u)*1.2*max(var(--fit,1),.85))}
-.stg-root.is-floor :is(.stg-session,.stg-break-next) .stg-people .stg-company{font-size:calc(var(--u)*1.3*max(var(--fit,1),.85))}
-.stg-root.is-floor :is(.stg-session,.stg-break-next) .stg-people[data-n="1"] .stg-name{font-size:calc(var(--u)*3)}
-.stg-root.is-floor :is(.stg-session,.stg-break-next) .stg-people[data-n="1"] .stg-role{font-size:calc(var(--u)*1.6)}
-.stg-root.is-floor :is(.stg-session,.stg-break-next) .stg-people[data-n="1"] .stg-company{font-size:calc(var(--u)*1.9)}
-
-.stg-root.is-floor .stg-break{grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);align-items:start}
+.stg-root.is-floor .stg-session .stg-people{align-self:start;padding-top:calc(var(--u)*4.6)}
+.stg-root.is-floor .stg-break{align-items:start}
 .stg-root.is-floor .stg-break-main{justify-content:flex-start;padding-top:calc(var(--u)*14.4);gap:calc(var(--u)*1)}
 .stg-root.is-floor .stg-break-main .stg-huge{font-size:calc(var(--u)*4.6*var(--fit,1))}
 .stg-root.is-floor .stg-break-next{justify-content:flex-start;padding-top:calc(var(--u)*4.6)}
 .stg-root.is-floor .stg-break-next .stg-subtitle{font-size:calc(var(--u)*2.3*var(--fit,1))}
-.stg-root.is-floor .stg-break-next .stg-people{margin-top:calc(var(--u)*1.4);padding-top:0}
+.stg-root.is-floor .stg-break-next .stg-people{margin-top:calc(var(--u)*1.4)}
 .stg-root.is-floor .stg-pause{padding-bottom:calc(var(--floor)*var(--fh) + var(--u)*2)}
 /* framed rooms: the slides as a card on the right, over the background */
 .stg-root.is-framed-deck .stg-deck{background:none;left:calc(var(--u)*62);right:calc(var(--u)*5);top:calc(var(--u)*7.6);bottom:calc(var(--u)*3.4);justify-content:flex-end}
