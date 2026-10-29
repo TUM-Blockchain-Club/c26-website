@@ -852,6 +852,7 @@ export const StageDisplay = ({
               key={cue.key}
               id={cue.deck.slide}
               sponsors={cue.slot.sponsors ?? []}
+              facts={cue.slot.facts}
             />
           )}
         </SceneFader>
