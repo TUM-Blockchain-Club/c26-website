@@ -597,7 +597,7 @@ export const OPENING_CSS = `
 .op-grow{transform-origin:50% 0;animation:op-grow 1.2s cubic-bezier(.65,0,.25,1) both;animation-delay:var(--d,0s)}
 .op-wipe{animation:op-wipe 1.3s cubic-bezier(.65,0,.25,1) both;animation-delay:var(--d,0s)}
 .op-spin-in{animation:op-spin-in 1.4s var(--ease) both;animation-delay:var(--d,0s)}
-@keyframes op-rise{from{opacity:0;transform:translateY(calc(var(--u)*1.2))}to{opacity:1;transform:none}}
+@keyframes op-rise{from{opacity:0;transform:translateY(calc(var(--u)*1.2*var(--rise,1)))}to{opacity:1;transform:none}}
 @keyframes op-pop{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
 @keyframes op-draw{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 @keyframes op-grow{from{transform:scaleY(0)}to{transform:scaleY(1)}}

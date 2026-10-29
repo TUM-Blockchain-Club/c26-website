@@ -52,7 +52,7 @@ import {
 
 const INTRO_MS = 8200;
 /** How long a scene takes to fade out when the next one comes. */
-const LEAVE_MS = 900;
+const LEAVE_MS = 350;
 const COUNTDOWN_FROM_MS = 30 * 60 * 1000;
 const REFRESH_MS = 60 * 1000;
 
@@ -130,6 +130,11 @@ const FLOOR_FREE: Record<string, number> = {
   turing: 0.2,
   hopper: 0.2,
 };
+
+/** Rooms where a speaker's slides sit as a card on the right, over the
+ * screen's background, with the session beside them, rather than filling
+ * the screen on black. */
+const FRAMED_DECK = new Set(["nakamoto"]);
 
 const WIDE_ROOMS: Record<string, [number, number]> = {
   nakamoto: [2880, 1026],
@@ -676,12 +681,23 @@ export const StageDisplay = ({
   useLayoutEffect(() => {
     const el = mainRef.current;
     if (!el) return;
+    // Measured as the scene will stand once its entrance is over: the rise
+    // offsets are zeroed for the measurement (and back before paint), and
+    // only the incoming scene counts, not one still fading out. Otherwise a
+    // scene shrinks while it rises in and jumps back a moment later.
+    const scene =
+      [...el.children].find(
+        (c): c is HTMLElement =>
+          c instanceof HTMLElement && !c.classList.contains("is-leaving"),
+      ) ?? el;
+    el.style.setProperty("--rise", "0");
     let fit = 1;
     el.style.setProperty("--fit", "1");
-    while (el.scrollHeight > el.clientHeight + 1 && fit > 0.6) {
+    while (scene.scrollHeight > scene.clientHeight + 1 && fit > 0.6) {
       fit = Math.round((fit - 0.05) * 100) / 100;
       el.style.setProperty("--fit", String(fit));
     }
+    el.style.removeProperty("--rise");
   });
 
   if (!mounted) return <div className="fixed inset-0 bg-[#050407]" />;
@@ -705,7 +721,9 @@ export const StageDisplay = ({
       ref={rootRef}
       className={`stg-root ${introActive ? "is-intro" : ""} ${
         WIDE_ROOMS[roomSlug] ? "is-wide" : ""
-      } ${floor ? "is-floor" : ""}`}
+      } ${floor ? "is-floor" : ""} ${
+        FRAMED_DECK.has(roomSlug) ? "is-framed-deck" : ""
+      }`}
       data-brand={event}
       onMouseMove={showPanel}
       style={
@@ -763,7 +781,9 @@ export const StageDisplay = ({
                     cue.kind === "break" ||
                     cue.deck?.from === "opening"
                   ? cue.key
-                  : "none"
+                  : cue.kind === "deck" && FRAMED_DECK.has(roomSlug)
+                    ? `deck-${cue.slot.id}`
+                    : "none"
           }
         >
           {!cue && <Wrap key="wrap" />}
@@ -788,6 +808,11 @@ export const StageDisplay = ({
           {cue?.kind === "break" && (
             <Break key={cue.key} slot={cue.slot} next={upcoming} now={now} />
           )}
+          {cue?.kind === "deck" &&
+            cue.deck?.from !== "opening" &&
+            FRAMED_DECK.has(roomSlug) && (
+              <DeckSide key={`deck-${cue.slot.id}`} slot={cue.slot} />
+            )}
           {cue?.deck?.from === "opening" && (
             <OpeningSlide
               key={cue.key}
@@ -1185,6 +1210,22 @@ const SessionScene = ({
   );
 };
 
+/** Beside a speaker's slides on the framed rooms: what is on and who. */
+const DeckSide = ({ slot }: { slot: StageSlot }) => {
+  const names = slot.people.filter((p) => !p.moderator).map((p) => p.name);
+  return (
+    <section className="stg-scene stg-deck-side">
+      <Label live>On stage</Label>
+      <h1 className="stg-title">
+        <TitleLines title={slot.title} />
+      </h1>
+      {names.length > 0 && (
+        <p className="stg-deck-people">{names.join(", ")}</p>
+      )}
+    </section>
+  );
+};
+
 const UpNext = ({
   slot,
   after,
@@ -1530,11 +1571,11 @@ const CSS = `
 
 .stg-main{position:absolute;left:calc(var(--u)*5);right:calc(var(--u)*5);top:calc(var(--u)*11.5);bottom:calc(var(--u)*4.4);z-index:2}
 .stg-scene{height:100%;display:flex;flex-direction:column;animation:stg-in 1.2s cubic-bezier(.22,.61,.36,1) .45s both}
-@keyframes stg-in{from{opacity:0;transform:translateY(calc(var(--u)*.5))}to{opacity:1;transform:none}}
+@keyframes stg-in{from{opacity:0;transform:translateY(calc(var(--u)*.5*var(--rise,1)))}to{opacity:1;transform:none}}
 @keyframes stg-fade{from{opacity:0}}
 @keyframes stg-layer-out{to{opacity:0}}
 .stg-layer{position:absolute;inset:0}
-.stg-layer.is-leaving{pointer-events:none;animation:stg-layer-out .9s cubic-bezier(.4,0,.2,1) forwards}
+.stg-layer.is-leaving{pointer-events:none;animation:stg-layer-out .35s cubic-bezier(.4,0,1,1) forwards}
 
 .stg-head{display:flex;flex-direction:column;gap:calc(var(--u)*1.1);max-width:calc(var(--u)*82);margin-bottom:calc(var(--u)*2.4)}
 .stg-head-row{display:flex;align-items:center;gap:calc(var(--u)*2.4);flex-wrap:wrap}
@@ -1650,7 +1691,7 @@ const CSS = `
 @keyframes stg-shine{to{background-position:-20% 0}}
 @keyframes stg-floor{to{transform:scaleX(1)}}
 .stg-intro-title{font-weight:600;font-size:calc(var(--u)*1.7);letter-spacing:.01em;color:rgba(255,255,255,.7);max-width:calc(var(--u)*72);line-height:1.5;text-wrap:balance;animation:stg-rise 1s cubic-bezier(.2,.7,.1,1) 3.9s both}
-@keyframes stg-rise{from{opacity:0;transform:translateY(calc(var(--u)*1))}to{opacity:1;transform:none}}
+@keyframes stg-rise{from{opacity:0;transform:translateY(calc(var(--u)*1*var(--rise,1)))}to{opacity:1;transform:none}}
 
 .stg-deck{position:absolute;inset:0;z-index:4;background:#000;display:flex;align-items:center;justify-content:center;animation:stg-fade .8s ease both}
 .stg-deck canvas{display:block}
@@ -1715,5 +1756,14 @@ const CSS = `
 .stg-root.is-floor .stg-break-next .stg-subtitle{font-size:calc(var(--u)*2.3*var(--fit,1))}
 .stg-root.is-floor .stg-break-next .stg-people{margin-top:calc(var(--u)*1.4);padding-top:0}
 .stg-root.is-floor .stg-pause{padding-bottom:calc(var(--floor)*var(--fh) + var(--u)*2)}
+/* framed rooms: the slides as a card on the right, over the background */
+.stg-root.is-framed-deck .stg-deck{background:none;left:calc(var(--u)*62);right:calc(var(--u)*5);top:calc(var(--u)*7.6);bottom:calc(var(--u)*3.4);justify-content:flex-end}
+.stg-root.is-framed-deck .stg-deck canvas,.stg-root.is-framed-deck .stg-deck-img{border-radius:calc(var(--u)*.6);box-shadow:0 0 0 1px var(--line),0 calc(var(--u)*1.2) calc(var(--u)*5) rgba(0,0,0,.6)}
+.stg-root.is-framed-deck .stg-deck-img{max-width:100%;max-height:100%}
+.stg-deck-side{justify-content:flex-end;gap:calc(var(--u)*1.2);max-width:calc(var(--u)*50);overflow:clip;overflow-clip-margin:calc(var(--u)*2)}
+.stg-deck-side .stg-title{font-size:calc(var(--u)*3*var(--fit,1));line-height:1.15}
+.stg-deck-people{margin:0;font-size:calc(var(--u)*1.6);font-weight:600;line-height:1.35;color:var(--mute)}
+.stg-root.is-floor .stg-deck-side{justify-content:flex-start;padding-top:calc(var(--u)*14.4)}
+.stg-root.is-floor.is-framed-deck .stg-deck{bottom:calc(var(--floor)*var(--fh));align-items:flex-start}
 ${OPENING_CSS}
 `;
