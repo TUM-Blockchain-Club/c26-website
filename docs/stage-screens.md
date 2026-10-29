@@ -35,8 +35,8 @@ Up next → Intro → On stage → Slides 1…n → next session
   Strapi (Agenda 26, field `slides`; PDFs and images, in their order), or a
   PDF uploaded in the room's studio on that computer, which takes
   precedence. On Nakamoto (`FRAMED_DECK`) they sit as a card on the right
-  over the screen's background, with the session's title and speakers on
-  the left; the other rooms show them full screen on black.
+  over the screen's background, with the session's title and speakers at
+  the top left, under the conference mark; the other rooms show them full screen on black.
 - **Breaks** in the programme are their own cue; **P** puts up a short-pause
   screen at any time, **B** blacks out.
 
@@ -123,8 +123,8 @@ replaces them, as for any other session. Pictures are in
 
 ## Nakamoto layout
 
-On Nakamoto (Main Stage), every day, the stage name and clock sit at the
-top centre, the session on the left and the speakers large in their own
+On Nakamoto (Main Stage), every day, the conference mark is larger, the
+stage name and clock sit at the top centre, the session on the left and the speakers large in their own
 column on the right, never under the text (`SIDE_ROOMS`): one speaker with
 a big portrait, two or four in two columns, three or five and more in
 three. Every room with a free floor on the Digital Assets Day uses the same

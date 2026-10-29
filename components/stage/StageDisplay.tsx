@@ -1731,6 +1731,8 @@ const CSS = `
    stage and clock at the top centre, the session on the left, the speakers
    large in their own column on the right, never under the text. */
 .stg-root.is-side .stg-top{align-items:flex-start}
+.stg-root.is-side .stg-wordmark{height:calc(var(--u)*6.6)}
+.stg-root.is-side:not(.is-floor) .stg-main{top:calc(var(--u)*12.8)}
 .stg-root.is-side .stg-where{position:absolute;left:50%;top:calc(var(--u)*.6);translate:-50% 0}
 .stg-root.is-side .stg-stage{font-size:calc(var(--u)*1.5)}
 .stg-root.is-side .stg-clock{font-size:calc(var(--u)*2.2)}
@@ -1789,9 +1791,9 @@ const CSS = `
 .stg-root.is-framed-deck .stg-deck{background:none;left:calc(var(--u)*62);right:calc(var(--u)*5);top:calc(var(--u)*7.6);bottom:calc(var(--u)*3.4);justify-content:flex-end}
 .stg-root.is-framed-deck .stg-deck canvas,.stg-root.is-framed-deck .stg-deck-img{border-radius:calc(var(--u)*.6);box-shadow:0 0 0 1px var(--line),0 calc(var(--u)*1.2) calc(var(--u)*5) rgba(0,0,0,.6)}
 .stg-root.is-framed-deck .stg-deck-img{max-width:100%;max-height:100%}
-.stg-deck-side{justify-content:flex-end;gap:calc(var(--u)*1.2);max-width:calc(var(--u)*50);overflow:clip;overflow-clip-margin:calc(var(--u)*2)}
+.stg-deck-side{justify-content:flex-start;gap:calc(var(--u)*1.2);max-width:calc(var(--u)*50);overflow:clip;overflow-clip-margin:calc(var(--u)*2)}
 .stg-deck-side .stg-title{font-size:calc(var(--u)*3*var(--fit,1));line-height:1.15}
-.stg-deck-people{margin:0;font-size:calc(var(--u)*1.6);font-weight:600;line-height:1.35;color:var(--mute)}
+.stg-deck-people{margin:0;font-size:calc(var(--u)*2);font-weight:600;line-height:1.35;color:var(--mute)}
 .stg-root.is-floor .stg-deck-side{justify-content:flex-start;padding-top:calc(var(--u)*14.4)}
 .stg-root.is-floor.is-framed-deck .stg-deck{bottom:calc(var(--floor)*var(--fh));align-items:flex-start}
 ${OPENING_CSS}
