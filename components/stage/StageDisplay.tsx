@@ -139,7 +139,7 @@ const FLOOR_FREE: Record<string, number> = {
 /** Rooms where a speaker's slides sit as a card on the right, over the
  * screen's background, with the session beside them, rather than filling
  * the screen on black. */
-const FRAMED_DECK = new Set(["nakamoto"]);
+const FRAMED_DECK = new Set(["nakamoto", "turing"]);
 
 /** Rooms that always put the speakers in their own column on the right,
  * with stage and clock at the top centre; every room with a free floor
