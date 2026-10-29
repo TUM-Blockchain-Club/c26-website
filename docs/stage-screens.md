@@ -167,12 +167,11 @@ Every lunch break shows all sponsors from Strapi with "Thank you to our
 sponsors" and what comes after the break. Each day ends on its own cue
 after the last session: "That's a wrap for today" with all sponsors.
 
-The wall (`SponsorWall` in `OpeningDeck.tsx`) groups the sponsors into
-Conference, Hackathon and Digital Assets Day, each under its own heading,
-with its tiers from the highest down (Platinum, Gold, Silver, Bronze,
-Partners; Premium, Standard, Bounty, Travel; Tracks). The logo size follows
-the rank inside each block. Conference runs on the left, Hackathon and the
-Digital Assets Day tracks on the right.
+The wall (`SponsorWall` in `OpeningDeck.tsx`) shows every sponsor together
+as tiles, one row per level of importance and the tiles larger the higher
+the tier: Gold and Premium first, then Silver and Standard, then Bronze,
+Bounty and the Digital Assets Day tracks. Each group carries its tier and
+category (Conference, Hackathon, Digital Assets Day) above its tiles.
 
 ## Opening slides: sources
 
