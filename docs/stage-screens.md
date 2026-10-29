@@ -120,7 +120,9 @@ by. They follow "On stage" one press each and keep the screen's background.
 The sponsors come live from Strapi, grouped by tier. Figma's first slide
 (the hosts) is what "On stage" already shows. A PDF uploaded for the session
 replaces them, as for any other session. Pictures are in
-`public/stage/opening/`.
+`public/stage/opening/`. The look is deliberately plain: solid type, thin
+grey rules, no gradients or glows, and every element only fades in
+(opacity, no movement or scaling), so nothing jumps or stutters on the wall.
 
 ## Nakamoto and Turing layout
 
