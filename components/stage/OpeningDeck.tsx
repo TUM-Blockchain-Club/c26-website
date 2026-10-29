@@ -59,7 +59,6 @@ type Year = {
   year: string;
   edition: string;
   venue: string;
-  when?: string;
   facts: Fact[];
   photo?: string;
 };
@@ -70,7 +69,6 @@ const YEARS: Year[] = [
     year: "2023",
     edition: "1st edition",
     venue: "Deutsches Museum",
-    when: "22 to 23 September",
     facts: [{ value: "50+", label: "Talks, panels and workshops" }],
     photo: `${IMG}/year-2023.jpg`,
   },
@@ -79,7 +77,6 @@ const YEARS: Year[] = [
     year: "2024",
     edition: "2nd edition",
     venue: "Deutsches Museum",
-    when: "12 to 13 September",
     facts: [],
     photo: `${IMG}/year-2024.jpg`,
   },
@@ -100,7 +97,6 @@ const YEARS: Year[] = [
     year: "2026",
     edition: "4th edition",
     venue: "House of Communication",
-    when: "29 to 31 October",
     facts: [],
   },
 ];
@@ -174,17 +170,6 @@ const Story = () => (
           <span className="op-years-venue op-rise" style={d(0.6 + i * 0.2)}>
             {y.venue}
           </span>
-          <span className="op-years-edition op-rise" style={d(0.65 + i * 0.2)}>
-            {y.edition}
-          </span>
-          <div className="op-years-media op-rise" style={d(0.75 + i * 0.2)}>
-            {y.photo ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={y.photo} alt="" />
-            ) : (
-              <Brand delay={1.5} />
-            )}
-          </div>
         </li>
       ))}
     </ol>
@@ -196,7 +181,6 @@ const YearSlide = ({ y, live }: { y: Year; live?: OpeningFacts }) => {
   return (
     <section className="stg-scene op op-year">
       <div className="op-year-text">
-        <Label>Our story</Label>
         <span className="op-year-edition op-rise" style={d(0.25)}>
           {y.edition}
         </span>
@@ -206,11 +190,6 @@ const YearSlide = ({ y, live }: { y: Year; live?: OpeningFacts }) => {
         <h1 className="op-year-venue op-rise" style={d(0.5)}>
           {y.venue}
         </h1>
-        {y.when && (
-          <p className="op-year-when op-rise" style={d(0.6)}>
-            {y.when}
-          </p>
-        )}
         {facts.length > 0 && (
           <dl className="op-year-facts">
             {facts.map((f, i) => (
@@ -243,23 +222,10 @@ const Why = () => (
       builders, researchers, founders, policymakers and industry leaders.
     </p>
     <ul className="op-pillars">
-      {(
-        [
-          [
-            "Run by students",
-            "Organised by the student-run TUM Blockchain Club",
-          ],
-          ["Non-profit", "A non-profit setting for open dialogue"],
-          [
-            "Open to everyone",
-            "No need to be a student or an expert to attend",
-          ],
-        ] as const
-      ).map(([title, line], i) => (
+      {["Run by students", "Non-profit", "Open to everyone"].map((title, i) => (
         <li key={title} className="op-rise" style={d(0.8 + i * 0.15)}>
           <span className="op-pillar-rule op-draw" style={d(0.8 + i * 0.15)} />
           <strong>{title}</strong>
-          <span>{line}</span>
         </li>
       ))}
     </ul>
@@ -320,7 +286,6 @@ const Agenda = () => (
           alt="TUM Blockchain Conference 26"
           className="op-day-c26"
         />
-        <span>Conference day</span>
       </div>
       <div className="op-day-event op-rise" style={d(0.95)}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -329,7 +294,6 @@ const Agenda = () => (
           alt="Digital Assets Day by Bundesblock"
           className="op-day-dad"
         />
-        <span>Curated by Bundesblock</span>
       </div>
       <span />
       <div className="op-hack op-wipe" style={d(1.2)}>
@@ -341,7 +305,6 @@ const Agenda = () => (
         />
         <span className="op-hack-text">
           <strong>32 hours</strong>
-          <span>Starts Friday at 09:00</span>
         </span>
       </div>
     </div>
@@ -355,14 +318,12 @@ const Plan = ({
   src,
   ratio,
   pins,
-  rooms,
   delay,
 }: {
   title: string;
   src: string;
   ratio: string;
   pins: Pin[];
-  rooms: [number, string, string][];
   delay: number;
 }) => (
   <figure className="op-plan op-rise" style={d(delay)}>
@@ -388,15 +349,6 @@ const Plan = ({
         ))}
       </div>
     </div>
-    <ul className="op-rooms">
-      {rooms.map(([n, name, where]) => (
-        <li key={n}>
-          <b>{n}</b>
-          <strong>{name}</strong>
-          <span>{where}</span>
-        </li>
-      ))}
-    </ul>
   </figure>
 );
 
@@ -416,11 +368,6 @@ const Stages = () => (
           { n: 3, name: "Hopper", x: 70.3, y: 22.9, left: true },
           { n: 4, name: "GERN", x: 19.6, y: 58.3 },
         ]}
-        rooms={[
-          [1, "Nakamoto", "LAB Lounge | Main Stage on Friday"],
-          [3, "Hopper", "Worklab 2 | Future Stage on Friday"],
-          [4, "GERN", "Entrance, expo and hackathon"],
-        ]}
       />
       <Plan
         title="First floor, up the stairs"
@@ -428,7 +375,6 @@ const Stages = () => (
         ratio="440 / 446"
         delay={0.5}
         pins={[{ n: 2, name: "Turing", x: 50.5, y: 83.8 }]}
-        rooms={[[2, "Turing", "Konferenz 9+10 | Executive Forum on Friday"]]}
       />
     </div>
   </section>
@@ -446,10 +392,6 @@ const Qr = () => (
         <h1 className="op-rise" style={d(0.6)}>
           Build your own agenda
         </h1>
-        <p className="op-rise" style={d(0.75)}>
-          Scan to see every session, stage and speaker, and plan your three
-          days.
-        </p>
         <p className="op-url op-rise" style={d(0.9)}>
           conference26.tum-blockchain.com/agenda
         </p>
@@ -571,9 +513,6 @@ const Organizers = () => (
           className="op-org-tbc op-rise"
           style={d(0.4)}
         />
-        <p className="op-org-claim op-rise" style={d(0.6)}>
-          Education <b>|</b> Network <b>|</b> Support
-        </p>
       </div>
       <span className="op-org-divider op-grow" style={d(0.8)} aria-hidden />
       <div className="op-org-side">
@@ -587,9 +526,6 @@ const Organizers = () => (
           className="op-org-dad op-rise"
           style={d(1.15)}
         />
-        <p className="op-org-day op-rise" style={d(1.3)}>
-          Friday 30 October
-        </p>
       </div>
     </div>
   </section>
@@ -664,23 +600,19 @@ export const OPENING_CSS = `
 .op-title{justify-content:center;align-items:center}
 .op-rule{display:block;width:calc(var(--u)*40);height:2px;margin-top:calc(var(--u)*2.4);background:linear-gradient(90deg,var(--a),var(--b),var(--c))}
 .op-date{margin:calc(var(--u)*1.6) 0 0;font-size:calc(var(--u)*2.2);font-weight:600;color:var(--mute)}
-.op-date b,.op-org-claim b{font-weight:400;opacity:.5;margin:0 .4em}
+.op-date b{font-weight:400;opacity:.5;margin:0 .4em}
 
 /* our story: a line through the years, photos underneath */
-.op-years{position:relative;flex:1;min-height:0;list-style:none;margin:calc(var(--u)*1) 0 0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:calc(var(--u)*3)}
+.op-story .stg-label{position:absolute;top:0}
+.op-story{justify-content:center}
+.op-years{position:relative;flex:none;min-height:0;list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:calc(var(--u)*3)}
 .op-years-line{position:absolute;left:0;right:0;top:calc(var(--u)*.55);height:1px;background:linear-gradient(90deg,var(--a),var(--b) 60%,var(--c))}
 .op-years li{position:relative;display:flex;flex-direction:column;min-width:0;padding-top:calc(var(--u)*2.2)}
 .op-years-dot{position:absolute;left:0;top:0;width:calc(var(--u)*1.1);height:calc(var(--u)*1.1);border-radius:50%;background:var(--ink)}
 .op-years .is-now .op-years-dot{background:var(--b);box-shadow:0 0 0 calc(var(--u)*.4) rgba(244,67,54,.22)}
-.op-years-year{font-weight:800;font-size:calc(var(--u)*4.2);line-height:1;letter-spacing:-.03em;padding-bottom:.08em}
+.op-years-year{font-weight:800;font-size:calc(var(--u)*6.4);line-height:1;letter-spacing:-.03em;padding-bottom:.08em}
 .op-years .is-now .op-years-year{background:linear-gradient(100deg,var(--a),var(--b) 55%,var(--c));-webkit-background-clip:text;background-clip:text;color:transparent}
-.op-years-venue{margin-top:calc(var(--u)*.6);font-weight:700;font-size:calc(var(--u)*1.7)}
-.op-years-edition{margin-top:calc(var(--u)*.2);font-size:calc(var(--u)*1.25);color:var(--mute)}
-.op-years-media{flex:1;min-height:0;position:relative;margin-top:calc(var(--u)*1.6);border-radius:calc(var(--u)*.6);overflow:hidden;background:#111016}
-.op-years-media > img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.op-years-media .op-brand{position:absolute;inset:0;gap:calc(var(--u)*1.2)}
-.op-years-media .op-sticker{height:42%}
-.op-years-media .op-wordmark{height:48%}
+.op-years-venue{margin-top:calc(var(--u)*.9);font-weight:700;font-size:calc(var(--u)*2.2)}
 
 /* one year */
 .op-year{flex-direction:row;gap:calc(var(--u)*5)}
@@ -688,7 +620,6 @@ export const OPENING_CSS = `
 .op-year-edition{margin-top:calc(var(--u)*1.4);font-weight:700;font-size:calc(var(--u)*1.4);color:var(--acc)}
 .op-year-num{font-weight:800;font-size:calc(var(--u)*9*var(--fit,1));line-height:1;letter-spacing:-.04em;padding-bottom:.08em;background:linear-gradient(100deg,var(--a),var(--b) 55%,var(--c));-webkit-background-clip:text;background-clip:text;color:transparent}
 .op-year-venue{margin:calc(var(--u)*.6) 0 0;font-weight:800;font-size:calc(var(--u)*3.4*var(--fit,1));line-height:1.1;letter-spacing:-.02em;padding-bottom:.08em}
-.op-year-when{margin:calc(var(--u)*.6) 0 0;font-size:calc(var(--u)*1.7);color:var(--mute)}
 .op-year-facts{margin:calc(var(--u)*2.6) 0 0;display:flex;gap:calc(var(--u)*3.2);flex-wrap:wrap}
 .op-year-facts div{display:flex;flex-direction:column;gap:calc(var(--u)*.3);padding-top:calc(var(--u)*.9);border-top:1px solid var(--line);min-width:calc(var(--u)*8)}
 .op-year-facts dt{font-weight:800;font-size:calc(var(--u)*3);line-height:1;letter-spacing:-.02em}
@@ -744,10 +675,6 @@ export const OPENING_CSS = `
 .op-halo{position:absolute;left:calc(var(--u)*1.1);top:50%;width:calc(var(--u)*4.4);height:calc(var(--u)*4.4);border-radius:50%;background:radial-gradient(circle,rgba(244,67,54,.45),rgba(244,67,54,0) 70%);animation:op-halo 2.8s ease-out infinite}
 .op-pin.is-left .op-halo{left:auto;right:calc(var(--u)*-1.1)}
 .op-pin em{font-style:normal;font-weight:800;font-size:calc(var(--u)*1.15);padding:calc(var(--u)*.2) calc(var(--u)*.6);border-radius:calc(var(--u)*.3);background:rgba(10,9,12,.85);white-space:nowrap}
-.op-rooms{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:calc(var(--u)*.6) calc(var(--u)*2.6)}
-.op-rooms li{display:flex;align-items:baseline;gap:calc(var(--u)*.7);font-size:calc(var(--u)*1.25);color:var(--mute)}
-.op-rooms b{align-self:center;width:calc(var(--u)*1.8);height:calc(var(--u)*1.8);border-radius:50%;display:grid;place-items:center;font-size:calc(var(--u)*.95);font-weight:800;color:#fff;background:var(--b)}
-.op-rooms strong{font-size:calc(var(--u)*1.5);font-weight:800;color:var(--ink)}
 
 /* qr */
 .op-qr{justify-content:center}
@@ -785,10 +712,7 @@ export const OPENING_CSS = `
 .op-org-row{display:flex;align-items:center;justify-content:center;gap:calc(var(--u)*7)}
 .op-org-side{display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*1.6)}
 .op-org-tbc{height:calc(var(--u)*12*var(--fit,1));width:auto}
-.op-org-claim{margin:0;font-weight:800;font-size:calc(var(--u)*2);letter-spacing:.06em;text-transform:uppercase;background:linear-gradient(100deg,var(--a),var(--b) 55%,var(--c));-webkit-background-clip:text;background-clip:text;color:transparent}
-.op-org-claim b{-webkit-text-fill-color:rgba(245,243,247,.4)}
 .op-org-divider{width:2px;align-self:stretch;min-height:calc(var(--u)*24);background:linear-gradient(var(--a),var(--b),var(--c))}
 .op-org-cap{margin:0;font-size:calc(var(--u)*1.7);color:var(--mute)}
 .op-org-dad{width:calc(var(--u)*34*var(--fit,1));height:auto}
-.op-org-day{margin:0;font-weight:800;font-size:calc(var(--u)*2);color:var(--b)}
 `;
