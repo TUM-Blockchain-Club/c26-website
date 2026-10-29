@@ -755,6 +755,8 @@ export const StageDisplay = ({
       className={`stg-root ${introActive ? "is-intro" : ""} ${
         wide ? "is-wide" : ""
       } ${floor ? "is-floor" : ""} ${
+        floor && floor >= 0.3 ? "is-floor-deep" : ""
+      } ${
         floor || SIDE_ROOMS.has(roomSlug) ? "is-side" : ""
       } ${framed ? "is-framed-deck" : ""}`}
       data-brand={event}
@@ -1885,7 +1887,9 @@ const CSS = `
 .stg-thanks-next{margin:calc(var(--u)*.6) 0 0;display:flex;flex-direction:column;gap:calc(var(--u)*.3);font-size:calc(var(--u)*1.3);color:var(--mute)}
 .stg-thanks-next b{font-size:calc(var(--u)*1.7);color:var(--ink)}
 .stg-root.is-side .stg-thanks-wall{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2.4fr);column-gap:calc(var(--u)*4);align-items:center}
-.stg-root.is-side .stg-thanks-wall .op-sponsor-rows{--fit:.64}
+.stg-root.is-side.is-wide .stg-thanks-wall .op-sponsor-rows{--fit:.9}
+/* Nakamoto's 40 % floor leaves less height, so its wall stays smaller */
+.stg-root.is-side.is-wide.is-floor-deep .stg-thanks-wall .op-sponsor-rows{--fit:.6}
 .stg-root.is-floor .stg-thanks-wall{align-items:start}
 .stg-root.is-floor .stg-thanks-head{padding-top:calc(var(--u)*14.4)}
 .stg-root.is-floor .stg-thanks-head .stg-title{font-size:calc(var(--u)*3.2*var(--fit,1))}
@@ -1893,7 +1897,7 @@ const CSS = `
 .stg-root.is-floor .stg-thanks-head .stg-lede{font-size:calc(var(--u)*1.5)}
 .stg-root.is-floor .stg-thanks-next{margin-top:calc(var(--u)*.3)}
 .stg-root.is-floor .stg-thanks-next b{font-size:calc(var(--u)*1.35);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.stg-root.is-floor .stg-thanks-wall .op-sponsor-rows{--fit:.58;padding-top:calc(var(--u)*4.6)}
+.stg-root.is-floor .stg-thanks-wall .op-sponsor-rows{padding-top:calc(var(--u)*4.6)}
 /* 16:9 screens on the Digital Assets Day: the mark twice, not three times
    as large, so the speakers' column clears it */
 .stg-root.is-floor:not(.is-wide) .stg-dad-solo{height:calc(var(--u)*8.8)}

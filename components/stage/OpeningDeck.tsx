@@ -653,7 +653,7 @@ export const OPENING_CSS = `
 
 /* sponsors */
 .op-sponsors{justify-content:flex-start}
-.op-sponsors .op-sponsor-rows{--fit:.74}
+.op-sponsors .op-sponsor-rows{--fit:.86}
 .op-sponsor-rows{display:flex;flex-direction:column;gap:calc(var(--u)*1.6*var(--fit,1))}
 .op-sponsor-row{display:flex;flex-wrap:wrap;align-items:flex-end;gap:calc(var(--u)*1.2*var(--fit,1)) calc(var(--u)*3*var(--fit,1))}
 .op-sponsor-group{display:flex;flex-direction:column;gap:calc(var(--u)*.6*var(--fit,1));min-width:0}
