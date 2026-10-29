@@ -34,7 +34,9 @@ Up next → Intro → On stage → Slides 1…n → next session
 - **Slides**, one page per press: the files uploaded on the session in
   Strapi (Agenda 26, field `slides`; PDFs and images, in their order), or a
   PDF uploaded in the room's studio on that computer, which takes
-  precedence.
+  precedence. On Nakamoto (`FRAMED_DECK`) they sit as a card on the right
+  over the screen's background, with the session's title and speakers on
+  the left; the other rooms show them full screen on black.
 - **Breaks** in the programme are their own cue; **P** puts up a short-pause
   screen at any time, **B** blacks out.
 
@@ -127,4 +129,9 @@ Hopper (`FLOOR_FREE` in `StageDisplay.tsx`). The Digital Assets Day mark is
 three times as large at the top left, the stage and clock sit at the top
 centre, the session runs down the left under the mark and the speakers are
 at the top right, with what comes next under them. Breaks and the pause
-screen keep to the same area. Speaker slides stay full screen.
+screen keep to the same area, and so do speaker slides on Nakamoto.
+
+Scene changes: the old scene fades out in 0.35 s before the new one rises
+in, and the shrink-to-fit is measured as the new scene will stand once
+its entrance is over, so nothing loads smaller first or keeps the old
+title on screen.
