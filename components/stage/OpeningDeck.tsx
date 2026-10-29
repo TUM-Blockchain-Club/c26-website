@@ -237,57 +237,53 @@ const Goals = () => (
 );
 
 /* Agenda: dates from the site; the Hackathon's 32 hours from the media
-   portal, its 09:00 Friday start from hackathon.tum-blockchain.com. */
+   portal, its Friday start from hackathon.tum-blockchain.com. Each day
+   comes up in turn, then the Hackathon's band draws across Friday and
+   Saturday. Only transform and opacity animate. */
+const AGENDA_DAYS = [
+  {
+    num: "29",
+    dow: "Thursday",
+    logo: "/logos/c26-wordmark-no-hackathon.svg",
+    alt: "TUM Blockchain Conference 26",
+    cls: "is-c26",
+  },
+  {
+    num: "30",
+    dow: "Friday",
+    logo: "/logos/digital-assets-day-logo.png",
+    alt: "Digital Assets Day by Bundesblock",
+    cls: "is-dad",
+  },
+  { num: "31", dow: "Saturday" },
+] as const;
+
 const Agenda = () => (
   <section className="stg-scene op op-agenda">
-    <div className="op-days">
-      {(
-        [
-          ["Thursday", "29"],
-          ["Friday", "30"],
-          ["Saturday", "31"],
-        ] as const
-      ).map(([day, date], i) => (
+    <div className="op-ag">
+      {AGENDA_DAYS.map((day, i) => (
         <div
-          key={date}
-          className="op-day-head op-rise"
-          style={d(0.35 + i * 0.12)}
+          key={day.num}
+          className="op-ag-day"
+          style={{ "--i": i } as React.CSSProperties}
         >
-          <span className="op-day-num">{date}</span>
-          <span className="op-day-name">
-            {day}
-            <br />
-            October
-          </span>
+          <span className="op-ag-num">{day.num}</span>
+          <span className="op-ag-dow">{day.dow}</span>
+          {"logo" in day && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={day.logo}
+              alt={day.alt}
+              className={`op-ag-logo ${day.cls}`}
+            />
+          )}
         </div>
       ))}
-      <div className="op-day-event op-rise" style={d(0.8)}>
+      <div className="op-ag-hack">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/logos/c26-wordmark-no-hackathon.svg"
-          alt="TUM Blockchain Conference 26"
-          className="op-day-c26"
-        />
-      </div>
-      <div className="op-day-event op-rise" style={d(0.95)}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/logos/digital-assets-day-logo.png"
-          alt="Digital Assets Day by Bundesblock"
-          className="op-day-dad"
-        />
-      </div>
-      <span />
-      <div className="op-hack op-wipe" style={d(1.2)}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={`${IMG}/hackathon-script.png`}
-          alt="Hackathon"
-          className="op-hack-script"
-        />
-        <span className="op-hack-text">
-          <strong>32 hours</strong>
-        </span>
+        <img src={`${IMG}/hackathon-script.png`} alt="Hackathon" />
+        <span className="op-ag-bar" aria-hidden />
+        <strong>32 hours</strong>
       </div>
     </div>
   </section>
@@ -614,19 +610,19 @@ export const OPENING_CSS = `
 
 /* agenda */
 .op-agenda{justify-content:center}
-.op-days{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:calc(var(--u)*4);row-gap:calc(var(--u)*2.2);margin-top:calc(var(--u)*1)}
-.op-day-head{display:flex;align-items:flex-end;gap:calc(var(--u)*1.2);padding-bottom:calc(var(--u)*1.2)}
-.op-day-num{font-weight:800;font-size:calc(var(--u)*7);line-height:.9;letter-spacing:-.04em}
-.op-day-name{font-weight:600;font-size:calc(var(--u)*1.4);line-height:1.25;color:var(--mute);padding-bottom:calc(var(--u)*.4)}
-.op-day-event{display:flex;flex-direction:column;align-items:flex-start;gap:calc(var(--u)*1);min-width:0}
-.op-day-event span{font-size:calc(var(--u)*1.4);color:var(--mute)}
-.op-day-c26{height:calc(var(--u)*8);width:auto}
-.op-day-dad{width:min(100%,calc(var(--u)*30));height:auto}
-.op-hack{grid-column:2 / span 2;display:flex;align-items:center;gap:calc(var(--u)*3);padding:calc(var(--u)*1.4) calc(var(--u)*2.4);border-radius:calc(var(--u)*.8);background:none;border:0;padding-left:0}
-.op-hack-script{height:calc(var(--u)*3.8);width:auto}
-.op-hack-text{display:flex;flex-direction:column;gap:calc(var(--u)*.3)}
-.op-hack-text strong{font-size:calc(var(--u)*2.2);font-weight:800}
-.op-hack-text span{font-size:calc(var(--u)*1.4);color:var(--mute)}
+.op-ag{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:auto auto;column-gap:calc(var(--u)*5);row-gap:calc(var(--u)*3.4)}
+.op-ag-day{display:flex;flex-direction:column;align-items:flex-start;min-width:0;animation:op-ag-in .9s cubic-bezier(.22,.61,.36,1) both;animation-delay:calc(.25s + var(--i) * .22s)}
+.op-ag-num{font-weight:800;font-size:calc(var(--u)*13);line-height:.85;letter-spacing:-.05em;padding-bottom:.06em}
+.op-ag-dow{margin-top:calc(var(--u)*1);font-weight:600;font-size:calc(var(--u)*2);color:var(--mute)}
+.op-ag-logo{margin-top:calc(var(--u)*3);display:block;width:auto;max-width:100%}
+.op-ag-logo.is-c26{height:calc(var(--u)*9)}
+.op-ag-logo.is-dad{height:calc(var(--u)*9)}
+.op-ag-hack{grid-column:2 / span 2;display:flex;align-items:center;gap:calc(var(--u)*2.4);animation:op-ag-in .9s cubic-bezier(.22,.61,.36,1) 1.05s both}
+.op-ag-hack img{height:calc(var(--u)*5);width:auto;flex:none}
+.op-ag-bar{flex:1;height:calc(var(--u)*.35);border-radius:calc(var(--u)*.2);background:var(--b);transform-origin:0 50%;animation:op-ag-draw 1.4s cubic-bezier(.65,0,.25,1) 1.3s both}
+.op-ag-hack strong{flex:none;font-weight:800;font-size:calc(var(--u)*3);letter-spacing:-.02em;animation:op-ag-in .7s ease-out 2.4s both}
+@keyframes op-ag-in{from{opacity:0;transform:translateY(calc(var(--u)*1.6*var(--rise,1)))}to{opacity:1;transform:none}}
+@keyframes op-ag-draw{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 
 /* stages: two floors, equal in size */
 .op-plans{flex:1;min-height:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:calc(var(--u)*4)}
