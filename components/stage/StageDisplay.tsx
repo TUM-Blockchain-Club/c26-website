@@ -713,12 +713,15 @@ export const StageDisplay = ({
         (c): c is HTMLElement =>
           c instanceof HTMLElement && !c.classList.contains("is-leaving"),
       ) ?? el;
+    // The size is set on the incoming scene's own layer, not on <main>: a
+    // scene that is fading out keeps the size it had and never jumps to the
+    // next scene's.
     el.style.setProperty("--rise", "0");
     let fit = 1;
-    el.style.setProperty("--fit", "1");
+    scene.style.setProperty("--fit", "1");
     while (scene.scrollHeight > scene.clientHeight + 1 && fit > 0.6) {
       fit = Math.round((fit - 0.05) * 100) / 100;
-      el.style.setProperty("--fit", String(fit));
+      scene.style.setProperty("--fit", String(fit));
     }
     el.style.removeProperty("--rise");
   });
