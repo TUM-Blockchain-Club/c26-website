@@ -34,10 +34,10 @@ Up next → Intro → On stage → Slides 1…n → next session
 - **Slides**, one page per press: the files uploaded on the session in
   Strapi (Agenda 26, field `slides`; PDFs and images, in their order), or a
   PDF uploaded in the room's studio on that computer, which takes
-  precedence. On Nakamoto (`FRAMED_DECK`) they sit as a card on the right
+  precedence. On Nakamoto (`FRAMED_DECK`, on its LED wall) they sit as a card on the right
   over the screen's background, centred in the right part of the screen, with
   the stage name and clock always centred above it and the session's title
-  and speakers at the top left, under the conference mark; the other rooms show them full screen on black.
+  and speakers at the top left, under the conference mark; Turing and Hopper show them full screen on black.
 - **Breaks** in the programme are their own cue; **P** puts up a short-pause
   screen at any time, **B** blacks out.
 
