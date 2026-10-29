@@ -9,7 +9,11 @@ import {
   useState,
 } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import type { StagePerson, StageSlot } from "@/components/stage/stageData";
+import type {
+  StagePerson,
+  StageSlot,
+  StageSponsor,
+} from "@/components/stage/stageData";
 import { playIntroSting } from "@/components/stage/introSound";
 import { DeckPage, RemotePage, openRemote } from "@/components/stage/DeckPage";
 import {
@@ -18,6 +22,7 @@ import {
   OPENING_SESSION,
   OPENING_SLIDES,
   OpeningSlide,
+  SponsorWall,
   type OpeningSlideId,
 } from "@/components/stage/OpeningDeck";
 import {
@@ -134,19 +139,19 @@ const FLOOR_FREE: Record<string, number> = {
 /** Rooms where a speaker's slides sit as a card on the right, over the
  * screen's background, with the session beside them, rather than filling
  * the screen on black. */
-const FRAMED_DECK = new Set(["nakamoto"]);
+const FRAMED_DECK = new Set(["nakamoto", "turing"]);
 
 /** Rooms that always put the speakers in their own column on the right,
  * with stage and clock at the top centre; every room with a free floor
  * does too. */
-const SIDE_ROOMS = new Set(["nakamoto"]);
+const SIDE_ROOMS = new Set(["nakamoto", "turing"]);
 
 const WIDE_ROOMS: Record<string, [number, number]> = {
   nakamoto: [2880, 1026],
   turing: [3840, 1152],
 };
 
-type CueKind = "upnext" | "intro" | "onstage" | "deck" | "break";
+type CueKind = "upnext" | "intro" | "onstage" | "deck" | "break" | "wrap";
 /** Where a slide cue comes from: the studio PDF on this computer, or a
  * file uploaded on the session in Strapi. */
 type DeckRef =
@@ -168,10 +173,23 @@ const CUE_LABEL: Record<CueKind, string> = {
   onstage: "On stage",
   deck: "Slides",
   break: "Break",
+  wrap: "Thank you",
 };
 
 /** The day as a run of cues, in programme order. */
 const buildCues = (
+  slots: StageSlot[],
+  decks: Map<string, DeckMeta>,
+  pdfPages: Map<string, number>,
+): Cue[] => {
+  const cues = buildSessionCues(slots, decks, pdfPages);
+  // The day ends on a thank-you to the sponsors after its last session.
+  const last = slots[slots.length - 1];
+  if (last) cues.push({ kind: "wrap", slot: last, key: `${last.id}:wrap` });
+  return cues;
+};
+
+const buildSessionCues = (
   slots: StageSlot[],
   decks: Map<string, DeckMeta>,
   pdfPages: Map<string, number>,
@@ -718,6 +736,10 @@ export const StageDisplay = ({
   const introActive = cue?.kind === "intro" && introRun > 0;
   const floor =
     event === "digital-assets-day" ? (FLOOR_FREE[roomSlug] ?? 0) : 0;
+  // ?format=landscape runs a wide room as a plain 16:9 screen, for when its
+  // picture goes to an ordinary projector instead of the LED wall.
+  const wide =
+    params.get("format") === "landscape" ? undefined : WIDE_ROOMS[roomSlug];
 
   introOn.current = introActive;
 
@@ -725,7 +747,7 @@ export const StageDisplay = ({
     <div
       ref={rootRef}
       className={`stg-root ${introActive ? "is-intro" : ""} ${
-        WIDE_ROOMS[roomSlug] ? "is-wide" : ""
+        wide ? "is-wide" : ""
       } ${floor ? "is-floor" : ""} ${
         floor || SIDE_ROOMS.has(roomSlug) ? "is-side" : ""
       } ${FRAMED_DECK.has(roomSlug) ? "is-framed-deck" : ""}`}
@@ -740,8 +762,8 @@ export const StageDisplay = ({
           "--glowB": brand.glowB,
           "--acc": brand.accent,
           ...(floor && { "--floor": floor }),
-          ...(WIDE_ROOMS[roomSlug] && {
-            "--r": WIDE_ROOMS[roomSlug][0] / WIDE_ROOMS[roomSlug][1],
+          ...(wide && {
+            "--r": wide[0] / wide[1],
           }),
         } as React.CSSProperties
       }
@@ -784,6 +806,7 @@ export const StageDisplay = ({
                 ? `on-${cue.slot.id}`
                 : cue.kind === "upnext" ||
                     cue.kind === "break" ||
+                    cue.kind === "wrap" ||
                     cue.deck?.from === "opening"
                   ? cue.key
                   : cue.kind === "deck" && FRAMED_DECK.has(roomSlug)
@@ -792,6 +815,9 @@ export const StageDisplay = ({
           }
         >
           {!cue && <Wrap key="wrap" />}
+          {cue?.kind === "wrap" && (
+            <Wrap key={cue.key} sponsors={cue.slot.sponsors} />
+          )}
           {cue?.kind === "upnext" && (
             <UpNext
               key={cue.key}
@@ -810,9 +836,12 @@ export const StageDisplay = ({
               manual
             />
           )}
-          {cue?.kind === "break" && (
-            <Break key={cue.key} slot={cue.slot} next={upcoming} now={now} />
-          )}
+          {cue?.kind === "break" &&
+            (/lunch/i.test(cue.slot.title) && cue.slot.sponsors?.length ? (
+              <LunchBreak key={cue.key} slot={cue.slot} next={upcoming} />
+            ) : (
+              <Break key={cue.key} slot={cue.slot} next={upcoming} now={now} />
+            ))}
           {cue?.kind === "deck" &&
             cue.deck?.from !== "opening" &&
             FRAMED_DECK.has(roomSlug) && (
@@ -1366,15 +1395,48 @@ const SceneFader = ({
   );
 };
 
-const Wrap = ({ nextDay }: { nextDay?: StageSlot } = {}) => (
-  <section className="stg-scene stg-center">
-    <Label>Thank you</Label>
-    <h1 className="stg-title stg-huge">That’s a wrap for today</h1>
-    {nextDay && (
-      <p className="stg-lede">
-        Back at {nextDay.startLabel} with <TitleLines title={nextDay.title} />
-      </p>
-    )}
+const Wrap = ({
+  nextDay,
+  sponsors,
+}: { nextDay?: StageSlot; sponsors?: StageSponsor[] } = {}) =>
+  sponsors?.length ? (
+    <section className="stg-scene stg-thanks-wall">
+      <div className="stg-thanks-head">
+        <Label>Thank you</Label>
+        <h1 className="stg-title">That’s a wrap for today</h1>
+        <p className="stg-lede">Thank you to our sponsors</p>
+      </div>
+      <SponsorWall sponsors={sponsors} delay={0.7} />
+    </section>
+  ) : (
+    <section className="stg-scene stg-center">
+      <Label>Thank you</Label>
+      <h1 className="stg-title stg-huge">That’s a wrap for today</h1>
+      {nextDay && (
+        <p className="stg-lede">
+          Back at {nextDay.startLabel} with <TitleLines title={nextDay.title} />
+        </p>
+      )}
+    </section>
+  );
+
+/** A lunch break thanks every sponsor, with what comes after it. */
+const LunchBreak = ({ slot, next }: { slot: StageSlot; next?: StageSlot }) => (
+  <section className="stg-scene stg-thanks-wall">
+    <div className="stg-thanks-head">
+      <Label>{range(slot)}</Label>
+      <h1 className="stg-title">{slot.title}</h1>
+      <p className="stg-lede">Thank you to our sponsors</p>
+      {next && (
+        <p className="stg-thanks-next">
+          After the break at {next.startLabel}
+          <b>
+            <TitleLines title={next.title} />
+          </b>
+        </p>
+      )}
+    </div>
+    <SponsorWall sponsors={slot.sponsors ?? []} delay={0.7} />
   </section>
 );
 
@@ -1740,6 +1802,8 @@ const CSS = `
 .stg-root.is-side .stg-session .stg-head{grid-column:1;grid-row:1 / span 2;align-self:center}
 .stg-root.is-side .stg-session .stg-title,.stg-root.is-side .stg-session .stg-title.is-mid{font-size:calc(var(--u)*4.4*var(--fit,1))}
 .stg-root.is-side .stg-session .stg-title.is-long{font-size:calc(var(--u)*3.4*var(--fit,1))}
+.stg-root.is-side:not(.is-wide) .stg-session .stg-title,.stg-root.is-side:not(.is-wide) .stg-session .stg-title.is-mid{font-size:calc(var(--u)*3.4*var(--fit,1))}
+.stg-root.is-side:not(.is-wide) .stg-session .stg-title.is-long{font-size:calc(var(--u)*2.8*var(--fit,1))}
 .stg-root.is-side .stg-session .stg-ticker{grid-column:2;grid-row:2;margin-top:calc(var(--u)*1.2)}
 .stg-root.is-side :is(.stg-session,.stg-break-next) .stg-people{grid-column:2;grid-row:1;margin:0;align-self:center;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:calc(var(--u)*1.6*var(--fit,1)) calc(var(--u)*2.2)}
 .stg-root.is-side :is(.stg-session,.stg-break-next) .stg-people li{flex-direction:row;align-items:center;gap:calc(var(--u)*1.4)}
@@ -1775,7 +1839,7 @@ const CSS = `
 /* Digital Assets Day: the lower part stays free for the panel in front, and
    the Digital Assets Day mark is three times as large */
 .stg-root.is-floor .stg-dad-solo{height:calc(var(--u)*13.2)}
-.stg-root.is-floor .stg-main{top:calc(var(--u)*4);bottom:calc(var(--floor)*100%)}
+.stg-root.is-floor .stg-main{top:calc(var(--u)*4);bottom:calc(var(--floor)*100% + var(--u)*.8)}
 .stg-root.is-floor .stg-session .stg-head{align-self:start;padding-top:calc(var(--u)*14.4)}
 .stg-root.is-floor .stg-session .stg-title,.stg-root.is-floor .stg-session .stg-title.is-mid{font-size:calc(var(--u)*3.6*var(--fit,1))}
 .stg-root.is-floor .stg-session .stg-title.is-long{font-size:calc(var(--u)*2.9*var(--fit,1))}
@@ -1788,13 +1852,44 @@ const CSS = `
 .stg-root.is-floor .stg-break-next .stg-people{margin-top:calc(var(--u)*1.4)}
 .stg-root.is-floor .stg-pause{padding-bottom:calc(var(--floor)*var(--fh) + var(--u)*2)}
 /* framed rooms: the slides as a card on the right, over the background */
-.stg-root.is-framed-deck .stg-deck{background:none;left:calc(var(--u)*62);right:calc(var(--u)*5);top:calc(var(--u)*7.6);bottom:calc(var(--u)*3.4);justify-content:flex-end}
+.stg-root.is-framed-deck .stg-deck{background:none;left:39%;right:calc(var(--u)*5);top:calc(var(--u)*7.6);bottom:calc(var(--u)*3.4);justify-content:flex-end}
 .stg-root.is-framed-deck .stg-deck canvas,.stg-root.is-framed-deck .stg-deck-img{border-radius:calc(var(--u)*.6);box-shadow:0 0 0 1px var(--line),0 calc(var(--u)*1.2) calc(var(--u)*5) rgba(0,0,0,.6)}
 .stg-root.is-framed-deck .stg-deck-img{max-width:100%;max-height:100%}
-.stg-deck-side{justify-content:flex-start;gap:calc(var(--u)*1.2);max-width:calc(var(--u)*50);overflow:clip;overflow-clip-margin:calc(var(--u)*2)}
+.stg-deck-side{justify-content:flex-start;gap:calc(var(--u)*1.2);max-width:min(calc(var(--u)*50),calc(var(--fw)*.39 - var(--u)*9));overflow:clip;overflow-clip-margin:calc(var(--u)*2)}
 .stg-deck-side .stg-title{font-size:calc(var(--u)*3*var(--fit,1));line-height:1.15}
 .stg-deck-people{margin:0;font-size:calc(var(--u)*2);font-weight:600;line-height:1.35;color:var(--mute)}
 .stg-root.is-floor .stg-deck-side{justify-content:flex-start;padding-top:calc(var(--u)*14.4)}
 .stg-root.is-floor.is-framed-deck .stg-deck{bottom:calc(var(--floor)*var(--fh));align-items:flex-start}
+/* lunch break and the end of the day: the sponsors, with a thank-you */
+.stg-thanks-wall{gap:calc(var(--u)*2.2)}
+.stg-thanks-head{display:flex;flex-direction:column;gap:calc(var(--u)*.6)}
+.stg-thanks-head .stg-title{font-size:calc(var(--u)*4.6*var(--fit,1))}
+.stg-thanks-head .stg-lede{margin:0;font-weight:700;color:var(--acc);font-size:calc(var(--u)*1.8)}
+.stg-thanks-next{margin:calc(var(--u)*.6) 0 0;display:flex;flex-direction:column;gap:calc(var(--u)*.3);font-size:calc(var(--u)*1.3);color:var(--mute)}
+.stg-thanks-next b{font-size:calc(var(--u)*1.7);color:var(--ink)}
+.stg-root.is-side .stg-thanks-wall{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2.4fr);column-gap:calc(var(--u)*4);align-items:center}
+.stg-root.is-side .stg-thanks-wall .op-sponsor-rows{--fit:.64}
+.stg-root.is-floor .stg-thanks-wall{align-items:start}
+.stg-root.is-floor .stg-thanks-head{padding-top:calc(var(--u)*14.4)}
+.stg-root.is-floor .stg-thanks-head .stg-title{font-size:calc(var(--u)*3.2*var(--fit,1))}
+.stg-root.is-floor .stg-thanks-head{gap:calc(var(--u)*.35)}
+.stg-root.is-floor .stg-thanks-head .stg-lede{font-size:calc(var(--u)*1.5)}
+.stg-root.is-floor .stg-thanks-next{margin-top:calc(var(--u)*.3)}
+.stg-root.is-floor .stg-thanks-next b{font-size:calc(var(--u)*1.35);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.stg-root.is-floor .stg-thanks-wall .op-sponsor-rows{--fit:.58;padding-top:calc(var(--u)*4.6)}
+/* 16:9 screens on the Digital Assets Day: the mark twice, not three times
+   as large, so the speakers' column clears it */
+.stg-root.is-floor:not(.is-wide) .stg-dad-solo{height:calc(var(--u)*8.8)}
+.stg-root.is-floor:not(.is-wide) :is(.stg-session .stg-head,.stg-thanks-head,.stg-break-main,.stg-deck-side){padding-top:calc(var(--u)*10)}
+.stg-root.is-floor:not(.is-wide) .stg-session{grid-template-columns:minmax(0,1fr) minmax(0,1.2fr)}
+.stg-root.is-floor:not(.is-wide) .stg-session .stg-people[data-n="1"] .stg-portrait{width:calc(var(--u)*15*var(--fit,1));height:calc(var(--u)*15*var(--fit,1))}
+.stg-root.is-floor:not(.is-wide) .stg-session .stg-people[data-n="1"] .stg-name{font-size:calc(var(--u)*2.8*var(--fit,1))}
+.stg-thanks-wall .op-sponsor-group{flex-wrap:wrap}
+.stg-root.is-side:not(.is-wide) .stg-thanks-wall{grid-template-columns:minmax(0,1fr) minmax(0,1.6fr)}
+.stg-root.is-side:not(.is-wide) .stg-thanks-wall .op-sponsor-rows{--fit:.5}
+/* 16:9 side layout: four and more speakers in two columns, so names and
+   roles keep room to breathe */
+.stg-root.is-side:not(.is-wide) :is(.stg-session,.stg-break-next) .stg-people:not([data-n="1"]):not([data-n="2"]):not([data-n="3"]){grid-template-columns:repeat(2,minmax(0,1fr))}
+.stg-root.is-side:not(.is-wide) :is(.stg-session,.stg-break-next) .stg-people:not([data-n="1"]):not([data-n="2"]):not([data-n="3"]) .stg-portrait{width:calc(var(--u)*6.6*var(--fit,1));height:calc(var(--u)*6.6*var(--fit,1))}
 ${OPENING_CSS}
 `;

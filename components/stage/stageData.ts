@@ -77,6 +77,9 @@ const instant = (day: string, time: string) =>
   Date.parse(`${day}T${time}:00+01:00`);
 
 const pad = (n: number) => String(n).padStart(2, "0");
+/** The Munich calendar day of an instant, e.g. "2026-10-29". */
+const dayOf = (ms: number) =>
+  new Date(ms + 60 * 60 * 1000).toISOString().slice(0, 10);
 const clock = (ms: number) => {
   const d = new Date(ms + 60 * 60 * 1000); // to CET wall time
   return `${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
@@ -176,13 +179,23 @@ export const getStageSlots = async (room: StageRoom): Promise<StageSlot[]> => {
       }),
     });
   }
-  const opening = slots.find((sl) => sl.id === OPENING_SESSION);
-  if (opening)
-    opening.sponsors = sponsors.map((sp) => ({
-      name: sp.name,
-      tier: sp.tier,
-      src: sp.src,
-      light: sp.background === "light",
-    }));
-  return slots.sort((a, b) => a.start - b.start || a.end - b.end);
+  // The full sponsor list rides along where it is shown: the opening's
+  // thank-you slide, every lunch break and the end of each day.
+  const all: StageSponsor[] = sponsors.map((sp) => ({
+    name: sp.name,
+    tier: sp.tier,
+    src: sp.src,
+    light: sp.background === "light",
+  }));
+  slots.sort((a, b) => a.start - b.start || a.end - b.end);
+  const lastOfDay = new Map<string, StageSlot>();
+  for (const sl of slots) lastOfDay.set(dayOf(sl.start), sl);
+  for (const sl of slots)
+    if (
+      sl.id === OPENING_SESSION ||
+      (sl.kind === "break" && /lunch/i.test(sl.title)) ||
+      lastOfDay.get(dayOf(sl.start)) === sl
+    )
+      sl.sponsors = all;
+  return slots;
 };

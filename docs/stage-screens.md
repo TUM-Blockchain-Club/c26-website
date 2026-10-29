@@ -121,13 +121,13 @@ The sponsors come live from Strapi, grouped by tier. Figma's first slide
 replaces them, as for any other session. Pictures are in
 `public/stage/opening/`.
 
-## Nakamoto layout
+## Nakamoto and Turing layout
 
-On Nakamoto (Main Stage), every day, the conference mark is larger, the
+On Nakamoto (Main Stage) and Turing (Executive Forum), every day, the conference mark is larger, the
 stage name and clock sit at the top centre, the session on the left and the speakers large in their own
 column on the right, never under the text (`SIDE_ROOMS`): one speaker with
 a big portrait, two or four in two columns, three or five and more in
-three. Every room with a free floor on the Digital Assets Day uses the same
+three (`SIDE_ROOMS`, with the slide card in `FRAMED_DECK`). Every room with a free floor on the Digital Assets Day uses the same
 layout.
 
 ## Digital Assets Day layout
@@ -138,9 +138,23 @@ Hopper (`FLOOR_FREE` in `StageDisplay.tsx`). The Digital Assets Day mark is
 three times as large at the top left, the stage and clock sit at the top
 centre, the session runs down the left under the mark and the speakers are
 at the top right, with what comes next under them. Breaks and the pause
-screen keep to the same area, and so do speaker slides on Nakamoto.
+screen keep to the same area, and so do speaker slides on Nakamoto. On
+16:9 screens the mark is twice rather than three times as large, and four
+or more speakers sit in two columns, so the speakers' column clears it.
 
 Scene changes: the old scene fades out in 0.35 s before the new one rises
 in, and the shrink-to-fit is measured as the new scene will stand once
 its entrance is over, so nothing loads smaller first or keeps the old
 title on screen.
+
+## Turing as 16:9
+
+`?format=landscape` runs a wide room as a plain 16:9 screen instead of its
+LED wall's shape, for an ordinary projector. The start page links Turing's
+days in that format too.
+
+## Sponsors thank-you
+
+Every lunch break shows all sponsors from Strapi with "Thank you to our
+sponsors" and what comes after the break. Each day ends on its own cue
+after the last session: "That's a wrap for today" with all sponsors.

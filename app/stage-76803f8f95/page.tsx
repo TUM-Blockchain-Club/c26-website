@@ -31,7 +31,7 @@ export const metadata: Metadata = {
 const KEYS: [string, string][] = [
   [
     "→ / Space / Enter / clicker",
-    "next cue: Up next → Intro → On stage → Thank you → next session",
+    "next cue: Up next → Intro → On stage → Slides → next session",
   ],
   ["←", "back one cue"],
   ["↓ / ↑", "jump to the next / previous session"],
@@ -78,7 +78,7 @@ export default async function StageIndexPage() {
                 Assets Day runs in blue throughout. Nothing moves on its own:
                 every step is one press of → or the clicker. While a speaker
                 presents, switch the projector to their laptop and come back
-                here for Thank you. Changes in Strapi appear within a minute.
+                here afterwards. Changes in Strapi appear within a minute.
               </Text>
             </div>
 
@@ -113,6 +113,21 @@ export default async function StageIndexPage() {
                         </span>
                       </Link>
                     ))}
+                    {/* Turing's LED wall is 3840 x 1152; this runs the same
+                        screen as a plain 16:9 picture for a normal projector. */}
+                    {r.slug === "turing" &&
+                      r.days.map(([day]) => (
+                        <Link
+                          key={`${day}-169`}
+                          href={`/stage-76803f8f95/${r.slug}?day=${day}&format=landscape`}
+                          className="flex items-center justify-between rounded-lg border border-dashed border-line px-4 py-2 text-xs font-bold transition-colors hover:border-white"
+                        >
+                          <span>{DAY_NAMES[day] ?? day}</span>
+                          <span className="font-normal opacity-80">
+                            16:9 landscape
+                          </span>
+                        </Link>
+                      ))}
                   </div>
                 </div>
               ))}

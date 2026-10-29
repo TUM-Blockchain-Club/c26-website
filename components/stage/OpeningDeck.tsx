@@ -471,49 +471,58 @@ const SPONSOR_ROWS: { size: string; groups: [string, string[]][] }[] = [
   },
 ];
 
-const Sponsors = ({ sponsors }: { sponsors: StageSponsor[] }) => {
+/** Every sponsor, row by row by tier; also shown in the lunch break and at
+ * the end of each day. */
+export const SponsorWall = ({
+  sponsors,
+  delay = 0.4,
+}: {
+  sponsors: StageSponsor[];
+  delay?: number;
+}) => {
   let n = 0;
   return (
-    <section className="stg-scene op op-sponsors">
-      <Label>Thank you to our sponsors</Label>
-      <div className="op-sponsor-rows">
-        {SPONSOR_ROWS.map((row, r) => {
-          const groups = row.groups
-            .map(
-              ([label, tiers]) =>
-                [
-                  label,
-                  sponsors.filter((s) => tiers.includes(s.tier)),
-                ] as const,
-            )
-            .filter(([, list]) => list.length);
-          if (!groups.length) return null;
-          return (
-            <div key={r} className={`op-sponsor-row ${row.size}`}>
-              {groups.map(([label, list]) => (
-                <div key={label} className="op-sponsor-group">
-                  <span className="op-tier op-rise" style={d(0.4 + r * 0.15)}>
-                    {label}
+    <div className="op-sponsor-rows">
+      {SPONSOR_ROWS.map((row, r) => {
+        const groups = row.groups
+          .map(
+            ([label, tiers]) =>
+              [label, sponsors.filter((s) => tiers.includes(s.tier))] as const,
+          )
+          .filter(([, list]) => list.length);
+        if (!groups.length) return null;
+        return (
+          <div key={r} className={`op-sponsor-row ${row.size}`}>
+            {groups.map(([label, list]) => (
+              <div key={label} className="op-sponsor-group">
+                <span className="op-tier op-rise" style={d(delay + r * 0.15)}>
+                  {label}
+                </span>
+                {list.map((s) => (
+                  <span
+                    key={s.name}
+                    className={`op-logo op-pop ${s.light ? "" : "is-dark"}`}
+                    style={d(delay + 0.1 + r * 0.15 + n++ * 0.04)}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={s.src} alt={s.name} />
                   </span>
-                  {list.map((s) => (
-                    <span
-                      key={s.name}
-                      className={`op-logo op-pop ${s.light ? "" : "is-dark"}`}
-                      style={d(0.5 + r * 0.15 + n++ * 0.04)}
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={s.src} alt={s.name} />
-                    </span>
-                  ))}
-                </div>
-              ))}
-            </div>
-          );
-        })}
-      </div>
-    </section>
+                ))}
+              </div>
+            ))}
+          </div>
+        );
+      })}
+    </div>
   );
 };
+
+const Sponsors = ({ sponsors }: { sponsors: StageSponsor[] }) => (
+  <section className="stg-scene op op-sponsors">
+    <Label>Thank you to our sponsors</Label>
+    <SponsorWall sponsors={sponsors} />
+  </section>
+);
 
 const Organizers = () => (
   <section className="stg-scene op op-org">
