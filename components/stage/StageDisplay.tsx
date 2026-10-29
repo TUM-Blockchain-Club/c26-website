@@ -1853,7 +1853,12 @@ const CSS = `
 .stg-root.is-floor .stg-break-next .stg-people{margin-top:calc(var(--u)*1.4)}
 .stg-root.is-floor .stg-pause{padding-bottom:calc(var(--floor)*var(--fh) + var(--u)*2)}
 /* framed rooms: the slides as a card on the right, over the background */
-.stg-root.is-framed-deck .stg-deck{background:none;left:39%;right:calc(var(--u)*5);top:calc(var(--u)*7.6);bottom:calc(var(--u)*3.4);justify-content:flex-end}
+.stg-root.is-framed-deck .stg-deck{background:none;left:39%;right:calc(var(--u)*5);top:calc(var(--u)*7.6);bottom:calc(var(--u)*3.4);justify-content:center}
+/* Stage and clock stay put above the middle of the slide area, on every cue,
+   so they never jump when the slides come up. In .stg-top's own box (5u in
+   from each side) the area's middle, 39% to 5u from the right, is at
+   69.5% - .55u. */
+.stg-root.is-framed-deck .stg-where{left:calc(69.5% - var(--u)*.55)}
 .stg-root.is-framed-deck .stg-deck canvas,.stg-root.is-framed-deck .stg-deck-img{border-radius:calc(var(--u)*.6);box-shadow:0 0 0 1px var(--line),0 calc(var(--u)*1.2) calc(var(--u)*5) rgba(0,0,0,.6)}
 .stg-root.is-framed-deck .stg-deck-img{max-width:100%;max-height:100%}
 .stg-deck-side{justify-content:flex-start;gap:calc(var(--u)*1.2);max-width:min(calc(var(--u)*50),calc(var(--fw)*.39 - var(--u)*9));overflow:clip;overflow-clip-margin:calc(var(--u)*2)}
@@ -1885,7 +1890,6 @@ const CSS = `
 .stg-root.is-floor:not(.is-wide) .stg-session{grid-template-columns:minmax(0,1fr) minmax(0,1.2fr)}
 .stg-root.is-floor:not(.is-wide) .stg-session .stg-people[data-n="1"] .stg-portrait{width:calc(var(--u)*15*var(--fit,1));height:calc(var(--u)*15*var(--fit,1))}
 .stg-root.is-floor:not(.is-wide) .stg-session .stg-people[data-n="1"] .stg-name{font-size:calc(var(--u)*2.8*var(--fit,1))}
-.stg-thanks-wall .op-sponsor-group{flex-wrap:wrap}
 .stg-root.is-side:not(.is-wide) .stg-thanks-wall{grid-template-columns:minmax(0,1fr) minmax(0,1.6fr)}
 .stg-root.is-side:not(.is-wide) .stg-thanks-wall .op-sponsor-rows{--fit:.5}
 /* 16:9 side layout: four and more speakers in two columns, so names and

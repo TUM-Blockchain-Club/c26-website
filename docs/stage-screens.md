@@ -35,8 +35,9 @@ Up next → Intro → On stage → Slides 1…n → next session
   Strapi (Agenda 26, field `slides`; PDFs and images, in their order), or a
   PDF uploaded in the room's studio on that computer, which takes
   precedence. On Nakamoto (`FRAMED_DECK`) they sit as a card on the right
-  over the screen's background, with the session's title and speakers at
-  the top left, under the conference mark; the other rooms show them full screen on black.
+  over the screen's background, centred in the right part of the screen, with
+  the stage name and clock always centred above it and the session's title
+  and speakers at the top left, under the conference mark; the other rooms show them full screen on black.
 - **Breaks** in the programme are their own cue; **P** puts up a short-pause
   screen at any time, **B** blacks out.
 
@@ -158,6 +159,13 @@ days in that format too.
 Every lunch break shows all sponsors from Strapi with "Thank you to our
 sponsors" and what comes after the break. Each day ends on its own cue
 after the last session: "That's a wrap for today" with all sponsors.
+
+The wall (`SponsorWall` in `OpeningDeck.tsx`) groups the sponsors into
+Conference, Hackathon and Digital Assets Day, each under its own heading,
+with its tiers from the highest down (Platinum, Gold, Silver, Bronze,
+Partners; Premium, Standard, Bounty, Travel; Tracks). The logo size follows
+the rank inside each block. Conference runs on the left, Hackathon and the
+Digital Assets Day tracks on the right.
 
 ## Opening slides: sources
 
