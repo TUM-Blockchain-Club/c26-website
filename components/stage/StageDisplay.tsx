@@ -151,7 +151,14 @@ const WIDE_ROOMS: Record<string, [number, number]> = {
   turing: [3840, 1152],
 };
 
-type CueKind = "upnext" | "intro" | "onstage" | "deck" | "break" | "wrap";
+type CueKind =
+  | "upnext"
+  | "intro"
+  | "onstage"
+  | "deck"
+  | "break"
+  | "wrap"
+  | "closing";
 /** Where a slide cue comes from: the studio PDF on this computer, or a
  * file uploaded on the session in Strapi. */
 type DeckRef =
@@ -174,18 +181,33 @@ const CUE_LABEL: Record<CueKind, string> = {
   deck: "Slides",
   break: "Break",
   wrap: "Thank you",
+  closing: "Closing",
 };
+
+/** The closing ceremony's slides, one image per page of its PDF. */
+const CLOSING_PAGES = 24;
 
 /** The day as a run of cues, in programme order. */
 const buildCues = (
   slots: StageSlot[],
   decks: Map<string, DeckMeta>,
   pdfPages: Map<string, number>,
+  roomSlug: string,
 ): Cue[] => {
   const cues = buildSessionCues(slots, decks, pdfPages);
   // The day ends on a thank-you to the sponsors after its last session.
   const last = slots[slots.length - 1];
   if (last) cues.push({ kind: "wrap", slot: last, key: `${last.id}:wrap` });
+  // The Main Stage then runs the closing ceremony over the whole wall.
+  if (last && roomSlug === "nakamoto" && last.event === "digital-assets-day")
+    for (let i = 1; i <= CLOSING_PAGES; i++)
+      cues.push({
+        kind: "closing",
+        slot: last,
+        page: i,
+        pages: CLOSING_PAGES,
+        key: `${last.id}:closing:${i}`,
+      });
   return cues;
 };
 
@@ -402,8 +424,8 @@ export const StageDisplay = ({
     };
   }, [daySlots]);
   const cues = useMemo(
-    () => buildCues(daySlots, decks, pdfPages),
-    [daySlots, decks, pdfPages],
+    () => buildCues(daySlots, decks, pdfPages, roomSlug),
+    [daySlots, decks, pdfPages, roomSlug],
   );
   const [introRun, setIntroRun] = useState(0);
   const startedRef = useRef(false);
@@ -675,13 +697,16 @@ export const StageDisplay = ({
       for (const sp of sl.sponsors ?? []) srcs.add(sp.src);
       for (const f of sl.slides ?? []) if (f.kind === "image") srcs.add(f.src);
     }
+    for (const c of cues)
+      if (c.kind === "closing" && c.page)
+        srcs.add(`/stage/closing/${String(c.page).padStart(2, "0")}.webp`);
     preloaded.current = [...srcs].map((src) => {
       const img = new Image();
       img.decoding = "async";
       img.src = src;
       return img;
     });
-  }, [daySlots]);
+  }, [daySlots, cues]);
 
   // Pictures fade in where they belong once loaded, instead of popping in.
   const rootRef = useRef<HTMLDivElement>(null);
@@ -733,7 +758,7 @@ export const StageDisplay = ({
   // The Main Stage closes the Digital Assets Day on the Nakamoto Stage's
   // own look, over the whole wall: the panel has left the floor by then.
   const closing =
-    cue?.kind === "wrap" &&
+    (cue?.kind === "wrap" || cue?.kind === "closing") &&
     roomSlug === "nakamoto" &&
     (dayEvent ?? slot?.event) === "digital-assets-day";
   const event = closing
@@ -766,7 +791,9 @@ export const StageDisplay = ({
         floor && floor >= 0.3 ? "is-floor-deep" : ""
       } ${
         floor || SIDE_ROOMS.has(roomSlug) ? "is-side" : ""
-      } ${framed ? "is-framed-deck" : ""}`}
+      } ${framed ? "is-framed-deck" : ""} ${
+        cue?.kind === "closing" ? "is-closing-page" : ""
+      }`}
       data-brand={event}
       onMouseMove={showPanel}
       style={
@@ -875,6 +902,10 @@ export const StageDisplay = ({
           )}
         </SceneFader>
       </main>
+
+      {cue?.kind === "closing" && cue.page && (
+        <ClosingPage key="closing" page={cue.page} />
+      )}
 
       {cue?.kind === "deck" && cue.deck?.from === "local" && (
         <DeckPage
@@ -1423,6 +1454,18 @@ const SceneFader = ({
   );
 };
 
+/** One page of the closing ceremony: only what stands in front on the PDF
+ * page, its background cut away, so it sits on the stage's own backdrop. */
+const ClosingPage = ({ page }: { page: number }) => (
+  <div className="stg-closing">
+    {/* eslint-disable-next-line @next/next/no-img-element */}
+    <img
+      src={`/stage/closing/${String(page).padStart(2, "0")}.webp`}
+      alt={`Closing ceremony, page ${page}`}
+    />
+  </div>
+);
+
 const Wrap = ({
   nextDay,
   sponsors,
@@ -1912,6 +1955,9 @@ const CSS = `
 .stg-root.is-floor:not(.is-floor-deep).is-framed-deck .stg-deck{bottom:calc(var(--floor)*var(--fh));align-items:flex-start}
 /* lunch break and the end of the day: the sponsors, with a thank-you */
 .stg-thanks-wall{gap:calc(var(--u)*2.2)}
+.stg-closing{position:absolute;inset:0;z-index:3;display:flex;align-items:center;justify-content:center;animation:stg-in .6s ease both}
+.stg-closing img{height:100%;width:100%;object-fit:contain}
+.stg-root.is-closing-page .stg-top{display:none}
 .stg-thanks-head{display:flex;flex-direction:column;gap:calc(var(--u)*.6)}
 .stg-thanks-head .stg-title{font-size:calc(var(--u)*4.6*var(--fit,1))}
 .stg-thanks-head .stg-lede{margin:0;font-weight:700;color:var(--acc);font-size:calc(var(--u)*1.8)}

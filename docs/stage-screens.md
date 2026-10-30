@@ -216,3 +216,9 @@ On the Digital Assets Day the last cue on the Main Stage (Nakamoto room) runs
 in the Nakamoto Stage look instead of blue, over the whole wall (no free
 floor), with "This is only possible because of our sponsors" and the full
 sponsor wall. Other rooms keep the usual wrap.
+
+After that thank-you, the Main Stage runs the closing ceremony: 24 pages in
+`public/stage/closing/NN.webp`, rendered from `Closing.pdf` with the slide
+background cut away, so only the foreground sits on the stage backdrop (header
+hidden). To update, re-export the pages under the same names and adjust
+`CLOSING_PAGES` in `components/stage/StageDisplay.tsx`.
