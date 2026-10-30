@@ -357,14 +357,21 @@ const toEntry = (s: StrapiSession): AgendaEntry | null => {
   };
 };
 
-export const getAgendaEntries = async (): Promise<AgendaEntry[]> => {
+/**
+ * The speakers' slides are not public: only the stage screens ask for them
+ * with `withSlides`. Everything the public agenda renders goes without, so
+ * the file links never reach the page or its payload.
+ */
+export const getAgendaEntries = async ({
+  withSlides = false,
+}: { withSlides?: boolean } = {}): Promise<AgendaEntry[]> => {
   const [rows, converted] = await Promise.all([
     fetchAll<StrapiSession>(
       "agenda-26s",
       "sort=startTime:asc&populate=*",
       TAGS.agenda,
     ),
-    getConvertedSlides(),
+    withSlides ? getConvertedSlides() : new Map<string, string>(),
   ]);
   if (!rows || rows.length === 0) {
     announce("agenda", "code", fallbackAgenda.length);
@@ -373,19 +380,22 @@ export const getAgendaEntries = async (): Promise<AgendaEntry[]> => {
   const entries = rows
     .map(toEntry)
     .filter((e): e is AgendaEntry => e !== null)
-    .map((e) =>
+    .map((e): AgendaEntry => {
+      if (e.kind !== "talk" || !e.slides) return e;
+      if (!withSlides) {
+        const { slides: _slides, ...rest } = e;
+        return rest;
+      }
       // A PowerPoint, Keynote or ODP file gets the PDF made of it, so the
-      // site can open it in the browser.
-      e.kind === "talk" && e.slides
-        ? {
-            ...e,
-            slides: e.slides.map((f) => {
-              const pdf = f.hash ? converted.get(f.hash) : undefined;
-              return pdf ? { ...f, pdf } : f;
-            }),
-          }
-        : e,
-    );
+      // stage can open it in the browser.
+      return {
+        ...e,
+        slides: e.slides.map((f) => {
+          const pdf = f.hash ? converted.get(f.hash) : undefined;
+          return pdf ? { ...f, pdf } : f;
+        }),
+      };
+    });
   if (entries.length === 0) {
     console.error("[strapi] agenda: every session was unusable");
     announce("agenda", "code", fallbackAgenda.length);

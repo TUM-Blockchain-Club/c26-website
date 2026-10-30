@@ -69,12 +69,14 @@ the sheet scrolls there instead of cutting content off.
 
 ## Slides
 
-Files uploaded to a session's `slides` field in Strapi show in its dialog
-under **Slides** (`components/agenda/SessionSlides.tsx`), and the agenda
-card gets a small "Slides" chip. They come with the rest of the agenda, so
-saving the session in Strapi is all it takes: the webhook refreshes the page,
-or the 60-second cache does. Each file opens in a new tab: Strapi forbids
-framing its files, so they are linked rather than embedded. A file named
-`slides-pdf-<hash of the original>.pdf` in the media library stands in for
-a PowerPoint, Keynote or ODP file of that hash, so the browser can open it.
-A media upload (`file` in the webhook) refreshes the agenda too.
+Speakers' slides are not public. Files uploaded to a session's `slides`
+field in Strapi only reach the stage screens: `getAgendaEntries()` leaves
+them out unless called with `{ withSlides: true }`, which only
+`components/stage/stageData.ts` does. So neither the agenda, the session
+dialog nor their page payload links to them. (30 October 2026: the Slides
+button in the dialog and the "Slides" chip on the agenda card were removed.)
+
+The files themselves still sit in Strapi's public media library under a
+hashed URL; anyone who already has a link can still open it. A file named
+`slides-pdf-<hash of the original>.pdf` stands in for a PowerPoint, Keynote
+or ODP file of that hash on the stage.

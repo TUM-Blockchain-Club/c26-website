@@ -95,7 +95,7 @@ const OPEN_ENDED_MIN = 30;
 
 export const getStageSlots = async (room: StageRoom): Promise<StageSlot[]> => {
   const [entries, speakers, sponsors, converted] = await Promise.all([
-    getAgendaEntries(),
+    getAgendaEntries({ withSlides: true }),
     getSpeakers(),
     getSponsors(),
     getConvertedSlides(),
