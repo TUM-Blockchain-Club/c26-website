@@ -209,3 +209,10 @@ Dropped from the Figma deck for lack of a source: 2024's "1,000+ visitors,
 100 talks", "we expanded into the Deutsches Museum" (2023 was already
 there), 2025's "1,100+" (the site says 1,200+) and the Saturday 17:30
 closing time.
+
+## Main Stage closing
+
+On the Digital Assets Day the last cue on the Main Stage (Nakamoto room) runs
+in the Nakamoto Stage look instead of blue, over the whole wall (no free
+floor), with "This is only possible because of our sponsors" and the full
+sponsor wall. Other rooms keep the usual wrap.
