@@ -159,6 +159,8 @@ export type AgendaEntry =
        * confirmed yet, which renders "Speaker to be announced". */
       speakers?: string[];
       moderator?: string;
+      /** People who join by video (Strapi: speakerNames.remote). */
+      remote?: string[];
       /** Slides uploaded on the session in Strapi, in their order. `size` is
        * in kB; `pdf` is the PDF the convert-slides workflow made of a
        * PowerPoint, Keynote or ODP file, once there is one. */
