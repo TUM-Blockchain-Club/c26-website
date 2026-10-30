@@ -135,6 +135,28 @@ export default async function StageIndexPage() {
 
             <div className="flex flex-col gap-3">
               <Text as="p" textType="sub_title" className="font-bold">
+                Hackathon stage
+              </Text>
+              <Text
+                as="p"
+                textType="small"
+                className="text-secondary max-w-2xl"
+              >
+                The Hackathon opening runs as its own presentation. Open it on
+                the stage computer and press F for full screen.
+              </Text>
+              <div className="flex flex-wrap gap-3">
+                <a
+                  href="/stage-76803f8f95/hackathon"
+                  className="rounded-lg border border-line px-4 py-2 text-sm font-bold hover:border-white"
+                >
+                  Hackathon opening
+                </a>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <Text as="p" textType="sub_title" className="font-bold">
                 Speaker slides
               </Text>
               <Text

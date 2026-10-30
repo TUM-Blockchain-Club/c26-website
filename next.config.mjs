@@ -15,6 +15,10 @@ const nextConfig = {
       },
     ],
   },
+  // The Hackathon opening deck is read from disk by its stage route.
+  outputFileTracingIncludes: {
+    "/stage-76803f8f95/hackathon": ["./stage-decks/**/*"],
+  },
   // basePath: '/c24-website',
   // assetPrefix: '/c24-website',
 };
