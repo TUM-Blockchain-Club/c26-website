@@ -730,7 +730,15 @@ export const StageDisplay = ({
 
   const slot = cue?.slot;
   const dayEvent = days.find((d) => d.day === saved.day)?.event;
-  const event = dayEvent ?? slot?.event ?? "conference";
+  // The Main Stage closes the Digital Assets Day on the Nakamoto Stage's
+  // own look, over the whole wall: the panel has left the floor by then.
+  const closing =
+    cue?.kind === "wrap" &&
+    roomSlug === "nakamoto" &&
+    (dayEvent ?? slot?.event) === "digital-assets-day";
+  const event = closing
+    ? "conference"
+    : (dayEvent ?? slot?.event ?? "conference");
   const brand = BRAND[event];
   const nextTalk = (from: number) =>
     cues.slice(from + 1).find((c) => c.kind === "upnext")?.slot;
@@ -824,7 +832,11 @@ export const StageDisplay = ({
         >
           {!cue && <Wrap key="wrap" />}
           {cue?.kind === "wrap" && (
-            <Wrap key={cue.key} sponsors={cue.slot.sponsors} />
+            <Wrap
+              key={cue.key}
+              sponsors={cue.slot.sponsors}
+              closing={closing}
+            />
           )}
           {cue?.kind === "upnext" && (
             <UpNext
@@ -1414,14 +1426,29 @@ const SceneFader = ({
 const Wrap = ({
   nextDay,
   sponsors,
-}: { nextDay?: StageSlot; sponsors?: StageSponsor[] } = {}) =>
+  closing,
+}: {
+  nextDay?: StageSlot;
+  sponsors?: StageSponsor[];
+  /** The Main Stage's close of the Digital Assets Day. */
+  closing?: boolean;
+} = {}) =>
   sponsors?.length ? (
     <section className="stg-scene stg-thanks-wall">
-      <div className="stg-thanks-head">
-        <Label>Thank you</Label>
-        <h1 className="stg-title">That’s a wrap for today</h1>
-        <p className="stg-lede">Thank you to our sponsors</p>
-      </div>
+      {closing ? (
+        <div className="stg-thanks-head">
+          <Label>Thank you</Label>
+          <h1 className="stg-title">
+            This is only possible because of our sponsors
+          </h1>
+        </div>
+      ) : (
+        <div className="stg-thanks-head">
+          <Label>Thank you</Label>
+          <h1 className="stg-title">That’s a wrap for today</h1>
+          <p className="stg-lede">Thank you to our sponsors</p>
+        </div>
+      )}
       <SponsorWall sponsors={sponsors} delay={0.7} />
     </section>
   ) : (
