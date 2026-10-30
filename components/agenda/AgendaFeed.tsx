@@ -1,6 +1,5 @@
 import classNames from "classnames";
 import { ChevronRightIcon } from "@radix-ui/react-icons";
-import { FileText } from "lucide-react";
 import { Text } from "@/components/text";
 import { AgendaSpeakers } from "@/components/agenda/AgendaSpeakers";
 import {
@@ -79,13 +78,6 @@ const EntryRow = ({ entry }: { entry: AgendaEntry }) => {
             {entry.stage}
           </span>
         )}
-        {/* Says the slides are up, which opening the card reaches. */}
-        {entry.slides?.length ? (
-          <span className="flex items-center gap-1 rounded-full border border-line px-2.5 py-0.5 text-xs text-secondary">
-            <FileText className="h-3 w-3" aria-hidden />
-            Slides
-          </span>
-        ) : null}
         <span className="ml-auto flex items-center gap-1 text-xs text-faint">
           {entry.format}
           {/* Says the card opens; the whole card is the link. */}

@@ -15,7 +15,6 @@ import React, {
 import { Text } from "@/components/text";
 import { AgendaSpeakers } from "@/components/agenda/AgendaSpeakers";
 import { SessionShare } from "@/components/agenda/SessionShare";
-import { SessionSlides } from "@/components/agenda/SessionSlides";
 import {
   EVENT_BADGES,
   dayLabel,
@@ -304,12 +303,6 @@ const SessionDialogContent = ({ talk }: { talk: AgendaTalk }) => {
             size="compact"
           />
         </div>
-
-        {talk.slides?.length ? (
-          <div className="mt-5 sm:mt-6">
-            <SessionSlides talk={talk} />
-          </div>
-        ) : null}
 
         {isShareable(talk) && (
           <div className="mt-4 border-t border-line pt-3.5 sm:mt-6 sm:pt-5">
