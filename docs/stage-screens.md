@@ -34,10 +34,10 @@ Up next → Intro → On stage → Slides 1…n → next session
 - **Slides**, one page per press: the files uploaded on the session in
   Strapi (Agenda 26, field `slides`; PDFs and images, in their order), or a
   PDF uploaded in the room's studio on that computer, which takes
-  precedence. On Nakamoto and Turing (`FRAMED_DECK`, on their LED walls) they sit as a card on the right
+  precedence. On Nakamoto (`FRAMED_DECK`, on its LED wall) they sit as a card on the right
   over the screen's background, centred in the right part of the screen, with
   the stage name and clock always centred above it and the session's title
-  and speakers at the top left, under the conference mark; 16:9 screens (Hopper, or Turing as landscape) show them full screen on black.
+  and speakers at the top left, under the conference mark; Turing and Hopper show them full screen on black.
 - **Breaks** in the programme are their own cue; **P** puts up a short-pause
   screen at any time, **B** blacks out.
 
@@ -144,12 +144,13 @@ Hopper (`FLOOR_FREE` in `StageDisplay.tsx`). The Digital Assets Day mark is
 three times as large at the top left, the stage and clock sit at the top
 centre, the session runs down the left under the mark and the speakers are
 at the top right, with what comes next under them. Breaks and the pause
-screen keep to the same area, and so do speaker slides on Nakamoto. On
+screen keep to the same area; speaker slides on Nakamoto (Main Stage)
+run from just under the clock to the bottom edge, every day. On
 16:9 screens the mark is twice rather than three times as large, and four
 or more speakers sit in two columns, so the speakers' column clears it.
 
 The track sponsors' logos stay on through "Up next", the intro, "On stage"
-and beside the slides on the framed rooms, so a session keeps the same size
+and beside the slides on Nakamoto, so a session keeps the same size
 from one cue to the next.
 
 Someone joining by video is named, comma-separated, under `remote` in the
@@ -166,7 +167,7 @@ title on screen.
 
 `?format=landscape` runs a wide room as a plain 16:9 screen instead of its
 LED wall's shape, for an ordinary projector. Slides then fill the screen on
-black, as on Hopper; the card over the background is only for the wide walls. The start page links Turing's
+black, as on Hopper. The start page links Turing's
 days in that format too.
 
 ## Sponsors thank-you

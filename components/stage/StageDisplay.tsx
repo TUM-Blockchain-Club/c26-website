@@ -139,7 +139,7 @@ const FLOOR_FREE: Record<string, number> = {
 /** Rooms where a speaker's slides sit as a card on the right, over the
  * screen's background, with the session beside them, rather than filling
  * the screen on black. */
-const FRAMED_DECK = new Set(["nakamoto", "turing"]);
+const FRAMED_DECK = new Set(["nakamoto"]);
 
 /** Rooms that always put the speakers in their own column on the right,
  * with stage and clock at the top centre; every room with a free floor
@@ -1870,7 +1870,7 @@ const CSS = `
 .stg-root.is-floor .stg-break-next .stg-people{margin-top:calc(var(--u)*1.4)}
 .stg-root.is-floor .stg-pause{padding-bottom:calc(var(--floor)*var(--fh) + var(--u)*2)}
 /* framed rooms: the slides as a card on the right, over the background */
-.stg-root.is-framed-deck .stg-deck{background:none;left:39%;right:calc(var(--u)*5);top:calc(var(--u)*7.6);bottom:calc(var(--u)*3.4);justify-content:center}
+.stg-root.is-framed-deck .stg-deck{background:none;left:39%;right:calc(var(--u)*5);top:calc(var(--u)*8);bottom:0;justify-content:center}
 /* Stage and clock stay put above the middle of the slide area, on every cue,
    so they never jump when the slides come up. In .stg-top's own box (5u in
    from each side) the area's middle, 39% to 5u from the right, is at
@@ -1882,7 +1882,7 @@ const CSS = `
 .stg-deck-side .stg-title{font-size:calc(var(--u)*3*var(--fit,1));line-height:1.15}
 .stg-deck-people{margin:0;font-size:calc(var(--u)*2);font-weight:600;line-height:1.35;color:var(--mute)}
 .stg-root.is-floor .stg-deck-side{justify-content:flex-start;padding-top:calc(var(--u)*14.4)}
-.stg-root.is-floor.is-framed-deck .stg-deck{bottom:calc(var(--floor)*var(--fh));align-items:flex-start}
+.stg-root.is-floor:not(.is-floor-deep).is-framed-deck .stg-deck{bottom:calc(var(--floor)*var(--fh));align-items:flex-start}
 /* lunch break and the end of the day: the sponsors, with a thank-you */
 .stg-thanks-wall{gap:calc(var(--u)*2.2)}
 .stg-thanks-head{display:flex;flex-direction:column;gap:calc(var(--u)*.6)}
