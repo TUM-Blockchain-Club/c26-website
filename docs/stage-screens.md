@@ -148,9 +148,13 @@ screen keep to the same area, and so do speaker slides on Nakamoto. On
 16:9 screens the mark is twice rather than three times as large, and four
 or more speakers sit in two columns, so the speakers' column clears it.
 
-"On stage" keeps the room the track sponsors' logos took on "Up next"
-(hidden, not removed), so a session stays the same size from one to the
-other.
+The track sponsors' logos stay on through "Up next", the intro, "On stage"
+and beside the slides on the framed rooms, so a session keeps the same size
+from one cue to the next.
+
+Someone joining by video is named, comma-separated, under `remote` in the
+session's `speakerNames` in Strapi; the screen then adds a small
+"(remote)" beside their name.
 
 Scene changes: the old scene fades out in 0.35 s before the new one rises
 in, keeping its own size while it fades (the shrink-to-fit is set on each

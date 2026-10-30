@@ -301,8 +301,14 @@ const toEntry = (s: StrapiSession): AgendaEntry | null => {
   // them twice.
   const moderator = s.speakerNames?.moderator;
   const linked = (s.speakers ?? []).map((x) => x.name).filter(Boolean);
+  // "remote" is no person of its own: it names, comma-separated, who joins
+  // the session by video, for the stage screens to say so.
+  const remote = (s.speakerNames?.remote ?? "")
+    .split(",")
+    .map((x) => x.trim())
+    .filter(Boolean);
   const named = Object.entries(s.speakerNames ?? {})
-    .filter(([key]) => key !== "moderator")
+    .filter(([key]) => key !== "moderator" && key !== "remote")
     .map(([, value]) => value)
     .filter(Boolean);
 
@@ -336,6 +342,7 @@ const toEntry = (s: StrapiSession): AgendaEntry | null => {
     ...(s.type ? { format: s.type } : {}),
     ...(speakers.length ? { speakers } : {}),
     ...(moderator ? { moderator } : {}),
+    ...(remote.length ? { remote } : {}),
     ...(s.slides?.length
       ? {
           slides: s.slides.map((f) => ({

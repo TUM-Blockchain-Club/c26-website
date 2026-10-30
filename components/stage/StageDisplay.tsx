@@ -1129,7 +1129,10 @@ const People = ({
         >
           <Portrait p={p} />
           <span className="stg-person-text">
-            <span className="stg-name">{p.name}</span>
+            <span className="stg-name">
+              {p.name}
+              {p.remote && <span className="stg-remote"> (remote)</span>}
+            </span>
             {p.position && <span className="stg-role">{p.position}</span>}
             {p.company && <span className="stg-company">{p.company}</span>}
             {p.moderator && <span className="stg-tag">Moderator</span>}
@@ -1232,7 +1235,7 @@ const SessionScene = ({
   live?: boolean;
   side?: React.ReactNode;
   ticker?: React.ReactNode;
-  /** Off while the talk runs: the stage belongs to the speakers then. */
+  /** Off hides the track sponsors' logos but keeps their room. */
   sponsors?: boolean;
 }) => {
   const solo = slot.people.length === 1;
@@ -1269,6 +1272,7 @@ const DeckSide = ({ slot }: { slot: StageSlot }) => {
       {names.length > 0 && (
         <p className="stg-deck-people">{names.join(", ")}</p>
       )}
+      <TrackLine slot={slot} />
     </section>
   );
 };
@@ -1312,7 +1316,6 @@ const NowOnStage = ({
     slot={slot}
     label="On stage"
     live
-    sponsors={false}
     ticker={<Ticker label="Next" slot={next} />}
   />
 );
@@ -1700,6 +1703,7 @@ const CSS = `
 .stg-main:has(.stg-people.is-strip) .stg-title:not(.is-long){font-size:calc(var(--u)*4.4*var(--fit,1))}
 .stg-people.is-strip .stg-name{font-size:calc(var(--u)*1.45)}
 .stg-people.is-strip .stg-role{font-size:calc(var(--u)*1.25)}
+.stg-remote{font-size:max(.7em,calc(var(--u)*1.2));font-weight:400;color:var(--mute);white-space:nowrap}
 .stg-company{font-weight:700;font-size:calc(var(--u)*1.5);line-height:1.25;color:var(--ink);padding-bottom:.08em}
 .stg-people.is-solo .stg-company{font-size:calc(var(--u)*2)}
 .stg-people.is-strip .stg-company{font-size:calc(var(--u)*1.3)}

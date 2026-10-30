@@ -29,6 +29,8 @@ export type StagePerson = {
   company?: string;
   photo?: string;
   moderator: boolean;
+  /** Joins by video; the screen notes it beside the name. */
+  remote?: boolean;
 };
 
 /** One slot on a stage, as the display needs it: absolute times, so the
@@ -175,6 +177,9 @@ export const getStageSlots = async (room: StageRoom): Promise<StageSlot[]> => {
         return {
           name,
           moderator,
+          ...(e.remote?.some((r) => bareName(r) === bareName(name))
+            ? { remote: true }
+            : {}),
           ...(link?.position ? { position: link.position } : {}),
           ...(link?.company ? { company: link.company } : {}),
           ...(link?.photo ? { photo: link.photo } : {}),
