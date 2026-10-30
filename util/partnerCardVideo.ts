@@ -2948,13 +2948,67 @@ export const TIER_LABEL: Record<SponsorTier, string> = {
   track: "TRACK SPONSOR",
 };
 
-/** What the card is a sponsorship of — the eyebrow above the tier. */
-const tierEyebrow = (tier: SponsorTier) =>
+/** One flat colour per tier, for the chip that names a second sponsorship on
+ * a combined card. The palettes above are three stop gradients and cannot
+ * tint an outline. */
+const TIER_CHIP_HEX: Record<SponsorTier, string> = {
+  platinum: "#d6e1ff",
+  gold: "#ffd27a",
+  silver: "#dfe5ec",
+  bronze: "#e4aa78",
+  premium: "#ffcd78",
+  standard: "#8ab4f8",
+  bounty: "#f0aa3c",
+  travel: "#7fdcc8",
+  track: "#82b4ff",
+};
+
+/** What one tier is a sponsorship of. */
+const tierContext = (tier: SponsorTier) =>
   tier === "track"
     ? "DIGITAL ASSETS DAY · OCT 30"
     : HACKATHON_TIERS.has(tier)
       ? "BLOCKCHAIN & AI HACKATHON · OCT 30 TO 31"
       : "TUM BLOCKCHAIN CONFERENCE 26";
+
+/** The eyebrow above the tier. A sponsor who backs both the conference and
+ * the Hackathon gets both named, without their dates: two full contexts would
+ * run into the conference logos in the other corner. */
+const SHORT_CONTEXT: Record<string, string> = {
+  "DIGITAL ASSETS DAY · OCT 30": "DIGITAL ASSETS DAY",
+  "BLOCKCHAIN & AI HACKATHON · OCT 30 TO 31": "BLOCKCHAIN & AI HACKATHON",
+};
+const tierEyebrow = (tier: SponsorTier, alsoTier?: SponsorTier) => {
+  const first = tierContext(tier);
+  if (!alsoTier) return first;
+  const second = tierContext(alsoTier);
+  if (second === first) return first;
+  const shorten = (c: string) => SHORT_CONTEXT[c] ?? c;
+  return `${shorten(first)} · ${shorten(second)}`;
+};
+
+/** The chip under the tier line: the day's track where there is one, else the
+ * second sponsorship of a combined card. */
+const sponsorChip = (
+  content: SponsorCardContent,
+): { name: string; hex: string } | undefined => {
+  const track = dayTrackOf(content.dayTrack);
+  if (track) return { name: track.name, hex: track.hex };
+  if (content.alsoTier) {
+    // "AND STANDARD SPONSOR" alone says nothing: the rank only means something
+    // next to the thing it ranks in, so the chip names that too.
+    const of = HACKATHON_TIERS.has(content.alsoTier)
+      ? "THE HACKATHON"
+      : content.alsoTier === "track"
+        ? "THE DIGITAL ASSETS DAY"
+        : "THE CONFERENCE";
+    return {
+      name: `AND ${TIER_LABEL[content.alsoTier]} OF ${of}`,
+      hex: TIER_CHIP_HEX[content.alsoTier],
+    };
+  }
+  return undefined;
+};
 
 export type SponsorCardContent = {
   /** Omit for the generic, self-serve external sponsor card: no tier theme,
@@ -2963,6 +3017,11 @@ export type SponsorCardContent = {
   /** For a Digital Assets Day track sponsor: which of the day's tracks they
    * back. The card names it in that track's own colour from the agenda. */
   dayTrack?: DadTrackName;
+  /** A second sponsorship on the same card, for a sponsor who backs both the
+   * conference and the Hackathon. The headline keeps the higher tier and the
+   * chip underneath names this one, so they get one card instead of two that
+   * each tell half the story. */
+  alsoTier?: SponsorTier;
   /** The logos on the card. Usually one. A track card can carry the whole
    * group, in which case they share the plate row. */
   logoUrls: string[];
@@ -3228,14 +3287,16 @@ function drawSponsorLandscape(
     ctx.restore();
   }
   const eyebrowIn = easeOut(phase(p, 0.08, 0.18));
-  drawSpacedText(ctx, tierEyebrow(content.tier), P, 136, {
+  drawSpacedText(ctx, tierEyebrow(content.tier, content.alsoTier), P, 136, {
     size: 26,
     spacing: 6,
     color: "rgba(255,255,255,0.6)",
     alpha: eyebrowIn,
     weight: 700,
     font: brandFont(),
-    maxWidth: w * 0.5,
+    // Stops short of the conference logos in the opposite corner. A card that
+    // names two sponsorships fills this line, where one leaves it half empty.
+    maxWidth: w * 0.44,
   });
 
   // The tier line, centred, set in the tier's own colours under a short rule.
@@ -3261,7 +3322,7 @@ function drawSponsorLandscape(
   });
 
   // Which of the day's tracks this sponsors, in that track's colour.
-  const track = dayTrackOf(content.dayTrack);
+  const track = sponsorChip(content);
   if (track) {
     drawTrackChip(
       ctx,
@@ -3430,7 +3491,7 @@ function drawSponsorPortrait(
     ctx.restore();
   }
   const eyebrowIn = easeOut(phase(p, 0.08, 0.18));
-  drawSpacedText(ctx, tierEyebrow(content.tier), w / 2, 226, {
+  drawSpacedText(ctx, tierEyebrow(content.tier, content.alsoTier), w / 2, 226, {
     size: 20,
     spacing: 4,
     color: "rgba(255,255,255,0.6)",
@@ -3462,7 +3523,7 @@ function drawSponsorPortrait(
     maxWidth: w - P * 2,
   });
 
-  const track = dayTrackOf(content.dayTrack);
+  const track = sponsorChip(content);
   if (track) {
     drawTrackChip(
       ctx,
